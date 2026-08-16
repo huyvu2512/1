@@ -4,7 +4,6 @@ let playerInstance = null;
 let currentChannelData = null;
 let currentVideoElement = null;
 
-// Phân tích ClearKey từ DRM string (ví dụ "keyId:keyValue" hoặc URL query id=...)
 export function parseClearKey(drmString) {
   if (!drmString) return null;
   if (typeof drmString === 'object') return drmString;
@@ -12,7 +11,6 @@ export function parseClearKey(drmString) {
   try {
     let keyString = drmString.trim();
     if (keyString.startsWith('http')) {
-      // Ví dụ: https://.../key.php?id=HEX1:HEX2 hoặc JSON
       if (keyString.includes('?id=')) {
         keyString = keyString.split('?id=')[1] || '';
       } else if (keyString.includes('&id=')) {
@@ -57,7 +55,7 @@ export async function initPlayer(videoElement, onStatusUpdate) {
       }
     });
 
-    // Request filter: Đặt User-Agent & Referer chuẩn để tránh lỗi 403 / CORS
+    // Request filter cho CDN
     playerInstance.getNetworkingEngine().registerRequestFilter((type, request) => {
       const ua = (currentChannelData && currentChannelData.userAgent) 
         ? currentChannelData.userAgent 
@@ -75,9 +73,9 @@ export async function initPlayer(videoElement, onStatusUpdate) {
 
     playerInstance.addEventListener('error', (event) => {
       const err = event.detail;
-      console.error('Shaka Player Error:', err);
+      console.error('🚨 Shaka Error Detail:', err);
       if (onStatusUpdate) {
-        onStatusUpdate(`Lỗi phát (${err.code || 'DRM'})`);
+        onStatusUpdate(`Lỗi: Code ${err.code} (Xem Console F12)`);
       }
     });
 
@@ -101,11 +99,9 @@ export async function playStream(channel, onStatusUpdate) {
     if (channel.licenseKey) {
       const clearKeyObj = parseClearKey(channel.licenseKey);
       if (clearKeyObj) {
-        // ClearKey DRM
         drmConfig.clearKeys = clearKeyObj;
         console.log(`[DRM] Kích hoạt ClearKey DRM:`, clearKeyObj);
       } else {
-        // Widevine Server URL
         drmConfig.servers['com.widevine.alpha'] = channel.licenseKey;
         drmConfig.advanced['com.widevine.alpha'] = {
           videoRobustness: 'SW_SECURE_CRYPTO',
@@ -117,7 +113,6 @@ export async function playStream(channel, onStatusUpdate) {
 
     playerInstance.configure({ drm: drmConfig });
 
-    // Kiểm tra xem có đang chạy qua local proxy không
     let streamUrl = channel.url;
     if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') {
       streamUrl = `/api/stream?url=${encodeURIComponent(channel.url)}`;
@@ -125,13 +120,13 @@ export async function playStream(channel, onStatusUpdate) {
 
     await playerInstance.load(streamUrl);
     if (currentVideoElement) {
-      currentVideoElement.play().catch(() => {});
+      currentVideoElement.play().catch((err) => console.log('Autoplay play error:', err));
     }
     if (onStatusUpdate) onStatusUpdate(`Đang phát: ${channel.name}`);
   } catch (error) {
-    console.error(`[Playback Failed] ${channel.name}:`, error);
+    console.error(`🚨 [Playback Failed] ${channel.name}:`, error);
     if (onStatusUpdate) {
-      onStatusUpdate(`Lỗi: ${error.message || 'Không thể giải mã'}`);
+      onStatusUpdate(`Lỗi phát: Code ${error.code || 'UNKNOWN'} (Xem Console)`);
     }
   }
 }
