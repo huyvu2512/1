@@ -108,7 +108,7 @@ function setupDOM() {
       <div id="drawer-channel-list" class="drawer-channel-list"></div>
     </div>
 
-    <!-- KHUNG OSD BANNER DƯỚI (SLIM GLASS + HÀNG 4 VIÊN THUỐC) -->
+    <!-- KHUNG OSD BANNER DƯỚI -->
     <div id="dl-osd-banner" class="pip-right active">
       <!-- HÀNG 1: THÔNG TIN KÊNH + LIVE + SPECS -->
       <div class="osd-main-row">
@@ -134,8 +134,8 @@ function setupDOM() {
         <span id="osd-stop-time" class="osd-time-bound">00:45</span>
       </div>
 
-      <!-- HÀNG 3: CÁC NÚT VIÊN THUỐC ĐIỀU KHIỂN (DANH SÁCH KÊNH, LỊCH PHÁT SÓNG, AUTO, ÂM THANH) -->
-      <div class="osd-action-pills-row">
+      <!-- HÀNG 3: CÁC NÚT VIÊN THUỐC ĐIỀU KHIỂN (MẶC ĐỊNH ẨN TRONG CHẾ ĐỘ PIP MỞ MENU) -->
+      <div class="osd-action-pills-row" style="display: none;">
         <button id="btn-action-drawer" class="bottom-pill-btn focused">
           <svg viewBox="0 0 24 24"><path d="M16 12H3"/><path d="M16 18H3"/><path d="M16 6H3"/><path d="M21 12h.01"/><path d="M21 18h.01"/><path d="M21 6h.01"/></svg>
           <span>Danh sách kênh</span>

@@ -507,6 +507,11 @@ var globalStyles=`
       bottom: 20px !important;
     }
 
+    /* KHI \u1EDE CH\u1EBE \u0110\u1ED8 PIP THU NH\u1ECE (M\u1EDE DRAWER): \u1EA8N HO\xC0N TO\xC0N H\xC0NG 4 N\xDAT VI\xCAN THU\u1ED0C */
+    #dl-osd-banner.pip-right .osd-action-pills-row {
+      display: none !important;
+    }
+
     /* H\xC0NG 1: TH\xD4NG TIN K\xCANH + LIVE + SPECS */
     .osd-main-row {
       display: flex;
@@ -919,7 +924,7 @@ var allChannels=[];var currentPlayingChannel=null;var isDrawerOpen=true;var play
       <div id="drawer-channel-list" class="drawer-channel-list"></div>
     </div>
 
-    <!-- KHUNG OSD BANNER D\u01AF\u1EDAI (SLIM GLASS + H\xC0NG 4 VI\xCAN THU\u1ED0C) -->
+    <!-- KHUNG OSD BANNER D\u01AF\u1EDAI -->
     <div id="dl-osd-banner" class="pip-right active">
       <!-- H\xC0NG 1: TH\xD4NG TIN K\xCANH + LIVE + SPECS -->
       <div class="osd-main-row">
@@ -945,8 +950,8 @@ var allChannels=[];var currentPlayingChannel=null;var isDrawerOpen=true;var play
         <span id="osd-stop-time" class="osd-time-bound">00:45</span>
       </div>
 
-      <!-- H\xC0NG 3: C\xC1C N\xDAT VI\xCAN THU\u1ED0C \u0110I\u1EC0U KHI\u1EC2N (DANH S\xC1CH K\xCANH, L\u1ECACH PH\xC1T S\xD3NG, AUTO, \xC2M THANH) -->
-      <div class="osd-action-pills-row">
+      <!-- H\xC0NG 3: C\xC1C N\xDAT VI\xCAN THU\u1ED0C \u0110I\u1EC0U KHI\u1EC2N (M\u1EB6C \u0110\u1ECANH \u1EA8N TRONG CH\u1EBE \u0110\u1ED8 PIP M\u1EDE MENU) -->
+      <div class="osd-action-pills-row" style="display: none;">
         <button id="btn-action-drawer" class="bottom-pill-btn focused">
           <svg viewBox="0 0 24 24"><path d="M16 12H3"/><path d="M16 18H3"/><path d="M16 6H3"/><path d="M21 12h.01"/><path d="M21 18h.01"/><path d="M21 6h.01"/></svg>
           <span>Danh s\xE1ch k\xEAnh</span>

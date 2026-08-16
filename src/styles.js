@@ -501,6 +501,11 @@ export const globalStyles = `
       bottom: 20px !important;
     }
 
+    /* KHI Ở CHẾ ĐỘ PIP THU NHỎ (MỞ DRAWER): ẨN HOÀN TOÀN HÀNG 4 NÚT VIÊN THUỐC */
+    #dl-osd-banner.pip-right .osd-action-pills-row {
+      display: none !important;
+    }
+
     /* HÀNG 1: THÔNG TIN KÊNH + LIVE + SPECS */
     .osd-main-row {
       display: flex;
