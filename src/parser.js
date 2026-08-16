@@ -1,5 +1,5 @@
 /**
- * Parser phân tích danh sách phát M3U với hỗ trợ các thẻ #KODIPROP (DRM Widevine, MPD)
+ * Parser phân tích danh sách phát M3U với hỗ trợ các thẻ #KODIPROP (DRM Widevine / ClearKey, MPD, UserAgent)
  */
 export function parseM3U(content) {
   if (!content || typeof content !== 'string') return [];
@@ -13,15 +13,11 @@ export function parseM3U(content) {
     if (!line) continue;
 
     if (line.startsWith('#EXTINF:')) {
-      // Parse name: sau dấu phẩy cuối cùng của dòng #EXTINF
       const commaIndex = line.lastIndexOf(',');
       const name = commaIndex !== -1 ? line.substring(commaIndex + 1).trim() : 'Kênh truyền hình';
 
-      // Parse tvg-logo
       const logoMatch = line.match(/tvg-logo="([^"]+)"/i);
-      // Parse group-title
       const groupMatch = line.match(/group-title="([^"]+)"/i);
-      // Parse tvg-id
       const idMatch = line.match(/tvg-id="([^"]+)"/i);
 
       current = {
