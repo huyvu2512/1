@@ -55,7 +55,6 @@ export async function initPlayer(videoElement, onStatusUpdate) {
       }
     });
 
-    // Request filter cho CDN
     playerInstance.getNetworkingEngine().registerRequestFilter((type, request) => {
       const ua = (currentChannelData && currentChannelData.userAgent) 
         ? currentChannelData.userAgent 
@@ -71,11 +70,17 @@ export async function initPlayer(videoElement, onStatusUpdate) {
       request.allowCrossSiteCredentials = false;
     });
 
+    // Chỉ báo lỗi nếu là lỗi nghiêm trọng (severity === 2 / CRITICAL)
     playerInstance.addEventListener('error', (event) => {
       const err = event.detail;
-      console.error('🚨 Shaka Error Detail:', err);
-      if (onStatusUpdate) {
-        onStatusUpdate(`Lỗi: Code ${err.code} (Xem Console F12)`);
+      if (err.severity === 2) {
+        console.error('🚨 Shaka Fatal Error:', err);
+        if (onStatusUpdate) {
+          onStatusUpdate(`Lỗi phát nghiêm trọng (Code ${err.code})`);
+        }
+      } else {
+        // severity === 1 là cảnh báo có thể tự phục hồi (recoverable), video vẫn phát bình thường
+        console.warn('⚠️ Shaka Recoverable Warning (Tự phục hồi):', err);
       }
     });
 
@@ -100,14 +105,12 @@ export async function playStream(channel, onStatusUpdate) {
       const clearKeyObj = parseClearKey(channel.licenseKey);
       if (clearKeyObj) {
         drmConfig.clearKeys = clearKeyObj;
-        console.log(`[DRM] Kích hoạt ClearKey DRM:`, clearKeyObj);
       } else {
         drmConfig.servers['com.widevine.alpha'] = channel.licenseKey;
         drmConfig.advanced['com.widevine.alpha'] = {
           videoRobustness: 'SW_SECURE_CRYPTO',
           audioRobustness: 'SW_SECURE_CRYPTO'
         };
-        console.log(`[DRM] Kích hoạt Widevine license:`, channel.licenseKey);
       }
     }
 
@@ -120,13 +123,15 @@ export async function playStream(channel, onStatusUpdate) {
 
     await playerInstance.load(streamUrl);
     if (currentVideoElement) {
-      currentVideoElement.play().catch((err) => console.log('Autoplay play error:', err));
+      currentVideoElement.play().catch(() => {});
     }
     if (onStatusUpdate) onStatusUpdate(`Đang phát: ${channel.name}`);
   } catch (error) {
-    console.error(`🚨 [Playback Failed] ${channel.name}:`, error);
-    if (onStatusUpdate) {
-      onStatusUpdate(`Lỗi phát: Code ${error.code || 'UNKNOWN'} (Xem Console)`);
+    if (error.severity === 2) {
+      console.error(`🚨 [Playback Failed] ${channel.name}:`, error);
+      if (onStatusUpdate) {
+        onStatusUpdate(`Lỗi phát: Code ${error.code || 'UNKNOWN'}`);
+      }
     }
   }
 }
