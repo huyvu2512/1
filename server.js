@@ -17,6 +17,18 @@ const MIME_TYPES = {
   '.svg': 'image/svg+xml'
 };
 
+function resolveUrl(urlPath, baseUrl, origin) {
+  let resolved = urlPath;
+  if (!urlPath.startsWith('http://') && !urlPath.startsWith('https://')) {
+    if (urlPath.startsWith('/')) {
+      resolved = `${origin}${urlPath}`;
+    } else {
+      resolved = `${baseUrl}${urlPath}`;
+    }
+  }
+  return resolved;
+}
+
 async function handleStreamProxy(req, res, targetUrl) {
   try {
     const urlObj = new URL(targetUrl);
@@ -39,6 +51,15 @@ async function handleStreamProxy(req, res, targetUrl) {
         }
       }
 
+      if (proxyRes.statusCode >= 400) {
+        res.writeHead(proxyRes.statusCode, {
+          'Access-Control-Allow-Origin': '*',
+          'Content-Type': 'text/plain; charset=utf-8'
+        });
+        res.end(`Upstream Error: HTTP ${proxyRes.statusCode}`);
+        return;
+      }
+
       const resHeaders = {
         'Access-Control-Allow-Origin': '*',
         'Access-Control-Allow-Methods': 'GET, HEAD, OPTIONS',
@@ -50,20 +71,53 @@ async function handleStreamProxy(req, res, targetUrl) {
       const isMpd = contentType.includes('dash+xml') || contentType.includes('xml') || targetUrl.includes('.mpd');
       const isM3u8 = contentType.includes('mpegurl') || targetUrl.includes('.m3u8');
 
-      if (isMpd || isM3u8) {
+      if (isMpd) {
         let body = '';
         proxyRes.setEncoding('utf8');
         proxyRes.on('data', (chunk) => { body += chunk; });
         proxyRes.on('end', () => {
           const baseUrl = targetUrl.substring(0, targetUrl.lastIndexOf('/') + 1);
-          if (isMpd) {
-            // Rewrite relative URLs in MPD
-            body = body
-              .replace(/\binitialization="(?!https?:\/\/)([^"]+)"/g, `initialization="${baseUrl}$1"`)
-              .replace(/\bmedia="(?!https?:\/\/)([^"]+)"/g, `media="${baseUrl}$1"`);
-          }
+          body = body
+            .replace(/\binitialization="(?!https?:\/\/)([^"]+)"/g, `initialization="${baseUrl}$1"`)
+            .replace(/\bmedia="(?!https?:\/\/)([^"]+)"/g, `media="${baseUrl}$1"`);
+
           res.writeHead(200, resHeaders);
           res.end(body);
+        });
+      } else if (isM3u8) {
+        let body = '';
+        proxyRes.setEncoding('utf8');
+        proxyRes.on('data', (chunk) => { body += chunk; });
+        proxyRes.on('end', () => {
+          const baseUrl = targetUrl.substring(0, targetUrl.lastIndexOf('/') + 1);
+          const origin = urlObj.origin;
+          const lines = body.split(/\r?\n/);
+
+          const rewritten = lines.map((line) => {
+            const trimmed = line.trim();
+            if (!trimmed) return line;
+
+            if (trimmed.startsWith('#')) {
+              return trimmed.replace(/URI="([^"]+)"/g, (match, p1) => {
+                const abs = resolveUrl(p1, baseUrl, origin);
+                return `URI="/api/stream?url=${encodeURIComponent(abs)}"`;
+              });
+            }
+
+            if (trimmed.includes('.m3u8')) {
+              const abs = resolveUrl(trimmed, baseUrl, origin);
+              return `/api/stream?url=${encodeURIComponent(abs)}`;
+            }
+
+            // Ts / M4s video chunks: resolve to absolute CDN URL
+            return resolveUrl(trimmed, baseUrl, origin);
+          });
+
+          res.writeHead(200, {
+            ...resHeaders,
+            'Content-Type': 'application/vnd.apple.mpegurl'
+          });
+          res.end(rewritten.join('\n'));
         });
       } else {
         res.writeHead(proxyRes.statusCode, resHeaders);
@@ -72,13 +126,13 @@ async function handleStreamProxy(req, res, targetUrl) {
     });
 
     proxyReq.on('error', (err) => {
-      console.error('Proxy request error:', err);
-      res.writeHead(500, { 'Content-Type': 'text/plain', 'Access-Control-Allow-Origin': '*' });
-      res.end('Proxy Error: ' + err.message);
+      console.error(`Proxy request error for ${targetUrl}:`, err.message);
+      res.writeHead(502, { 'Content-Type': 'text/plain; charset=utf-8', 'Access-Control-Allow-Origin': '*' });
+      res.end(`Nguồn phát không phản hồi (${err.code || err.message})`);
     });
   } catch (e) {
     console.error('Proxy Error:', e);
-    res.writeHead(500, { 'Content-Type': 'text/plain', 'Access-Control-Allow-Origin': '*' });
+    res.writeHead(500, { 'Content-Type': 'text/plain; charset=utf-8', 'Access-Control-Allow-Origin': '*' });
     res.end('Invalid URL');
   }
 }
@@ -96,7 +150,6 @@ const server = http.createServer((req, res) => {
 
   const parsedUrl = new URL(req.url, `http://localhost:${PORT}`);
 
-  // API Proxy Stream
   if (parsedUrl.pathname === '/api/stream') {
     const targetUrl = parsedUrl.searchParams.get('url');
     if (!targetUrl) {
@@ -107,7 +160,6 @@ const server = http.createServer((req, res) => {
     return handleStreamProxy(req, res, targetUrl);
   }
 
-  // Static files
   let filePath = path.join(ROOT, parsedUrl.pathname === '/' ? 'index.html' : parsedUrl.pathname);
   const ext = path.extname(filePath).toLowerCase();
 
@@ -127,5 +179,5 @@ const server = http.createServer((req, res) => {
 
 server.listen(PORT, () => {
   console.log(`\n🚀 Dev Server & Streaming Proxy đang chạy tại: http://localhost:${PORT}`);
-  console.log(`Đã tích hợp bộ giải mã CORS & MPD/HLS Stream Proxy!\n`);
+  console.log(`Đã tối ưu M3U8 / MPD Sub-playlist & Segment Resolver!\n`);
 });
