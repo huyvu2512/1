@@ -26,16 +26,15 @@ export const TV_KEYS = {
 export function registerTizenKeys() {
   try {
     if (window.tizen && window.tizen.tvinputdevice) {
-      const keysToRegister = ['ColorF0Red', 'ColorF1Green', 'ColorF2Yellow', 'ColorF3Blue', 'MediaPlay', 'MediaPause', 'MediaStop', 'MediaPlayPause'];
+      const keysToRegister = [
+        'ColorF0Red', 'ColorF1Green', 'ColorF2Yellow', 'ColorF3Blue', 
+        'MediaPlay', 'MediaPause', 'MediaStop', 'MediaPlayPause'
+      ];
       keysToRegister.forEach((keyName) => {
         try {
           window.tizen.tvinputdevice.registerKey(keyName);
-        } catch (e) {
-          console.warn('Không thể đăng ký phím:', keyName, e);
-        }
+        } catch (e) {}
       });
     }
-  } catch (err) {
-    console.warn('Không phát hiện Tizen TV input device API');
-  }
+  } catch (err) {}
 }

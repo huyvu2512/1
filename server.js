@@ -7,6 +7,10 @@ const { URL } = require('url');
 const PORT = 3000;
 const ROOT = path.join(__dirname);
 
+process.on('uncaughtException', (err) => {
+  console.error('[Server Error Handler]', err.message);
+});
+
 const MIME_TYPES = {
   '.html': 'text/html; charset=utf-8',
   '.js': 'application/javascript; charset=utf-8',
@@ -52,11 +56,13 @@ async function handleStreamProxy(req, res, targetUrl) {
       }
 
       if (proxyRes.statusCode >= 400) {
-        res.writeHead(proxyRes.statusCode, {
-          'Access-Control-Allow-Origin': '*',
-          'Content-Type': 'text/plain; charset=utf-8'
-        });
-        res.end(`Upstream Error: HTTP ${proxyRes.statusCode}`);
+        if (!res.headersSent) {
+          res.writeHead(proxyRes.statusCode, {
+            'Access-Control-Allow-Origin': '*',
+            'Content-Type': 'text/plain; charset=utf-8'
+          });
+          res.end(`Upstream Error: HTTP ${proxyRes.statusCode}`);
+        }
         return;
       }
 
@@ -68,7 +74,7 @@ async function handleStreamProxy(req, res, targetUrl) {
       };
 
       const contentType = proxyRes.headers['content-type'] || '';
-      const isMpd = contentType.includes('dash+xml') || contentType.includes('xml') || targetUrl.includes('.mpd');
+      const isMpd = contentType.includes('dash+xml') || targetUrl.includes('.mpd');
       const isM3u8 = contentType.includes('mpegurl') || targetUrl.includes('.m3u8');
 
       if (isMpd) {
@@ -76,64 +82,72 @@ async function handleStreamProxy(req, res, targetUrl) {
         proxyRes.setEncoding('utf8');
         proxyRes.on('data', (chunk) => { body += chunk; });
         proxyRes.on('end', () => {
-          const baseUrl = targetUrl.substring(0, targetUrl.lastIndexOf('/') + 1);
-          body = body
-            .replace(/\binitialization="(?!https?:\/\/)([^"]+)"/g, `initialization="${baseUrl}$1"`)
-            .replace(/\bmedia="(?!https?:\/\/)([^"]+)"/g, `media="${baseUrl}$1"`);
+          if (!res.headersSent) {
+            const baseUrl = targetUrl.substring(0, targetUrl.lastIndexOf('/') + 1);
+            body = body
+              .replace(/\binitialization="(?!https?:\/\/)([^"]+)"/g, `initialization="${baseUrl}$1"`)
+              .replace(/\bmedia="(?!https?:\/\/)([^"]+)"/g, `media="${baseUrl}$1"`);
 
-          res.writeHead(200, resHeaders);
-          res.end(body);
+            res.writeHead(200, resHeaders);
+            res.end(body);
+          }
         });
       } else if (isM3u8) {
         let body = '';
         proxyRes.setEncoding('utf8');
         proxyRes.on('data', (chunk) => { body += chunk; });
         proxyRes.on('end', () => {
-          const baseUrl = targetUrl.substring(0, targetUrl.lastIndexOf('/') + 1);
-          const origin = urlObj.origin;
-          const lines = body.split(/\r?\n/);
+          if (!res.headersSent) {
+            const baseUrl = targetUrl.substring(0, targetUrl.lastIndexOf('/') + 1);
+            const origin = urlObj.origin;
+            const lines = body.split(/\r?\n/);
 
-          const rewritten = lines.map((line) => {
-            const trimmed = line.trim();
-            if (!trimmed) return line;
+            const rewritten = lines.map((line) => {
+              const trimmed = line.trim();
+              if (!trimmed) return line;
 
-            if (trimmed.startsWith('#')) {
-              return trimmed.replace(/URI="([^"]+)"/g, (match, p1) => {
-                const abs = resolveUrl(p1, baseUrl, origin);
-                return `URI="/api/stream?url=${encodeURIComponent(abs)}"`;
-              });
-            }
+              if (trimmed.startsWith('#')) {
+                return trimmed.replace(/URI="([^"]+)"/g, (match, p1) => {
+                  const abs = resolveUrl(p1, baseUrl, origin);
+                  return `URI="/api/stream?url=${encodeURIComponent(abs)}"`;
+                });
+              }
 
-            if (trimmed.includes('.m3u8')) {
-              const abs = resolveUrl(trimmed, baseUrl, origin);
-              return `/api/stream?url=${encodeURIComponent(abs)}`;
-            }
+              if (trimmed.includes('.m3u8')) {
+                const abs = resolveUrl(trimmed, baseUrl, origin);
+                return `/api/stream?url=${encodeURIComponent(abs)}`;
+              }
 
-            // Ts / M4s video chunks: resolve to absolute CDN URL
-            return resolveUrl(trimmed, baseUrl, origin);
-          });
+              // Ts / M4s video chunks: resolve to absolute CDN URL
+              return resolveUrl(trimmed, baseUrl, origin);
+            });
 
-          res.writeHead(200, {
-            ...resHeaders,
-            'Content-Type': 'application/vnd.apple.mpegurl'
-          });
-          res.end(rewritten.join('\n'));
+            res.writeHead(200, {
+              ...resHeaders,
+              'Content-Type': 'application/vnd.apple.mpegurl'
+            });
+            res.end(rewritten.join('\n'));
+          }
         });
       } else {
-        res.writeHead(proxyRes.statusCode, resHeaders);
-        proxyRes.pipe(res);
+        if (!res.headersSent) {
+          res.writeHead(proxyRes.statusCode, resHeaders);
+          proxyRes.pipe(res);
+        }
       }
     });
 
     proxyReq.on('error', (err) => {
-      console.error(`Proxy request error for ${targetUrl}:`, err.message);
-      res.writeHead(502, { 'Content-Type': 'text/plain; charset=utf-8', 'Access-Control-Allow-Origin': '*' });
-      res.end(`Nguồn phát không phản hồi (${err.code || err.message})`);
+      if (!res.headersSent) {
+        res.writeHead(502, { 'Content-Type': 'text/plain; charset=utf-8', 'Access-Control-Allow-Origin': '*' });
+        res.end(`Nguồn phát không phản hồi (${err.code || err.message})`);
+      }
     });
   } catch (e) {
-    console.error('Proxy Error:', e);
-    res.writeHead(500, { 'Content-Type': 'text/plain; charset=utf-8', 'Access-Control-Allow-Origin': '*' });
-    res.end('Invalid URL');
+    if (!res.headersSent) {
+      res.writeHead(500, { 'Content-Type': 'text/plain; charset=utf-8', 'Access-Control-Allow-Origin': '*' });
+      res.end('Invalid URL');
+    }
   }
 }
 
@@ -165,15 +179,19 @@ const server = http.createServer((req, res) => {
 
   fs.readFile(filePath, (err, data) => {
     if (err) {
-      res.writeHead(404, { 'Content-Type': 'text/plain; charset=utf-8' });
-      res.end('404 Not Found');
+      if (!res.headersSent) {
+        res.writeHead(404, { 'Content-Type': 'text/plain; charset=utf-8' });
+        res.end('404 Not Found');
+      }
       return;
     }
-    res.writeHead(200, {
-      'Content-Type': MIME_TYPES[ext] || 'application/octet-stream',
-      'Access-Control-Allow-Origin': '*'
-    });
-    res.end(data);
+    if (!res.headersSent) {
+      res.writeHead(200, {
+        'Content-Type': MIME_TYPES[ext] || 'application/octet-stream',
+        'Access-Control-Allow-Origin': '*'
+      });
+      res.end(data);
+    }
   });
 });
 

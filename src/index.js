@@ -1,580 +1,514 @@
-import { parseM3U } from './parser.js';
-import { initPlayer, playStream, stopStream } from './player.js';
+import { injectStyles } from './styles.js';
+import { 
+  updateOsdInfo, 
+  updateLiveVideoSpecs, 
+  showCenterPlayPause, 
+  setOpenDrawerCallback, 
+  setupPillClickEvents, 
+  navigateActionBar, 
+  executeActionPill,
+  isOsdVisible,
+  isQualityOrAudioDialogOpen,
+  navigateDialog,
+  selectDialogCurrent,
+  closeQualityAudioDialog
+} from './osd.js';
+import { 
+  initDrawerState, 
+  renderCategories, 
+  renderChannels, 
+  nextCategory, 
+  prevCategory, 
+  nextChannel, 
+  prevChannel, 
+  getCurrentChannels, 
+  getCurrentChannelIndex, 
+  setCurrentChannelIndex, 
+  getCurrentSelectedChannel, 
+  updateWindowsClock,
+  isSearchFocused,
+  blurSearchInput,
+  focusSearchInput,
+  clearSearch,
+  getSearchQuery
+} from './drawer.js';
+import { loadAndMergePlaylists } from './sources.js';
+import { initPlayer, playStream, stopStream, setStatsCallback, setPlaybackErrorCallback, handleStreamFailure } from './player.js';
+import { loadEPG } from './epg.js';
 import { TV_KEYS, registerTizenKeys } from './remote.js';
 
-const STORAGE_KEY = 'tb_iptv_drm_playlist_url';
-
 let allChannels = [];
-let filteredChannels = [];
-let categories = ['Tất cả'];
-let activeCategory = 'Tất cả';
-let selectedIndex = 0;
 let currentPlayingChannel = null;
-let isSidebarVisible = true;
-let isModalOpen = false;
+let isDrawerOpen = true;
+let playbackTimeout = null;
 
-function xhrGet(url, callback) {
-  const xhr = new XMLHttpRequest();
-  xhr.open('GET', url, true);
-  xhr.onreadystatechange = function () {
-    if (xhr.readyState === 4) {
-      if (xhr.status >= 200 && xhr.status < 300) {
-        callback(null, xhr.responseText);
-      } else {
-        callback(new Error(`HTTP ${xhr.status}`), null);
-      }
-    }
-  };
-  xhr.onerror = function () {
-    callback(new Error('Network error'), null);
-  };
-  try {
-    xhr.send();
-  } catch (e) {
-    callback(e, null);
-  }
-}
+function setupDOM() {
+  injectStyles();
 
-function setupUI() {
   document.body.innerHTML = `
-    <style>
-      * { box-sizing: border-box; margin: 0; padding: 0; }
-      body {
-        background: #090a0f;
-        color: #f8fafc;
-        font-family: 'Segoe UI', -apple-system, BlinkMacSystemFont, Roboto, sans-serif;
-        height: 100vh;
-        overflow: hidden;
-      }
-      #video-screen {
-        position: absolute;
-        top: 0; left: 0;
-        width: 100vw; height: 100vh;
-        background: #000;
-        z-index: 1;
-      }
-      #main-app {
-        position: relative;
-        z-index: 10;
-        width: 100vw; height: 100vh;
-        pointer-events: none;
-      }
-      .sidebar {
-        position: absolute;
-        top: 20px; left: 20px; bottom: 20px;
-        width: 380px;
-        background: rgba(15, 23, 42, 0.94);
-        backdrop-filter: blur(16px);
-        border: 1px solid rgba(255, 255, 255, 0.12);
-        border-radius: 16px;
-        padding: 18px;
-        display: flex;
-        flex-direction: column;
-        gap: 12px;
-        box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.85);
-        transition: transform 0.25s ease;
-        pointer-events: auto;
-      }
-      .sidebar.hidden {
-        transform: translateX(-420px);
-      }
-      .header-title {
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-        padding-bottom: 8px;
-        border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-      }
-      .header-title h1 {
-        font-size: 18px;
-        font-weight: 700;
-        background: linear-gradient(135deg, #38bdf8, #818cf8);
-        -webkit-background-clip: text;
-        -webkit-text-fill-color: transparent;
-      }
-      .btn-add {
-        background: #2563eb;
-        color: #fff;
-        border: none;
-        padding: 6px 12px;
-        border-radius: 6px;
-        font-size: 12px;
-        cursor: pointer;
-        font-weight: 600;
-      }
-      .category-tabs {
-        display: flex;
-        gap: 6px;
-        overflow-x: auto;
-        padding-bottom: 4px;
-      }
-      .category-badge {
-        padding: 5px 12px;
-        background: rgba(255, 255, 255, 0.08);
-        border-radius: 20px;
-        font-size: 12px;
-        white-space: nowrap;
-        cursor: pointer;
-      }
-      .category-badge.active {
-        background: #2563eb;
-        color: #fff;
-        font-weight: 600;
-      }
-      .channel-list {
-        flex: 1;
-        overflow-y: auto;
-        display: flex;
-        flex-direction: column;
-        gap: 6px;
-      }
-      .channel-card {
-        display: flex;
-        align-items: center;
-        gap: 10px;
-        padding: 8px 12px;
-        background: rgba(255, 255, 255, 0.03);
-        border: 1px solid transparent;
-        border-radius: 8px;
-        cursor: pointer;
-      }
-      .channel-card.focused {
-        background: rgba(37, 99, 235, 0.25);
-        border-color: #3b82f6;
-      }
-      .channel-card.playing {
-        border-color: #10b981;
-        background: rgba(16, 185, 129, 0.15);
-      }
-      .channel-logo {
-        width: 36px; height: 36px;
-        border-radius: 6px;
-        object-fit: contain;
-        background: rgba(0, 0, 0, 0.4);
-      }
-      .channel-info {
-        flex: 1;
-        overflow: hidden;
-      }
-      .channel-name {
-        font-size: 14px;
-        font-weight: 600;
-        white-space: nowrap;
-        overflow: hidden;
-        text-overflow: ellipsis;
-      }
-      .channel-tag {
-        font-size: 11px;
-        color: #94a3b8;
-        margin-top: 2px;
-      }
-      .drm-badge {
-        font-size: 9px;
-        padding: 1px 4px;
-        border-radius: 3px;
-        background: #f59e0b;
-        color: #000;
-        font-weight: 700;
-      }
-      .footer-hints {
-        display: flex;
-        justify-content: space-between;
-        font-size: 11px;
-        color: #94a3b8;
-        border-top: 1px solid rgba(255, 255, 255, 0.1);
-        padding-top: 8px;
-      }
+    <video id="video-screen" class="pip-right" autoplay playsinline></video>
 
-      #status-bar {
-        position: absolute;
-        bottom: 20px; right: 20px;
-        background: rgba(15, 23, 42, 0.9);
-        padding: 8px 16px;
-        border-radius: 20px;
-        border: 1px solid rgba(255, 255, 255, 0.1);
-        font-size: 13px;
-        color: #94a3b8;
-        z-index: 20;
-      }
+    <!-- LAYER ICON PLAY/PAUSE LỚN Ở GIỮA -->
+    <div id="center-state-layer" class="pip-right">
+      <div class="center-state-circle">
+        <svg id="center-state-icon" viewBox="0 0 24 24"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+      </div>
+    </div>
 
-      .modal {
-        position: absolute;
-        top: 0; left: 0; width: 100vw; height: 100vh;
-        background: rgba(10, 15, 30, 0.9);
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        z-index: 100;
-        pointer-events: auto;
-      }
-      .modal-box {
-        background: #1e293b;
-        padding: 28px;
-        border-radius: 16px;
-        width: 600px;
-        border: 1px solid rgba(255, 255, 255, 0.2);
-        color: #fff;
-      }
-      .modal-box h2 {
-        font-size: 20px;
-        margin-bottom: 8px;
-      }
-      .modal-box input {
-        width: 100%;
-        padding: 12px 14px;
-        border-radius: 8px;
-        background: #0f172a;
-        border: 1px solid #334155;
-        color: #fff;
-        font-size: 15px;
-        margin: 14px 0;
-        outline: none;
-      }
-      .modal-box input:focus {
-        border-color: #38bdf8;
-      }
-      .quick-links {
-        display: flex;
-        gap: 8px;
-        margin-bottom: 16px;
-        flex-wrap: wrap;
-      }
-      .quick-btn {
-        background: #334155;
-        border: none;
-        color: #cbd5e1;
-        padding: 6px 12px;
-        border-radius: 6px;
-        font-size: 12px;
-        cursor: pointer;
-      }
-      .modal-actions {
-        display: flex;
-        justify-content: flex-end;
-        gap: 10px;
-      }
-      .modal-actions button {
-        padding: 10px 18px;
-        border-radius: 8px;
-        border: none;
-        font-size: 14px;
-        font-weight: 600;
-        cursor: pointer;
-      }
-      .btn-cancel { background: #334155; color: #fff; }
-      .btn-load { background: #2563eb; color: #fff; }
-    </style>
+    <!-- SPINNER XOAY TRÒN TRẮNG LÚC NẠP VIDEO -->
+    <div id="video-spinner-layer" class="pip-right active">
+      <div class="white-video-spinner"></div>
+    </div>
 
-    <video id="video-screen" autoplay playsinline controls></video>
-    
-    <div id="main-app">
-      <div id="sidebar" class="sidebar">
-        <div class="header-title">
-          <h1>IPTV DRM Player</h1>
-          <button id="btn-open-modal" class="btn-add">Đổi Playlist</button>
+    <!-- KHUNG THÔNG BÁO OFFLINE -->
+    <div id="video-error-layer" class="pip-right">
+      <div class="error-container-box">
+        <div class="error-title-main">
+          <span class="err-white">IPTV Player</span>
+          <span class="err-cyan">DRM</span>
+        </div>
+        <div class="error-channel-text">KÊNH HIỆN TẠI KHÔNG KHẢ DỤNG</div>
+      </div>
+    </div>
+
+    <!-- BẢNG DANH SÁCH KÊNH TỐI GIẢN ĐEN XÁM (MẶC ĐỊNH MỞ) -->
+    <div id="tivimate-drawer" class="open">
+      <div class="drawer-header">
+        <div class="drawer-top-row">
+          <div class="app-title-badge">
+            <span class="title-white">IPTV Player</span>
+            <span class="title-cyan">DRM</span>
+          </div>
+          <div class="win-clock-badge">
+            <div id="drawer-time" class="win-time">23:37:11</div>
+            <div id="drawer-date" class="win-date">16-08-2026</div>
+          </div>
         </div>
 
-        <div id="categories" class="category-tabs"></div>
-        <div id="channel-list" class="channel-list"></div>
+        <!-- KHUNG TÌM KIẾM KÊNH -->
+        <div class="drawer-search-wrapper">
+          <div class="search-input-box" id="drawer-search-box">
+            <svg class="search-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+              <circle cx="11" cy="11" r="8"></circle>
+              <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+            </svg>
+            <input type="text" id="channel-search-input" placeholder="Tìm kiếm kênh..." autocomplete="off" spellcheck="false" />
+            <button id="search-clear-btn" class="search-clear-btn" style="display:none;" title="Xóa">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                <line x1="18" y1="6" x2="6" y2="18"></line>
+                <line x1="6" y1="6" x2="18" y2="18"></line>
+              </svg>
+            </button>
+          </div>
+        </div>
 
-        <div class="footer-hints">
-          <span>Phím Đỏ: Đổi Link</span>
-          <span>Xanh lá: Tải lại</span>
-          <span>Xanh dương: Ẩn/Hiện</span>
+        <div id="category-nav-bar" class="category-nav-bar"></div>
+      </div>
+
+      <div id="drawer-channel-list" class="drawer-channel-list"></div>
+    </div>
+
+    <!-- KHUNG OSD BANNER DƯỚI (SLIM GLASS + HÀNG 3 VIÊN THUỐC) -->
+    <div id="dl-osd-banner" class="pip-right active">
+      <!-- HÀNG 1: THÔNG TIN KÊNH + LIVE + SPECS -->
+      <div class="osd-main-row">
+        <div class="osd-left-info">
+          <div id="osd-logo" class="osd-logo-box"></div>
+          <div class="osd-text-col">
+            <div id="osd-channel-name" class="osd-ch-name">Đang tải...</div>
+            <div id="osd-program-name" class="osd-prog-name">ĐANG CẬP NHẬT...</div>
+          </div>
+        </div>
+        <div class="osd-right-info">
+          <span class="osd-live-tag">LIVE</span>
+          <span id="osd-specs" class="osd-specs-text">1920x1080 @ 25.0fps | 3.5 Mbps</span>
         </div>
       </div>
 
-      <div id="status-bar">Đang khởi động...</div>
-    </div>
-  `;
-
-  document.getElementById('btn-open-modal').onclick = () => openInputModal();
-}
-
-function showStatus(text) {
-  const bar = document.getElementById('status-bar');
-  if (bar) bar.innerText = text;
-}
-
-function openInputModal() {
-  isModalOpen = true;
-  const current = localStorage.getItem(STORAGE_KEY) || 'https://tv.vietanhtv.top/tv/';
-
-  const modal = document.createElement('div');
-  modal.id = 'input-modal';
-  modal.className = 'modal';
-  modal.innerHTML = `
-    <div class="modal-box">
-      <h2>Thêm / Đổi Playlist IPTV (M3U)</h2>
-      <p style="color: #94a3b8; font-size: 13px;">Dán đường link file M3U (hỗ trợ MPD, HLS, Widevine/ClearKey DRM):</p>
-      
-      <input id="playlist-url-input" type="text" placeholder="https://..." value="${current}" />
-
-      <div style="font-size: 12px; color: #64748b; margin-bottom: 6px;">Chọn nhanh link mẫu để test:</div>
-      <div class="quick-links">
-        <button class="quick-btn" id="qbtn-vietanh">VietAnhTV (DRM)</button>
-        <button class="quick-btn" id="qbtn-iptvorg">IPTV-Org VN (HLS)</button>
+      <!-- HÀNG 2: TIMELINE -->
+      <div id="osd-timeline-row" class="osd-timeline-row">
+        <span id="osd-start-time" class="osd-time-bound">00:00</span>
+        <div class="osd-timeline-track">
+          <div id="osd-progress-bar" class="osd-timeline-fill" style="width: 0%;"></div>
+        </div>
+        <span id="osd-stop-time" class="osd-time-bound">00:45</span>
       </div>
 
-      <div class="modal-actions">
-        <button class="btn-cancel" id="btn-modal-cancel">Hủy</button>
-        <button class="btn-load" id="btn-modal-load">Tải Playlist</button>
+      <!-- HÀNG 3: CÁC NÚT VIÊN THUỐC ĐIỀU KHIỂN -->
+      <div class="osd-action-pills-row">
+        <button id="btn-action-drawer" class="bottom-pill-btn focused">
+          <svg viewBox="0 0 24 24"><path d="M16 12H3"/><path d="M16 18H3"/><path d="M16 6H3"/><path d="M21 12h.01"/><path d="M21 18h.01"/><path d="M21 6h.01"/></svg>
+          <span>Danh sách kênh</span>
+        </button>
+        <button id="btn-action-quality" class="bottom-pill-btn">
+          <svg viewBox="0 0 24 24"><path d="M10 12H6"/><path d="M10 15V9"/><path d="M14 14.5a.5.5 0 0 0 .5.5h1a2.5 2.5 0 0 0 2.5-2.5v-1A2.5 2.5 0 0 0 15.5 9h-1a.5.5 0 0 0-.5.5z"/><path d="M6 15V9"/><rect x="2" y="5" width="20" height="14" rx="2"/></svg>
+          <span>Auto</span>
+        </button>
+        <button id="btn-action-audio" class="bottom-pill-btn">
+          <svg viewBox="0 0 24 24"><path d="M3 14h3a2 2 0 0 1 2 2v3a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-7a9 9 0 0 1 18 0v7a2 2 0 0 1-2 2h-1a2 2 0 0 1-2-2v-3a2 2 0 0 1 2-2h3"/></svg>
+          <span>Âm thanh</span>
+        </button>
       </div>
     </div>
+
+    <!-- POPUP CHỌN CHẤT LƯỢNG VÀ ÂM THANH -->
+    <div id="quality-audio-dialog"></div>
   `;
-  document.body.appendChild(modal);
 
-  document.getElementById('qbtn-vietanh').onclick = () => {
-    document.getElementById('playlist-url-input').value = 'https://tv.vietanhtv.top/tv/';
-  };
-  document.getElementById('qbtn-iptvorg').onclick = () => {
-    document.getElementById('playlist-url-input').value = 'https://raw.githubusercontent.com/iptv-org/iptv/master/streams/vn.m3u';
-  };
-
-  document.getElementById('btn-modal-cancel').onclick = () => closeInputModal();
-  document.getElementById('btn-modal-load').onclick = () => {
-    const val = document.getElementById('playlist-url-input').value.trim();
-    if (val) {
-      localStorage.setItem(STORAGE_KEY, val);
-      closeInputModal();
-      fetchAndLoadPlaylist(val);
-    }
-  };
-
-  const input = document.getElementById('playlist-url-input');
-  input.focus();
-  input.onkeydown = (e) => {
-    if (e.keyCode === 13) {
-      document.getElementById('btn-modal-load').click();
-    }
-  };
+  setupPillClickEvents();
+  setOpenDrawerCallback(openDrawer);
 }
 
-function closeInputModal() {
-  isModalOpen = false;
-  const m = document.getElementById('input-modal');
-  if (m) m.remove();
+function showVideoSpinner() {
+  const spinner = document.getElementById('video-spinner-layer');
+  const errorLayer = document.getElementById('video-error-layer');
+  if (errorLayer) errorLayer.classList.remove('active');
+  if (spinner) spinner.classList.add('active');
 }
 
-function fetchAndLoadPlaylist(url) {
-  showStatus('Đang tải danh sách kênh...');
-  let cleanUrl = url.trim();
-  if (cleanUrl.indexOf('tv.vietanhtv.top/tv') !== -1 && cleanUrl.slice(-1) !== '/') {
-    cleanUrl += '/';
-  }
+function hideVideoSpinner() {
+  const spinner = document.getElementById('video-spinner-layer');
+  if (spinner) spinner.classList.remove('active');
+}
 
-  // Trên localhost, proxy luôn request playlist để tránh 100% CORS
-  let targetFetchUrl = cleanUrl;
-  if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') {
-    targetFetchUrl = `/api/stream?url=${encodeURIComponent(cleanUrl)}`;
-  }
+function showPlaybackError() {
+  hideVideoSpinner();
+  const errorLayer = document.getElementById('video-error-layer');
+  if (errorLayer) errorLayer.classList.add('active');
+  const osdSpecs = document.getElementById('osd-specs');
+  if (osdSpecs) osdSpecs.innerText = 'Offline';
+}
 
-  xhrGet(targetFetchUrl, (err, text) => {
-    if (err) {
-      // Thử fallback CORS Proxy
-      xhrGet(`https://corsproxy.io/?${encodeURIComponent(cleanUrl)}`, (pErr, pText) => {
-        if (pErr) {
-          showStatus(`Lỗi tải playlist: ${err.message}`);
-          return;
-        }
-        processPlaylistText(pText);
-      });
-      return;
+function hidePlaybackError() {
+  const errorLayer = document.getElementById('video-error-layer');
+  if (errorLayer) errorLayer.classList.remove('active');
+}
+
+async function playSelectedChannel(ch) {
+  if (!ch) return;
+  currentPlayingChannel = ch;
+  showCenterPlayPause(null);
+  hidePlaybackError();
+  showVideoSpinner();
+  updateOsdInfo(ch, isDrawerOpen);
+  renderChannels();
+
+  if (playbackTimeout) clearTimeout(playbackTimeout);
+  playbackTimeout = setTimeout(() => {
+    const video = document.getElementById('video-screen');
+    if (!video || video.paused || video.readyState < 2) {
+      if (ch.sources && ch.sources.length > 1 && (ch.activeSourceIndex || 0) + 1 < ch.sources.length) {
+        handleStreamFailure(new Error('Timeout'));
+      } else {
+        showPlaybackError();
+      }
     }
-    processPlaylistText(text);
-  });
+  }, 7000);
+
+  await playStream(ch);
 }
 
-function processPlaylistText(text) {
-  allChannels = parseM3U(text);
-  if (allChannels.length === 0) {
-    showStatus('Không tìm thấy kênh hợp lệ trong playlist');
-    return;
-  }
+function openDrawer() {
+  isDrawerOpen = true;
+  const drawer = document.getElementById('tivimate-drawer');
+  const video = document.getElementById('video-screen');
+  const osdBanner = document.getElementById('dl-osd-banner');
+  const centerLayer = document.getElementById('center-state-layer');
+  const spinner = document.getElementById('video-spinner-layer');
+  const errorLayer = document.getElementById('video-error-layer');
 
-  const groupSet = new Set(['Tất cả']);
-  allChannels.forEach(ch => {
-    if (ch.group) groupSet.add(ch.group);
-  });
-  categories = Array.from(groupSet);
+  if (drawer) drawer.classList.add('open');
+  if (video) video.classList.add('pip-right');
+  if (osdBanner) osdBanner.classList.add('pip-right');
+  if (centerLayer) centerLayer.classList.add('pip-right');
+  if (spinner) spinner.classList.add('pip-right');
+  if (errorLayer) errorLayer.classList.add('pip-right');
 
   renderCategories();
-  filterCategory('Tất cả');
-  showStatus(`Đã nạp ${allChannels.length} kênh.`);
-
-  // Tìm kênh truyền hình thực tế đầu tiên (bỏ qua banner update)
-  let firstRealIdx = 0;
-  for (let i = 0; i < filteredChannels.length; i++) {
-    if (!filteredChannels[i].name.toLowerCase().includes('update')) {
-      firstRealIdx = i;
-      break;
-    }
-  }
-
-  if (filteredChannels.length > 0) {
-    selectChannel(firstRealIdx, true);
+  renderChannels();
+  if (currentPlayingChannel) {
+    updateOsdInfo(currentPlayingChannel, true);
   }
 }
 
-function renderCategories() {
-  const catEl = document.getElementById('categories');
-  if (!catEl) return;
-  catEl.innerHTML = '';
-  categories.forEach(cat => {
-    const badge = document.createElement('div');
-    badge.className = `category-badge ${cat === activeCategory ? 'active' : ''}`;
-    badge.innerText = cat;
-    badge.onclick = () => filterCategory(cat);
-    catEl.appendChild(badge);
-  });
+function closeDrawer() {
+  isDrawerOpen = false;
+  blurSearchInput();
+  const drawer = document.getElementById('tivimate-drawer');
+  const video = document.getElementById('video-screen');
+  const osdBanner = document.getElementById('dl-osd-banner');
+  const centerLayer = document.getElementById('center-state-layer');
+  const spinner = document.getElementById('video-spinner-layer');
+  const errorLayer = document.getElementById('video-error-layer');
+
+  if (drawer) drawer.classList.remove('open');
+  if (video) video.classList.remove('pip-right');
+  if (osdBanner) osdBanner.classList.remove('pip-right');
+  if (centerLayer) centerLayer.classList.remove('pip-right');
+  if (spinner) spinner.classList.remove('pip-right');
+  if (errorLayer) errorLayer.classList.remove('pip-right');
+
+  if (currentPlayingChannel) {
+    updateOsdInfo(currentPlayingChannel, false);
+  }
 }
 
-function filterCategory(categoryName) {
-  activeCategory = categoryName;
-  if (categoryName === 'Tất cả') {
-    filteredChannels = allChannels;
+function togglePlayPause() {
+  const video = document.getElementById('video-screen');
+  if (!video) return;
+  if (video.paused) {
+    video.play();
+    showCenterPlayPause('play');
   } else {
-    filteredChannels = allChannels.filter(c => c.group === categoryName);
+    video.pause();
+    showCenterPlayPause('pause');
+  }
+}
+
+function autoPlayFirstChannel() {
+  const channels = getCurrentChannels();
+  if (channels.length === 0) return;
+
+  let targetChannel = channels[0];
+  const lastIndex = localStorage.getItem('last_channel_index');
+  if (lastIndex !== null) {
+    const parsed = parseInt(lastIndex, 10);
+    if (!isNaN(parsed) && parsed >= 0 && parsed < channels.length) {
+      targetChannel = channels[parsed];
+      setCurrentChannelIndex(parsed);
+    }
   }
 
-  selectedIndex = 0;
-  renderChannelList();
-  renderCategories();
+  playSelectedChannel(targetChannel);
 }
 
-function renderChannelList() {
-  const listEl = document.getElementById('channel-list');
-  if (!listEl) return;
-
-  listEl.innerHTML = '';
-  filteredChannels.forEach((ch, idx) => {
-    const card = document.createElement('div');
-    card.className = `channel-card ${idx === selectedIndex ? 'focused' : ''} ${currentPlayingChannel === ch ? 'playing' : ''}`;
-
-    const logoImg = ch.logo ? `<img class="channel-logo" src="${ch.logo}" alt="logo" onerror="this.style.display='none'"/>` : '';
-    const drmTag = ch.licenseKey ? `<span class="drm-badge">DRM</span>` : '';
-
-    card.innerHTML = `
-      ${logoImg}
-      <div class="channel-info">
-        <div class="channel-name">${ch.name}</div>
-        <div class="channel-tag">${ch.group} ${drmTag}</div>
-      </div>
-    `;
-
-    card.onclick = () => selectChannel(idx, true);
-    listEl.appendChild(card);
-  });
-
-  updateFocus();
-}
-
-function updateFocus() {
-  const cards = document.querySelectorAll('.channel-card');
-  cards.forEach((c, idx) => {
-    c.classList.toggle('focused', idx === selectedIndex);
-    if (idx === selectedIndex) {
-      c.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
-    }
-  });
-}
-
-async function selectChannel(idx, playImmediately = false) {
-  if (idx < 0 || idx >= filteredChannels.length) return;
-  selectedIndex = idx;
-  updateFocus();
-
-  if (playImmediately) {
-    currentPlayingChannel = filteredChannels[idx];
-    renderChannelList();
-    await playStream(currentPlayingChannel, showStatus);
+function exitApp() {
+  stopStream();
+  if (window.tizen && window.tizen.application) {
+    try {
+      window.tizen.application.getCurrentApplication().exit();
+    } catch (e) {}
   }
 }
 
 function handleKeyDown(e) {
   const key = e.keyCode;
 
-  if (isModalOpen) {
-    if (key === TV_KEYS.RETURN || key === TV_KEYS.BACK_PC) {
-      closeInputModal();
+  if ([TV_KEYS.UP, TV_KEYS.DOWN, TV_KEYS.LEFT, TV_KEYS.RIGHT, 8, 27, TV_KEYS.RETURN, TV_KEYS.BACK_PC, TV_KEYS.INFO, TV_KEYS.PLAY, TV_KEYS.PAUSE, TV_KEYS.PLAY_PAUSE].includes(key)) {
+    if (!isSearchFocused() || key !== 8) {
+      e.preventDefault();
+    }
+  }
+
+  // 1. KHI POPUP CHỌN CHẤT LƯỢNG / ÂM THANH ĐANG MỞ
+  if (isQualityOrAudioDialogOpen()) {
+    if (key === TV_KEYS.UP) {
+      navigateDialog('up');
+      return;
+    }
+    if (key === TV_KEYS.DOWN) {
+      navigateDialog('down');
+      return;
+    }
+    if (key === TV_KEYS.ENTER) {
+      selectDialogCurrent();
+      return;
+    }
+    if (key === TV_KEYS.BACK_PC || key === TV_KEYS.RETURN || key === 8 || key === 27) {
+      closeQualityAudioDialog();
+      return;
+    }
+    return;
+  }
+
+  const channels = getCurrentChannels();
+
+  // 2. KHI ĐANG Ở CHẾ ĐỘ TOÀN MÀN HÌNH (FULLSCREEN)
+  if (!isDrawerOpen) {
+    // A. Phím TRÁI / PHẢI: Chuyển các nút Action Bar
+    if (key === TV_KEYS.LEFT) {
+      if (isOsdVisible()) {
+        navigateActionBar('left', currentPlayingChannel);
+      } else {
+        if (currentPlayingChannel) updateOsdInfo(currentPlayingChannel, false);
+      }
+      return;
+    }
+    if (key === TV_KEYS.RIGHT) {
+      if (isOsdVisible()) {
+        navigateActionBar('right', currentPlayingChannel);
+      } else {
+        if (currentPlayingChannel) updateOsdInfo(currentPlayingChannel, false);
+      }
+      return;
+    }
+
+    // B. Phím ENTER (OK):
+    if (key === TV_KEYS.ENTER) {
+      if (isOsdVisible()) {
+        executeActionPill(currentPlayingChannel);
+      } else {
+        togglePlayPause();
+      }
+      return;
+    }
+
+    if (key === TV_KEYS.PLAY || key === TV_KEYS.PAUSE || key === TV_KEYS.PLAY_PAUSE) {
+      togglePlayPause();
+      return;
+    }
+
+    // C. Phím LÊN / XUỐNG: Chuyển kênh
+    if (key === TV_KEYS.UP) {
+      let curIdx = getCurrentChannelIndex();
+      if (curIdx > 0) {
+        setCurrentChannelIndex(curIdx - 1);
+        playSelectedChannel(channels[curIdx - 1]);
+      }
+      return;
+    }
+    if (key === TV_KEYS.DOWN) {
+      let curIdx = getCurrentChannelIndex();
+      if (curIdx < channels.length - 1) {
+        setCurrentChannelIndex(curIdx + 1);
+        playSelectedChannel(channels[curIdx + 1]);
+      }
+      return;
+    }
+
+    // D. Phím INFO: Gọi OSD lên
+    if (key === TV_KEYS.INFO) {
+      if (currentPlayingChannel) updateOsdInfo(currentPlayingChannel, false);
+      return;
+    }
+
+    // E. Phím BACK: Mở Menu
+    if (key === TV_KEYS.BACK_PC || key === TV_KEYS.RETURN || key === 27 || key === 8) {
+      openDrawer();
+      return;
+    }
+
+    return;
+  }
+
+  // 3. KHI MENU ĐANG MỞ (CHẾ ĐỘ PIP THU NHỎ SANG PHẢI)
+  if (isSearchFocused()) {
+    if (key === TV_KEYS.DOWN) {
+      blurSearchInput();
+      return;
+    }
+    if (key === TV_KEYS.ENTER) {
+      blurSearchInput();
+      const ch = getCurrentSelectedChannel();
+      if (ch) playSelectedChannel(ch);
+      return;
+    }
+    if (key === TV_KEYS.BACK_PC || key === TV_KEYS.RETURN || key === 27) {
+      if (getSearchQuery()) {
+        clearSearch();
+      } else {
+        blurSearchInput();
+        closeDrawer();
+      }
+      return;
     }
     return;
   }
 
   switch (key) {
     case TV_KEYS.UP:
-      if (selectedIndex > 0) {
-        selectedIndex--;
-        updateFocus();
-      }
+      prevChannel();
       break;
-
     case TV_KEYS.DOWN:
-      if (selectedIndex < filteredChannels.length - 1) {
-        selectedIndex++;
-        updateFocus();
-      }
+      nextChannel();
       break;
-
     case TV_KEYS.LEFT:
-      shiftCategory(-1);
+      prevCategory();
       break;
-
     case TV_KEYS.RIGHT:
-      shiftCategory(1);
+      nextCategory();
       break;
-
     case TV_KEYS.ENTER:
-      selectChannel(selectedIndex, true);
+      const ch = getCurrentSelectedChannel();
+      if (ch) playSelectedChannel(ch);
       break;
-
-    case TV_KEYS.RED:
-      openInputModal();
-      break;
-
-    case TV_KEYS.GREEN:
-      const cur = localStorage.getItem(STORAGE_KEY);
-      if (cur) fetchAndLoadPlaylist(cur);
-      else openInputModal();
-      break;
-
-    case TV_KEYS.BLUE:
-      isSidebarVisible = !isSidebarVisible;
-      document.getElementById('sidebar').classList.toggle('hidden', !isSidebarVisible);
-      break;
-
-    case TV_KEYS.STOP:
-      stopStream();
-      showStatus('Đã dừng phát');
+    case TV_KEYS.BACK_PC:
+    case TV_KEYS.RETURN:
+    case 27:
+    case 8:
+      if (getSearchQuery()) {
+        clearSearch();
+      } else {
+        closeDrawer();
+      }
       break;
   }
-}
-
-function shiftCategory(direction) {
-  let idx = categories.indexOf(activeCategory);
-  idx = (idx + direction + categories.length) % categories.length;
-  filterCategory(categories[idx]);
 }
 
 async function initApp() {
-  setupUI();
+  setupDOM();
   registerTizenKeys();
 
   const video = document.getElementById('video-screen');
+
+  video.addEventListener('waiting', () => showVideoSpinner());
+  video.addEventListener('seeking', () => showVideoSpinner());
+  video.addEventListener('loadstart', () => showVideoSpinner());
+  video.addEventListener('playing', () => {
+    if (playbackTimeout) clearTimeout(playbackTimeout);
+    hidePlaybackError();
+    hideVideoSpinner();
+  });
+  video.addEventListener('canplay', () => {
+    if (playbackTimeout) clearTimeout(playbackTimeout);
+    hidePlaybackError();
+    hideVideoSpinner();
+  });
+  video.addEventListener('timeupdate', () => {
+    if (video.currentTime > 0.1) {
+      if (playbackTimeout) clearTimeout(playbackTimeout);
+      hidePlaybackError();
+      hideVideoSpinner();
+    }
+  });
+
   try {
-    await initPlayer(video, showStatus);
-  } catch (err) {
-    showStatus(err.message);
+    await initPlayer(video);
+  } catch (e) {
+    console.error('[App] Init player error:', e);
   }
+
+  setStatsCallback((stats) => {
+    updateLiveVideoSpecs(stats);
+  });
+
+  setPlaybackErrorCallback((err) => {
+    showPlaybackError();
+  });
 
   window.addEventListener('keydown', handleKeyDown);
+  window.addEventListener('beforeunload', () => stopStream());
+  window.addEventListener('pagehide', () => stopStream());
 
-  const savedUrl = localStorage.getItem(STORAGE_KEY);
-  if (savedUrl) {
-    fetchAndLoadPlaylist(savedUrl);
-  } else {
-    openInputModal();
-  }
+  updateWindowsClock();
+  setInterval(updateWindowsClock, 1000);
+
+  loadAndMergePlaylists((data) => {
+    allChannels = data.allChannels;
+    initDrawerState(data, (ch) => {
+      playSelectedChannel(ch);
+    });
+
+    openDrawer();
+    autoPlayFirstChannel();
+
+    loadEPG(() => {
+      renderChannels();
+      if (currentPlayingChannel) {
+        updateOsdInfo(currentPlayingChannel, isDrawerOpen);
+      }
+    });
+  });
 }
 
 initApp();
