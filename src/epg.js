@@ -212,7 +212,7 @@ function fetchXml(url, callback) {
     : bustUrl;
 
   xhr.open('GET', fetchUrl, true);
-  xhr.timeout = 7000; // Timeout 7s để tránh nghẽn mạng
+  xhr.timeout = 7000;
   xhr.setRequestHeader('Cache-Control', 'no-cache, no-store, must-revalidate');
   xhr.setRequestHeader('Pragma', 'no-cache');
   xhr.setRequestHeader('Expires', '0');
@@ -240,8 +240,6 @@ function fetchXml(url, callback) {
 }
 
 export function loadEPG(onLoaded) {
-  // NGUYÊN TẮC AN TOÀN: Nguồn 1 (LichPhatSong) tải nhanh hiển thị ngay lập tức
-  // Nguồn 2 (BlaoSolar) phân tích bổ sung thêm các kênh còn thiếu (nếu lỗi hoặc bị chặn CORS thì bỏ qua an toàn)
   fetchXml(EPG_SOURCE_1, (err1, xml1) => {
     if (!err1 && xml1) {
       const src1Data = parseEpgXml(xml1);
@@ -251,7 +249,6 @@ export function loadEPG(onLoaded) {
       if (onLoaded) onLoaded();
     }
 
-    // Tải tiếp Nguồn 2 để bổ sung kênh thiếu
     fetchXml(EPG_SOURCE_2, (err2, xml2) => {
       if (!err2 && xml2) {
         const src2Data = parseEpgXml(xml2);
@@ -314,4 +311,22 @@ export function getChannelEPG(channelName) {
       stopTimeStr: formatHM(nextProg.stop)
     } : null
   };
+}
+
+export function getChannelFullSchedule(channelName) {
+  const norm = normalizeEpgName(channelName);
+  const list = epgData[norm] || [];
+  const formatHM = (d) => `${String(d.getHours()).padStart(2, '0')}:${String(d.getMinutes()).padStart(2, '0')}`;
+  const now = new Date();
+
+  return list.map(p => {
+    const isCurrent = (p.start && p.stop && now >= p.start && now <= p.stop);
+    return {
+      title: p.title,
+      desc: p.desc,
+      startStr: p.start ? formatHM(p.start) : '--:--',
+      stopStr: p.stop ? formatHM(p.stop) : '--:--',
+      isCurrent
+    };
+  });
 }

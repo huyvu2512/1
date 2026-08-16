@@ -108,7 +108,7 @@ function setupDOM() {
       <div id="drawer-channel-list" class="drawer-channel-list"></div>
     </div>
 
-    <!-- KHUNG OSD BANNER DƯỚI (SLIM GLASS + HÀNG 3 VIÊN THUỐC) -->
+    <!-- KHUNG OSD BANNER DƯỚI (SLIM GLASS + HÀNG 4 VIÊN THUỐC) -->
     <div id="dl-osd-banner" class="pip-right active">
       <!-- HÀNG 1: THÔNG TIN KÊNH + LIVE + SPECS -->
       <div class="osd-main-row">
@@ -134,11 +134,15 @@ function setupDOM() {
         <span id="osd-stop-time" class="osd-time-bound">00:45</span>
       </div>
 
-      <!-- HÀNG 3: CÁC NÚT VIÊN THUỐC ĐIỀU KHIỂN -->
+      <!-- HÀNG 3: CÁC NÚT VIÊN THUỐC ĐIỀU KHIỂN (DANH SÁCH KÊNH, LỊCH PHÁT SÓNG, AUTO, ÂM THANH) -->
       <div class="osd-action-pills-row">
         <button id="btn-action-drawer" class="bottom-pill-btn focused">
           <svg viewBox="0 0 24 24"><path d="M16 12H3"/><path d="M16 18H3"/><path d="M16 6H3"/><path d="M21 12h.01"/><path d="M21 18h.01"/><path d="M21 6h.01"/></svg>
           <span>Danh sách kênh</span>
+        </button>
+        <button id="btn-action-epg" class="bottom-pill-btn">
+          <svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>
+          <span>Lịch phát sóng</span>
         </button>
         <button id="btn-action-quality" class="bottom-pill-btn">
           <svg viewBox="0 0 24 24"><path d="M10 12H6"/><path d="M10 15V9"/><path d="M14 14.5a.5.5 0 0 0 .5.5h1a2.5 2.5 0 0 0 2.5-2.5v-1A2.5 2.5 0 0 0 15.5 9h-1a.5.5 0 0 0-.5.5z"/><path d="M6 15V9"/><rect x="2" y="5" width="20" height="14" rx="2"/></svg>
@@ -151,11 +155,11 @@ function setupDOM() {
       </div>
     </div>
 
-    <!-- POPUP CHỌN CHẤT LƯỢNG VÀ ÂM THANH -->
+    <!-- POPUP CHỌN LỊCH PHÁT SÓNG, CHẤT LƯỢNG VÀ ÂM THANH -->
     <div id="quality-audio-dialog"></div>
   `;
 
-  setupPillClickEvents();
+  setupPillClickEvents(() => currentPlayingChannel);
   setOpenDrawerCallback(openDrawer);
 }
 
@@ -300,14 +304,14 @@ function handleKeyDown(e) {
     }
   }
 
-  // 1. KHI POPUP CHỌN CHẤT LƯỢNG / ÂM THANH ĐANG MỞ
+  // 1. KHI POPUP CHỌN LỊCH PHÁT SÓNG / CHẤT LƯỢNG / ÂM THANH ĐANG MỞ
   if (isQualityOrAudioDialogOpen()) {
     if (key === TV_KEYS.UP) {
-      navigateDialog('up');
+      navigateDialog('up', currentPlayingChannel ? currentPlayingChannel.name : '');
       return;
     }
     if (key === TV_KEYS.DOWN) {
-      navigateDialog('down');
+      navigateDialog('down', currentPlayingChannel ? currentPlayingChannel.name : '');
       return;
     }
     if (key === TV_KEYS.ENTER) {

@@ -467,26 +467,26 @@ export const globalStyles = `
     }
 
     /* =========================================================================
-       KHUNG OSD BANNER DƯỚI (SLIM GLASS + HÀNG VIÊN THUỐC CAO CẤP)
+       KHUNG OSD BANNER DƯỚI (SLIM GLASS + HÀNG VIÊN THUỐC LỚN ĐẸP SANG TRỌNG)
        ========================================================================= */
     #dl-osd-banner {
       position: absolute;
-      bottom: 20px;
+      bottom: 24px;
       left: 36px;
       right: 36px;
       z-index: 30;
-      background: rgba(13, 17, 24, 0.90);
-      backdrop-filter: blur(16px);
-      -webkit-backdrop-filter: blur(16px);
+      background: rgba(11, 15, 23, 0.92);
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
       border: 1px solid rgba(255, 255, 255, 0.12);
-      border-radius: 14px;
-      padding: 12px 18px 10px 18px;
-      box-shadow: 0 12px 35px rgba(0, 0, 0, 0.85);
+      border-radius: 16px;
+      padding: 14px 22px 14px 22px;
+      box-shadow: 0 14px 40px rgba(0, 0, 0, 0.85);
       display: flex;
       flex-direction: column;
-      gap: 8px;
+      gap: 10px;
       opacity: 0;
-      transform: translateY(16px);
+      transform: translateY(18px);
       pointer-events: none;
       transition: opacity 0.25s ease, transform 0.25s cubic-bezier(0.2, 0.9, 0.3, 1);
     }
@@ -498,7 +498,7 @@ export const globalStyles = `
     #dl-osd-banner.pip-right {
       left: 384px !important;
       right: 24px !important;
-      bottom: 16px !important;
+      bottom: 20px !important;
     }
 
     /* HÀNG 1: THÔNG TIN KÊNH + LIVE + SPECS */
@@ -511,13 +511,13 @@ export const globalStyles = `
     .osd-left-info {
       display: flex;
       align-items: center;
-      gap: 12px;
+      gap: 14px;
       min-width: 0;
       flex: 1;
     }
     .osd-logo-box {
-      width: 52px;
-      height: 32px;
+      width: 58px;
+      height: 36px;
       display: flex;
       align-items: center;
       justify-content: center;
@@ -531,11 +531,11 @@ export const globalStyles = `
     .osd-text-col {
       display: flex;
       flex-direction: column;
-      gap: 1.5px;
+      gap: 2px;
       min-width: 0;
     }
     .osd-ch-name {
-      font-size: 16px;
+      font-size: 17px;
       font-weight: 800;
       color: #ffffff;
       letter-spacing: -0.2px;
@@ -544,7 +544,7 @@ export const globalStyles = `
       text-overflow: ellipsis;
     }
     .osd-prog-name {
-      font-size: 11.5px;
+      font-size: 12.5px;
       font-weight: 800;
       color: #f97316;
       text-transform: uppercase;
@@ -556,20 +556,20 @@ export const globalStyles = `
     .osd-right-info {
       display: flex;
       align-items: center;
-      gap: 10px;
+      gap: 12px;
       flex-shrink: 0;
     }
     .osd-live-tag {
-      padding: 2px 7px;
+      padding: 3px 8px;
       background: #dc2626;
-      border-radius: 4px;
-      font-size: 10.5px;
+      border-radius: 5px;
+      font-size: 11px;
       font-weight: 900;
       color: #ffffff;
       letter-spacing: 0.6px;
     }
     .osd-specs-text {
-      font-size: 11.5px;
+      font-size: 12px;
       font-weight: 700;
       color: #f97316;
       font-family: 'Consolas', 'Courier New', monospace;
@@ -580,17 +580,17 @@ export const globalStyles = `
     .osd-timeline-row {
       display: flex;
       align-items: center;
-      gap: 8px;
+      gap: 10px;
     }
     .osd-time-bound {
-      font-size: 10.5px;
+      font-size: 11px;
       font-weight: 700;
       color: #cbd5e1;
       font-variant-numeric: tabular-nums;
     }
     .osd-timeline-track {
       flex: 1;
-      height: 3px;
+      height: 4px;
       background: rgba(255, 255, 255, 0.15);
       border-radius: 2px;
       overflow: hidden;
@@ -602,34 +602,34 @@ export const globalStyles = `
       transition: width 0.3s ease;
     }
 
-    /* HÀNG 3: CÁC NÚT VIÊN THUỐC ĐIỀU KHIỂN (DANH SÁCH KÊNH, CHẤT LƯỢNG, ÂM THANH) */
+    /* HÀNG 3: CÁC NÚT VIÊN THUỐC ĐIỀU KHIỂN (TO HƠN & ĐẸP NỔI BẬT) */
     .osd-action-pills-row {
       display: flex;
       align-items: center;
-      gap: 8px;
-      padding-top: 4px;
-      border-top: 1px solid rgba(255, 255, 255, 0.06);
+      gap: 10px;
+      padding-top: 6px;
+      border-top: 1px solid rgba(255, 255, 255, 0.08);
     }
 
     .bottom-pill-btn {
       display: inline-flex;
       align-items: center;
-      gap: 6px;
-      padding: 5px 12px;
-      border-radius: 16px;
-      background: rgba(255, 255, 255, 0.07);
-      border: 1px solid rgba(255, 255, 255, 0.12);
+      gap: 8px;
+      padding: 7px 16px;
+      border-radius: 20px;
+      background: rgba(255, 255, 255, 0.08);
+      border: 1.5px solid rgba(255, 255, 255, 0.12);
       color: #ffffff;
       cursor: pointer;
       outline: none;
-      font-size: 12px;
+      font-size: 13.5px;
       font-weight: 700;
       line-height: 1;
       transition: all 0.15s ease;
     }
     .bottom-pill-btn svg {
-      width: 14px;
-      height: 14px;
+      width: 17px;
+      height: 17px;
       stroke: currentColor;
       fill: none;
       stroke-width: 2;
@@ -640,7 +640,7 @@ export const globalStyles = `
       flex-shrink: 0;
     }
     .bottom-pill-btn span {
-      font-size: 12px;
+      font-size: 13.5px;
       font-weight: 700;
       line-height: 1;
       display: inline-block;
@@ -653,7 +653,7 @@ export const globalStyles = `
       background: #ffffff !important;
       border-color: #ffffff !important;
       color: #0b0d14 !important;
-      box-shadow: 0 0 10px rgba(255, 255, 255, 0.4);
+      box-shadow: 0 0 14px rgba(255, 255, 255, 0.45);
       transform: scale(1.02);
     }
     .bottom-pill-btn.focused svg,
@@ -662,7 +662,7 @@ export const globalStyles = `
     }
 
     /* =========================================================================
-       POPUP DIALOG CHỌN CHẤT LƯỢNG & ÂM THANH
+       POPUP DIALOG CHỌN LỊCH PHÁT SÓNG, CHẤT LƯỢNG & ÂM THANH
        ========================================================================= */
     #quality-audio-dialog {
       position: absolute;
@@ -671,8 +671,8 @@ export const globalStyles = `
       width: 100vw;
       height: 100vh;
       background: rgba(0, 0, 0, 0.75);
-      backdrop-filter: blur(8px);
-      -webkit-backdrop-filter: blur(8px);
+      backdrop-filter: blur(10px);
+      -webkit-backdrop-filter: blur(10px);
       z-index: 100;
       display: none;
       align-items: center;
@@ -683,18 +683,19 @@ export const globalStyles = `
     }
 
     .dialog-card {
-      width: 360px;
+      width: 480px;
+      max-width: 90vw;
       background: #0f1422;
       border: 1px solid rgba(255, 255, 255, 0.15);
-      border-radius: 14px;
-      padding: 18px;
+      border-radius: 16px;
+      padding: 20px;
       box-shadow: 0 20px 50px rgba(0, 0, 0, 0.9);
       display: flex;
       flex-direction: column;
-      gap: 12px;
+      gap: 14px;
     }
     .dialog-title {
-      font-size: 15px;
+      font-size: 16px;
       font-weight: 800;
       color: #ffffff;
       display: flex;
@@ -704,20 +705,24 @@ export const globalStyles = `
     .dialog-list {
       display: flex;
       flex-direction: column;
-      gap: 5px;
-      max-height: 260px;
+      gap: 6px;
+      max-height: 360px;
       overflow-y: auto;
+      padding-right: 4px;
     }
+    .dialog-list::-webkit-scrollbar { width: 4px; }
+    .dialog-list::-webkit-scrollbar-thumb { background: rgba(255, 255, 255, 0.15); border-radius: 3px; }
+
     .dialog-item {
       display: flex;
       align-items: center;
       justify-content: space-between;
-      padding: 9px 12px;
+      padding: 10px 14px;
       border-radius: 8px;
       background: rgba(255, 255, 255, 0.05);
       border: 1.5px solid transparent;
       color: #cbd5e1;
-      font-size: 13px;
+      font-size: 13.5px;
       font-weight: 600;
       cursor: pointer;
       transition: all 0.12s ease;
@@ -732,6 +737,56 @@ export const globalStyles = `
     .dialog-item.active {
       color: #f97316;
       font-weight: 800;
+    }
+
+    /* MỤC LỊCH PHÁT SÓNG TRONG POPUP */
+    .epg-schedule-item {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      padding: 10px 14px;
+      border-radius: 8px;
+      background: rgba(255, 255, 255, 0.04);
+      border: 1.5px solid transparent;
+      transition: all 0.12s ease;
+    }
+    .epg-schedule-item.current {
+      background: rgba(249, 115, 22, 0.12);
+      border-color: rgba(249, 115, 22, 0.4);
+    }
+    .epg-schedule-item.focused,
+    .epg-schedule-item:hover {
+      background: #1e293b;
+      border-color: #ffffff !important;
+      box-shadow: 0 0 10px rgba(255, 255, 255, 0.2);
+    }
+    .epg-time-range {
+      font-size: 12px;
+      font-weight: 700;
+      color: #94a3b8;
+      font-variant-numeric: tabular-nums;
+      white-space: nowrap;
+      min-width: 80px;
+    }
+    .epg-item-title {
+      font-size: 13.5px;
+      font-weight: 700;
+      color: #ffffff;
+      flex: 1;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    .epg-schedule-item.current .epg-item-title {
+      color: #f97316;
+    }
+    .epg-live-badge {
+      padding: 2px 6px;
+      background: #dc2626;
+      border-radius: 4px;
+      font-size: 10px;
+      font-weight: 900;
+      color: #ffffff;
     }
 `;
 
