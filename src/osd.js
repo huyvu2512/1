@@ -10,16 +10,26 @@ import { getChannelEPG, getChannelFullSchedule, isEpgReady } from './epg.js';
 let osdHideTimeout = null;
 let currentActionIndex = 0; // 0: Danh sách kênh, 1: Lịch phát sóng, 2: Chất lượng, 3: Âm thanh
 let onOpenDrawerCallback = null;
+let onPlayChannelCallback = null;
 
 let isDialogOpen = false;
 let dialogType = null; // 'quality' | 'audio' | 'epg'
 let dialogOptions = [];
 let dialogFocusedIndex = 0;
 
+// Trạng thái EPG 2 cột
+let epgChannelsList = [];
+let epgSelectedChannelIndex = 0;
+let epgActiveColumn = 'schedule'; // 'channel' | 'schedule'
+
 const ACTION_BUTTONS = ['btn-action-drawer', 'btn-action-epg', 'btn-action-quality', 'btn-action-audio'];
 
 export function setOpenDrawerCallback(cb) {
   onOpenDrawerCallback = cb;
+}
+
+export function setPlayChannelCallback(cb) {
+  onPlayChannelCallback = cb;
 }
 
 export function showCenterPlayPause(type) {
@@ -52,9 +62,7 @@ export function updateOsdInfo(ch, isDrawerOpen) {
   const chNameEl = document.getElementById('osd-channel-name');
   const progNameEl = document.getElementById('osd-program-name');
   const logoEl = document.getElementById('osd-logo');
-  const startTimeEl = document.getElementById('osd-start-time');
-  const stopTimeEl = document.getElementById('osd-stop-time');
-  const progressFillEl = document.getElementById('osd-progress-bar');
+  const timelineRowEl = document.getElementById('osd-timeline-row');
   const actionRowEl = document.querySelector('.osd-action-pills-row');
 
   if (chNameEl) chNameEl.innerText = ch.name;
@@ -69,20 +77,42 @@ export function updateOsdInfo(ch, isDrawerOpen) {
   const epg = getChannelEPG(ch.name);
 
   if (!epgReady) {
-    if (progNameEl) progNameEl.innerHTML = `<div class="skeleton-box skeleton-title" style="width: 140px; height: 12px;"></div>`;
-    if (startTimeEl) startTimeEl.innerText = '--:--';
-    if (stopTimeEl) stopTimeEl.innerText = '--:--';
-    if (progressFillEl) progressFillEl.style.width = '0%';
+    if (progNameEl) {
+      progNameEl.style.display = 'block';
+      progNameEl.innerHTML = `<div class="skeleton-box skeleton-title" style="width: 140px; height: 12px; margin: 2px 0;"></div>`;
+    }
+    if (timelineRowEl) {
+      timelineRowEl.style.display = 'flex';
+      timelineRowEl.innerHTML = `
+        <div class="skeleton-box" style="width: 34px; height: 12px; border-radius: 3px;"></div>
+        <div class="osd-timeline-track"><div class="skeleton-box skeleton-timeline" style="width: 100%; height: 100%;"></div></div>
+        <div class="skeleton-box" style="width: 34px; height: 12px; border-radius: 3px;"></div>
+      `;
+    }
   } else if (epg && epg.current && epg.current.title) {
-    if (progNameEl) progNameEl.innerText = epg.current.title;
-    if (startTimeEl) startTimeEl.innerText = epg.current.startTimeStr;
-    if (stopTimeEl) stopTimeEl.innerText = epg.current.stopTimeStr;
-    if (progressFillEl) progressFillEl.style.width = `${epg.current.progressPercent}%`;
+    if (progNameEl) {
+      progNameEl.style.display = 'block';
+      progNameEl.innerText = epg.current.title;
+    }
+    if (timelineRowEl) {
+      timelineRowEl.style.display = 'flex';
+      timelineRowEl.innerHTML = `
+        <span id="osd-start-time" class="osd-time-bound">${epg.current.startTimeStr}</span>
+        <div class="osd-timeline-track">
+          <div id="osd-progress-bar" class="osd-timeline-fill" style="width: ${epg.current.progressPercent}%;"></div>
+        </div>
+        <span id="osd-stop-time" class="osd-time-bound">${epg.current.stopTimeStr}</span>
+      `;
+    }
   } else {
-    if (progNameEl) progNameEl.innerText = 'CHƯƠNG TRÌNH ĐANG PHÁT';
-    if (startTimeEl) startTimeEl.innerText = '--:--';
-    if (stopTimeEl) stopTimeEl.innerText = '--:--';
-    if (progressFillEl) progressFillEl.style.width = '0%';
+    if (progNameEl) {
+      progNameEl.style.display = 'none';
+      progNameEl.innerHTML = '';
+    }
+    if (timelineRowEl) {
+      timelineRowEl.style.display = 'none';
+      timelineRowEl.innerHTML = '';
+    }
   }
 
   updateLiveVideoSpecs();
@@ -142,19 +172,19 @@ export function navigateActionBar(dir, currentChannel) {
   if (currentChannel) updateOsdInfo(currentChannel, false);
 }
 
-export function executeActionPill(currentChannel) {
+export function executeActionPill(currentChannel, allChannelsList) {
   if (currentActionIndex === 0) {
     if (onOpenDrawerCallback) onOpenDrawerCallback();
   } else if (currentActionIndex === 1) {
-    openEpgScheduleDialog(currentChannel);
+    openEpgScheduleDialog(currentChannel, allChannelsList);
   } else if (currentActionIndex === 2) {
-    openQualityDialog();
+    openQualityDialog(currentChannel);
   } else if (currentActionIndex === 3) {
-    openAudioDialog();
+    openAudioDialog(currentChannel);
   }
 }
 
-export function setupPillClickEvents(getCurrentChannelCb) {
+export function setupPillClickEvents(getCurrentChannelCb, getAllChannelsCb) {
   const btnDrawer = document.getElementById('btn-action-drawer');
   const btnEpg = document.getElementById('btn-action-epg');
   const btnQuality = document.getElementById('btn-action-quality');
@@ -174,7 +204,8 @@ export function setupPillClickEvents(getCurrentChannelCb) {
       currentActionIndex = 1;
       updateActionPillFocus();
       const ch = getCurrentChannelCb ? getCurrentChannelCb() : null;
-      if (ch) openEpgScheduleDialog(ch);
+      const all = getAllChannelsCb ? getAllChannelsCb() : [ch];
+      if (ch) openEpgScheduleDialog(ch, all);
     };
   }
   if (btnQuality) {
@@ -182,7 +213,8 @@ export function setupPillClickEvents(getCurrentChannelCb) {
       e.stopPropagation();
       currentActionIndex = 2;
       updateActionPillFocus();
-      openQualityDialog();
+      const ch = getCurrentChannelCb ? getCurrentChannelCb() : null;
+      openQualityDialog(ch);
     };
   }
   if (btnAudio) {
@@ -190,7 +222,8 @@ export function setupPillClickEvents(getCurrentChannelCb) {
       e.stopPropagation();
       currentActionIndex = 3;
       updateActionPillFocus();
-      openAudioDialog();
+      const ch = getCurrentChannelCb ? getCurrentChannelCb() : null;
+      openAudioDialog(ch);
     };
   }
 }
@@ -199,29 +232,68 @@ export function isQualityOrAudioDialogOpen() {
   return isDialogOpen;
 }
 
-export function openEpgScheduleDialog(channel) {
+export function openEpgScheduleDialog(channel, allChannelsList) {
   if (!channel) return;
+  if (osdHideTimeout) clearTimeout(osdHideTimeout);
   dialogType = 'epg';
-  const schedules = getChannelFullSchedule(channel.name);
-  dialogOptions = schedules;
-  dialogFocusedIndex = schedules.findIndex(s => s.isCurrent);
-  if (dialogFocusedIndex < 0) dialogFocusedIndex = 0;
+  epgChannelsList = (allChannelsList && allChannelsList.length > 0) ? allChannelsList : [channel];
+  const foundIdx = epgChannelsList.findIndex(c => c.name === channel.name);
+  epgSelectedChannelIndex = foundIdx >= 0 ? foundIdx : 0;
+  
+  const curCh = epgChannelsList[epgSelectedChannelIndex] || channel;
+  dialogOptions = getChannelFullSchedule(curCh.name);
+  const currentIdx = dialogOptions.findIndex(s => s.isCurrent);
+  dialogFocusedIndex = currentIdx >= 0 ? currentIdx : 0;
+  epgActiveColumn = 'schedule';
+
   isDialogOpen = true;
-  renderEpgScheduleContent(channel.name);
+  renderTwoColumnEpgModal();
 }
 
-function renderEpgScheduleContent(channelName) {
+function renderTwoColumnEpgModal() {
   const dlg = document.getElementById('quality-audio-dialog');
   if (!dlg) return;
 
+  const curCh = epgChannelsList[epgSelectedChannelIndex];
+  const channelName = curCh ? curCh.name : 'Kênh';
+
+  // 1. Render cột bên trái (Danh sách kênh)
+  let channelListHtml = '';
+  epgChannelsList.forEach((c, idx) => {
+    const isSel = (idx === epgSelectedChannelIndex);
+    const isFoc = (isSel && epgActiveColumn === 'channel');
+    const logoImg = (c.logo && c.logo.trim()) ? `<img src="${c.logo}" class="epg-ch-logo" onerror="this.style.display='none';" />` : '';
+    channelListHtml += `
+      <div class="epg-ch-item ${isSel ? 'selected' : ''} ${isFoc ? 'focused' : ''}" data-ch-index="${idx}">
+        ${logoImg}
+        <span>${c.name}</span>
+      </div>
+    `;
+  });
+
+  // 2. Render cột bên phải (Lịch phát sóng)
   let itemsHtml = '';
-  if (dialogOptions.length === 0) {
-    itemsHtml = `<div style="padding: 24px; text-align: center; color: #64748b; font-size: 13.5px; font-weight: 600;">Chưa có dữ liệu lịch phát sóng cho kênh này</div>`;
+  // Kiểm tra xem kênh có lịch phát sóng hợp lệ cho hôm nay không (có chương trình đang live hoặc sắp chiếu)
+  const hasValidSchedule = dialogOptions.length > 0 && dialogOptions.some(p => p.isCurrent || p.isFuture);
+
+  if (!hasValidSchedule) {
+    itemsHtml = `
+      <div style="display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100%; min-height: 240px; gap: 8px; color: #94a3b8; text-align: center; padding: 20px;">
+        <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" style="opacity: 0.5;">
+          <circle cx="12" cy="12" r="10"></circle>
+          <line x1="12" y1="8" x2="12" y2="12"></line>
+          <line x1="12" y1="16" x2="12.01" y2="16"></line>
+        </svg>
+        <span style="font-size: 14.5px; font-weight: 700; color: #cbd5e1;">Không có thông tin lịch phát sóng</span>
+        <span style="font-size: 12px; color: #64748b;">Chưa có dữ liệu chương trình cho kênh này</span>
+      </div>
+    `;
   } else {
     dialogOptions.forEach((p, idx) => {
-      const isFoc = (idx === dialogFocusedIndex);
+      const isFoc = (idx === dialogFocusedIndex && epgActiveColumn === 'schedule');
+      const isPast = p.isPast;
       itemsHtml += `
-        <div class="epg-schedule-item ${p.isCurrent ? 'current' : ''} ${isFoc ? 'focused' : ''}" data-index="${idx}">
+        <div class="epg-schedule-item ${isPast ? 'past' : ''} ${isFoc ? 'focused' : ''}" data-prog-index="${idx}">
           <span class="epg-time-range">${p.startStr} - ${p.stopStr}</span>
           <span class="epg-item-title">${p.title}</span>
           ${p.isCurrent ? '<span class="epg-live-badge">LIVE</span>' : ''}
@@ -231,31 +303,62 @@ function renderEpgScheduleContent(channelName) {
   }
 
   dlg.innerHTML = `
-    <div class="dialog-card">
-      <div class="dialog-title">
-        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#f97316" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>
-        <span>Lịch phát sóng - ${channelName}</span>
+    <div class="dialog-card epg-schedule-card">
+      <div class="dialog-title">Lịch phát sóng - ${channelName}</div>
+      <div class="epg-dialog-body">
+        <div class="epg-channel-sidebar" id="epg-channel-sidebar-list">${channelListHtml}</div>
+        <div class="epg-schedule-panel" id="epg-schedule-scroll-list">${itemsHtml}</div>
       </div>
-      <div class="dialog-list" id="epg-schedule-scroll-list">${itemsHtml}</div>
     </div>
   `;
   dlg.classList.add('active');
 
-  const curEl = dlg.querySelector('.epg-schedule-item.current, .epg-schedule-item.focused');
-  if (curEl) {
-    curEl.scrollIntoView({ block: 'nearest' });
-  }
+  // Cuộn kênh đang chọn và chương trình đang chiếu ra giữa
+  setTimeout(() => {
+    const chEl = dlg.querySelector('.epg-ch-item.selected');
+    if (chEl) chEl.scrollIntoView({ block: 'nearest', behavior: 'auto' });
 
-  const itemEls = dlg.querySelectorAll('.epg-schedule-item');
-  itemEls.forEach(el => {
+    if (hasValidSchedule) {
+      const curProgEl = dlg.querySelector('.epg-schedule-item.focused') || dlg.querySelector('.epg-schedule-item .epg-live-badge')?.parentElement;
+      if (curProgEl) curProgEl.scrollIntoView({ block: 'center', behavior: 'auto' });
+    }
+  }, 10);
+
+  // Click vào kênh bên trái: chuyển kênh đang xem lịch
+  const chEls = dlg.querySelectorAll('.epg-ch-item');
+  chEls.forEach(el => {
     el.onclick = (e) => {
       e.stopPropagation();
-      closeQualityAudioDialog();
+      const idx = parseInt(el.getAttribute('data-ch-index'), 10);
+      switchEpgChannel(idx);
+    };
+  });
+
+  // Click vào lịch bên phải: nếu muốn đổi kênh và phát luôn
+  const progEls = dlg.querySelectorAll('.epg-schedule-item');
+  progEls.forEach(el => {
+    el.onclick = (e) => {
+      e.stopPropagation();
+      if (onPlayChannelCallback && curCh) {
+        onPlayChannelCallback(curCh);
+      }
+      closeQualityAudioDialog(curCh);
     };
   });
 }
 
-export function openQualityDialog() {
+function switchEpgChannel(idx) {
+  if (idx < 0 || idx >= epgChannelsList.length) return;
+  epgSelectedChannelIndex = idx;
+  const curCh = epgChannelsList[epgSelectedChannelIndex];
+  dialogOptions = getChannelFullSchedule(curCh.name);
+  const currentIdx = dialogOptions.findIndex(s => s.isCurrent);
+  dialogFocusedIndex = currentIdx >= 0 ? currentIdx : 0;
+  renderTwoColumnEpgModal();
+}
+
+export function openQualityDialog(channel) {
+  if (osdHideTimeout) clearTimeout(osdHideTimeout);
   dialogType = 'quality';
   dialogOptions = getRealVideoQualities();
   dialogFocusedIndex = dialogOptions.findIndex(o => o.active);
@@ -264,22 +367,26 @@ export function openQualityDialog() {
   renderDialogContent('Chất lượng hình ảnh');
 }
 
-export function openAudioDialog() {
+export function openAudioDialog(channel) {
+  if (osdHideTimeout) clearTimeout(osdHideTimeout);
   dialogType = 'audio';
   dialogOptions = getRealAudioTracks();
   dialogFocusedIndex = dialogOptions.findIndex(o => o.active);
   if (dialogFocusedIndex < 0) dialogFocusedIndex = 0;
   isDialogOpen = true;
-  renderDialogContent('Kênh âm thanh (Audio)');
+  renderDialogContent('Kênh âm thanh');
 }
 
-export function closeQualityAudioDialog() {
+export function closeQualityAudioDialog(currentChannel) {
   isDialogOpen = false;
   dialogType = null;
   const dlg = document.getElementById('quality-audio-dialog');
   if (dlg) {
     dlg.classList.remove('active');
     dlg.innerHTML = '';
+  }
+  if (currentChannel) {
+    updateOsdInfo(currentChannel, false);
   }
 }
 
@@ -294,7 +401,7 @@ function renderDialogContent(titleText) {
     itemsHtml += `
       <div class="dialog-item ${isFoc ? 'focused' : ''} ${isAct ? 'active' : ''}" data-index="${idx}">
         <span>${opt.label}</span>
-        ${isAct ? '<span style="color:#f97316;font-weight:900;">✓</span>' : ''}
+        ${isAct ? '<svg class="dialog-check-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>' : ''}
       </div>
     `;
   });
@@ -318,29 +425,118 @@ function renderDialogContent(titleText) {
   });
 }
 
-export function navigateDialog(dir, currentChannelName) {
-  if (!isDialogOpen || dialogOptions.length === 0) return;
+export function navigateDialog(dir, currentChannel) {
+  if (!isDialogOpen) return;
+
+  // XỬ LÝ ĐIỀU HƯỚNG 2 CỘT CHO LỊCH PHÁT SÓNG
+  if (dialogType === 'epg') {
+    const hasValidSchedule = dialogOptions.length > 0 && dialogOptions.some(p => p.isCurrent || p.isFuture);
+
+    if (epgActiveColumn === 'schedule') {
+      if (dir === 'left' || !hasValidSchedule) {
+        // Sang trái: chuyển focus sang cột Danh sách kênh bên trái
+        epgActiveColumn = 'channel';
+        renderTwoColumnEpgModal();
+        return;
+      }
+      if (dir === 'up') {
+        const currentIdx = dialogOptions.findIndex(s => s.isCurrent);
+        const minNavIdx = currentIdx >= 0 ? currentIdx : 0;
+        if (dialogFocusedIndex > minNavIdx) {
+          dialogFocusedIndex--;
+          updateScheduleFocusDOM();
+        }
+        return;
+      }
+      if (dir === 'down') {
+        if (dialogFocusedIndex < dialogOptions.length - 1) {
+          dialogFocusedIndex++;
+          updateScheduleFocusDOM();
+        }
+        return;
+      }
+    } else if (epgActiveColumn === 'channel') {
+      if (dir === 'left') {
+        // Sang trái khi đang ở cột kênh: đóng dialog và về thanh OSD
+        closeQualityAudioDialog(currentChannel);
+        return;
+      }
+      if (dir === 'right') {
+        // Sang phải: nếu có lịch hợp lệ thì chuyển focus sang cột Lịch
+        if (hasValidSchedule) {
+          epgActiveColumn = 'schedule';
+          renderTwoColumnEpgModal();
+        }
+        return;
+      }
+      if (dir === 'up') {
+        if (epgSelectedChannelIndex > 0) {
+          switchEpgChannel(epgSelectedChannelIndex - 1);
+        }
+        return;
+      }
+      if (dir === 'down') {
+        if (epgSelectedChannelIndex < epgChannelsList.length - 1) {
+          switchEpgChannel(epgSelectedChannelIndex + 1);
+        }
+        return;
+      }
+    }
+    return;
+  }
+
+  // CÁC POPUP THÔNG THƯỜNG (CHẤT LƯỢNG / ÂM THANH)
+  if (dir === 'left') {
+    closeQualityAudioDialog(currentChannel);
+    return;
+  }
+
+  if (dialogOptions.length === 0) return;
   if (dir === 'up') {
     if (dialogFocusedIndex > 0) dialogFocusedIndex--;
   } else if (dir === 'down') {
     if (dialogFocusedIndex < dialogOptions.length - 1) dialogFocusedIndex++;
   }
 
-  if (dialogType === 'epg') {
-    renderEpgScheduleContent(currentChannelName || 'Kênh');
-  } else {
-    renderDialogContent(dialogType === 'quality' ? 'Chất lượng hình ảnh' : 'Kênh âm thanh (Audio)');
-  }
+  const dlg = document.getElementById('quality-audio-dialog');
+  if (!dlg) return;
+
+  const itemEls = dlg.querySelectorAll('.dialog-item');
+  itemEls.forEach((el, idx) => {
+    const isFoc = (idx === dialogFocusedIndex);
+    el.classList.toggle('focused', isFoc);
+    if (isFoc) {
+      el.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
+    }
+  });
+}
+
+function updateScheduleFocusDOM() {
+  const dlg = document.getElementById('quality-audio-dialog');
+  if (!dlg) return;
+  const itemEls = dlg.querySelectorAll('.epg-schedule-item');
+  itemEls.forEach((el, idx) => {
+    const isFoc = (idx === dialogFocusedIndex);
+    el.classList.toggle('focused', isFoc);
+    if (isFoc) {
+      el.scrollIntoView({ block: 'center', behavior: 'smooth' });
+    }
+  });
 }
 
 export function selectDialogCurrent() {
-  if (!isDialogOpen || dialogOptions.length === 0) return;
+  if (!isDialogOpen) return;
 
   if (dialogType === 'epg') {
-    closeQualityAudioDialog();
+    const curCh = epgChannelsList[epgSelectedChannelIndex];
+    if (curCh && onPlayChannelCallback) {
+      onPlayChannelCallback(curCh);
+    }
+    closeQualityAudioDialog(curCh);
     return;
   }
 
+  if (dialogOptions.length === 0) return;
   const selectedOpt = dialogOptions[dialogFocusedIndex];
   if (!selectedOpt) return;
 

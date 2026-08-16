@@ -412,7 +412,7 @@ export const globalStyles = `
 
     .ch-program-gray {
       font-size: 11.5px;
-      font-weight: 600;
+      font-weight: 500;
       color: #94a3b8;
       white-space: nowrap;
       overflow: hidden;
@@ -467,26 +467,25 @@ export const globalStyles = `
     }
 
     /* =========================================================================
-       KHUNG OSD BANNER DƯỚI (SLIM GLASS + HÀNG VIÊN THUỐC LỚN ĐẸP SANG TRỌNG)
+       KHUNG OSD BANNER DƯỚI (NỀN ĐEN MỜ ĐẬM RÕ NÉT TRÁNH CHÓI SÁNG KHI FULLSCREEN)
        ========================================================================= */
     #dl-osd-banner {
       position: absolute;
-      bottom: 24px;
-      left: 36px;
-      right: 36px;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      width: 100vw;
       z-index: 30;
-      background: rgba(11, 15, 23, 0.92);
-      backdrop-filter: blur(20px);
-      -webkit-backdrop-filter: blur(20px);
-      border: 1px solid rgba(255, 255, 255, 0.12);
-      border-radius: 16px;
-      padding: 14px 22px 14px 22px;
-      box-shadow: 0 14px 40px rgba(0, 0, 0, 0.85);
+      background: linear-gradient(to top, rgba(0, 0, 0, 0.97) 0%, rgba(0, 0, 0, 0.88) 55%, rgba(0, 0, 0, 0.45) 85%, transparent 100%);
+      border: none;
+      border-radius: 0;
+      padding: 70px 48px 24px 48px;
+      box-shadow: none;
       display: flex;
       flex-direction: column;
-      gap: 10px;
+      gap: 12px;
       opacity: 0;
-      transform: translateY(18px);
+      transform: translateY(20px);
       pointer-events: none;
       transition: opacity 0.25s ease, transform 0.25s cubic-bezier(0.2, 0.9, 0.3, 1);
     }
@@ -495,13 +494,21 @@ export const globalStyles = `
       transform: translateY(0) !important;
       pointer-events: auto !important;
     }
+
+    /* KHI MỞ MENU (CHẾ ĐỘ PIP THU NHỎ PHẢI): HIỆN KHUNG CARD ĐEN XÁM BO TRÒN DƯỚI VIDEO */
     #dl-osd-banner.pip-right {
       left: 384px !important;
       right: 24px !important;
       bottom: 20px !important;
+      width: auto !important;
+      background: rgba(11, 15, 23, 0.92) !important;
+      backdrop-filter: blur(20px) !important;
+      -webkit-backdrop-filter: blur(20px) !important;
+      border: 1px solid rgba(255, 255, 255, 0.12) !important;
+      border-radius: 16px !important;
+      padding: 14px 20px !important;
+      box-shadow: 0 14px 40px rgba(0, 0, 0, 0.85) !important;
     }
-
-    /* KHI Ở CHẾ ĐỘ PIP THU NHỎ (MỞ DRAWER): ẨN HOÀN TOÀN HÀNG 4 NÚT VIÊN THUỐC */
     #dl-osd-banner.pip-right .osd-action-pills-row {
       display: none !important;
     }
@@ -536,11 +543,11 @@ export const globalStyles = `
     .osd-text-col {
       display: flex;
       flex-direction: column;
-      gap: 2px;
+      gap: 3px;
       min-width: 0;
     }
     .osd-ch-name {
-      font-size: 17px;
+      font-size: 19px;
       font-weight: 800;
       color: #ffffff;
       letter-spacing: -0.2px;
@@ -549,13 +556,14 @@ export const globalStyles = `
       text-overflow: ellipsis;
     }
     .osd-prog-name {
-      font-size: 12.5px;
-      font-weight: 800;
+      font-size: 13px;
+      font-weight: 500;
       color: #f97316;
       text-transform: uppercase;
       white-space: nowrap;
       overflow: hidden;
       text-overflow: ellipsis;
+      letter-spacing: 0.2px;
     }
 
     .osd-right-info {
@@ -574,7 +582,7 @@ export const globalStyles = `
       letter-spacing: 0.6px;
     }
     .osd-specs-text {
-      font-size: 12px;
+      font-size: 12.5px;
       font-weight: 700;
       color: #f97316;
       font-family: 'Consolas', 'Courier New', monospace;
@@ -585,10 +593,11 @@ export const globalStyles = `
     .osd-timeline-row {
       display: flex;
       align-items: center;
-      gap: 10px;
+      gap: 12px;
+      width: 100%;
     }
     .osd-time-bound {
-      font-size: 11px;
+      font-size: 11.5px;
       font-weight: 700;
       color: #cbd5e1;
       font-variant-numeric: tabular-nums;
@@ -596,7 +605,7 @@ export const globalStyles = `
     .osd-timeline-track {
       flex: 1;
       height: 4px;
-      background: rgba(255, 255, 255, 0.15);
+      background: rgba(255, 255, 255, 0.22);
       border-radius: 2px;
       overflow: hidden;
     }
@@ -607,13 +616,13 @@ export const globalStyles = `
       transition: width 0.3s ease;
     }
 
-    /* HÀNG 3: CÁC NÚT VIÊN THUỐC ĐIỀU KHIỂN (TO HƠN & ĐẸP NỔI BẬT) */
+    /* HÀNG 3: CÁC NÚT VIÊN THUỐC ĐIỀU KHIỂN CĂN GIỮA DƯỚI ĐÁY */
     .osd-action-pills-row {
       display: flex;
       align-items: center;
-      gap: 10px;
-      padding-top: 6px;
-      border-top: 1px solid rgba(255, 255, 255, 0.08);
+      justify-content: center;
+      gap: 12px;
+      padding-top: 4px;
     }
 
     .bottom-pill-btn {
@@ -622,15 +631,15 @@ export const globalStyles = `
       gap: 8px;
       padding: 7px 16px;
       border-radius: 20px;
-      background: rgba(255, 255, 255, 0.08);
-      border: 1.5px solid rgba(255, 255, 255, 0.12);
+      background: rgba(255, 255, 255, 0.12);
+      border: 1px solid rgba(255, 255, 255, 0.16);
       color: #ffffff;
       cursor: pointer;
       outline: none;
       font-size: 13.5px;
       font-weight: 700;
       line-height: 1;
-      transition: all 0.15s ease;
+      transition: background 0.1s ease, color 0.1s ease;
     }
     .bottom-pill-btn svg {
       width: 17px;
@@ -652,14 +661,14 @@ export const globalStyles = `
       vertical-align: middle;
     }
 
-    /* KHI VIÊN THUỐC ĐƯỢC CHỌN (FOCUS BẰNG REMOTE HOẶC HOVER) */
+    /* KHI VIÊN THUỐC ĐƯỢC CHỌN (FOCUS HOẶC HOVER): TRẮNG TINH TẾ ĐƠN GIẢN KHÔNG LẤP LÁNH / GLOW */
     .bottom-pill-btn.focused,
     .bottom-pill-btn:hover {
       background: #ffffff !important;
       border-color: #ffffff !important;
       color: #0b0d14 !important;
-      box-shadow: 0 0 14px rgba(255, 255, 255, 0.45);
-      transform: scale(1.02);
+      box-shadow: none !important;
+      transform: none !important;
     }
     .bottom-pill-btn.focused svg,
     .bottom-pill-btn:hover svg {
@@ -675,99 +684,226 @@ export const globalStyles = `
       left: 0;
       width: 100vw;
       height: 100vh;
-      background: rgba(0, 0, 0, 0.75);
-      backdrop-filter: blur(10px);
-      -webkit-backdrop-filter: blur(10px);
+      background: transparent !important;
+      backdrop-filter: none !important;
+      -webkit-backdrop-filter: none !important;
       z-index: 100;
       display: none;
-      align-items: center;
-      justify-content: center;
+      justify-content: flex-end;
+      align-items: flex-end;
+      padding: 24px 36px 140px 36px;
+      pointer-events: none;
     }
     #quality-audio-dialog.active {
       display: flex !important;
     }
 
     .dialog-card {
-      width: 480px;
+      width: 360px;
       max-width: 90vw;
-      background: #0f1422;
-      border: 1px solid rgba(255, 255, 255, 0.15);
-      border-radius: 16px;
-      padding: 20px;
-      box-shadow: 0 20px 50px rgba(0, 0, 0, 0.9);
+      min-height: 330px;
+      height: auto;
+      max-height: calc(100vh - 160px);
+      background: #232733;
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      border-radius: 18px;
+      padding: 22px 18px;
+      box-shadow: -10px 10px 40px rgba(0, 0, 0, 0.85);
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+      pointer-events: auto;
+    }
+
+    /* CARD DÀNH CHO LỊCH PHÁT SÓNG 2 CỘT RỘNG RÃI, TO RÕ ĐẸP */
+    .dialog-card.epg-schedule-card {
+      width: 720px;
+      max-width: 95vw;
+      height: 490px;
+      min-height: 440px;
+      max-height: calc(100vh - 130px);
+      padding: 20px 22px;
       display: flex;
       flex-direction: column;
       gap: 14px;
     }
-    .dialog-title {
-      font-size: 16px;
-      font-weight: 800;
-      color: #ffffff;
+
+    .epg-dialog-body {
+      display: flex;
+      gap: 16px;
+      flex: 1;
+      min-height: 0;
+      overflow: hidden;
+    }
+
+    /* CỘT KÊNH BÊN TRÁI RỘNG RÃI, LOGO VÀ TÊN KÊNH RÕ RÀNG */
+    .epg-channel-sidebar {
+      width: 250px;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      overflow-y: auto;
+      padding-right: 6px;
+      border-right: 1px solid rgba(255, 255, 255, 0.09);
+    }
+    .epg-channel-sidebar::-webkit-scrollbar { width: 4px; }
+    .epg-channel-sidebar::-webkit-scrollbar-thumb { background: rgba(255, 255, 255, 0.15); border-radius: 2px; }
+
+    .epg-ch-item {
       display: flex;
       align-items: center;
-      gap: 8px;
+      gap: 12px;
+      padding: 10px 14px;
+      min-height: 48px;
+      height: 48px;
+      border-radius: 11px;
+      background: #2b3140;
+      border: 1.5px solid transparent;
+      color: #e2e8f0;
+      font-size: 14px;
+      font-weight: 700;
+      cursor: pointer;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      transition: background 0.1s ease, color 0.1s ease;
     }
+    .epg-ch-item.selected {
+      border-color: #f97316;
+    }
+    .epg-ch-item.focused,
+    .epg-ch-item:hover {
+      background: #ffffff !important;
+      color: #0b0d14 !important;
+      font-weight: 700 !important;
+      border-color: transparent !important;
+    }
+    .epg-ch-logo {
+      width: 44px;
+      height: 28px;
+      object-fit: contain;
+      flex-shrink: 0;
+    }
+
+    .epg-schedule-panel {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      min-width: 0;
+      overflow-y: auto;
+      padding-right: 2px;
+    }
+    .epg-schedule-panel::-webkit-scrollbar { width: 4px; }
+    .epg-schedule-panel::-webkit-scrollbar-thumb { background: rgba(255, 255, 255, 0.2); border-radius: 2px; }
+
+    .dialog-title {
+      font-size: 16px;
+      font-weight: 700;
+      color: #ffffff;
+      text-align: center;
+      letter-spacing: -0.1px;
+    }
+
     .dialog-list {
       display: flex;
       flex-direction: column;
-      gap: 6px;
-      max-height: 360px;
+      gap: 8px;
       overflow-y: auto;
-      padding-right: 4px;
+      padding-right: 2px;
+      max-height: calc(100vh - 230px);
     }
     .dialog-list::-webkit-scrollbar { width: 4px; }
-    .dialog-list::-webkit-scrollbar-thumb { background: rgba(255, 255, 255, 0.15); border-radius: 3px; }
+    .dialog-list::-webkit-scrollbar-thumb { background: rgba(255, 255, 255, 0.2); border-radius: 2px; }
 
+    /* MỤC TRONG DIALOG: MẶC ĐỊNH LÀ KHUNG XÁM SÁNG NÉT CHỮ THANH */
     .dialog-item {
       display: flex;
       align-items: center;
       justify-content: space-between;
-      padding: 10px 14px;
-      border-radius: 8px;
-      background: rgba(255, 255, 255, 0.05);
+      padding: 12px 16px;
+      border-radius: 11px;
+      background: #313746;
       border: 1.5px solid transparent;
-      color: #cbd5e1;
-      font-size: 13.5px;
+      color: #e2e8f0;
+      font-size: 14px;
       font-weight: 600;
       cursor: pointer;
-      transition: all 0.12s ease;
+      transition: background 0.1s ease, color 0.1s ease;
     }
+
+    /* KHI DI CHUYỂN CON TRỎ (FOCUS HOẶC HOVER): CHUYỂN THÀNH MÀU TRẮNG SÁNG + CHỮ ĐEN NÉT VỪA */
     .dialog-item.focused,
     .dialog-item:hover {
-      background: #1e293b;
-      border-color: #ffffff !important;
-      color: #ffffff;
-      box-shadow: 0 0 10px rgba(255, 255, 255, 0.2);
+      background: #ffffff !important;
+      color: #0b0d14 !important;
+      font-weight: 600 !important;
+      box-shadow: none !important;
+      border-color: transparent !important;
     }
-    .dialog-item.active {
-      color: #f97316;
-      font-weight: 800;
+    .dialog-item.focused .dialog-check-icon,
+    .dialog-item:hover .dialog-check-icon {
+      stroke: #0b0d14 !important;
+    }
+    .dialog-item:not(.focused):not(:hover) .dialog-check-icon {
+      stroke: #ffffff !important;
     }
 
     /* MỤC LỊCH PHÁT SÓNG TRONG POPUP */
     .epg-schedule-item {
       display: flex;
       align-items: center;
-      gap: 14px;
-      padding: 10px 14px;
-      border-radius: 8px;
-      background: rgba(255, 255, 255, 0.04);
+      gap: 12px;
+      padding: 11px 14px;
+      border-radius: 11px;
+      background: #313746;
       border: 1.5px solid transparent;
-      transition: all 0.12s ease;
+      color: #e2e8f0;
+      font-size: 13.5px;
+      font-weight: 600;
+      transition: background 0.1s ease, color 0.1s ease;
+      cursor: pointer;
     }
-    .epg-schedule-item.current {
-      background: rgba(249, 115, 22, 0.12);
-      border-color: rgba(249, 115, 22, 0.4);
+
+    /* CÁC CHƯƠNG TRÌNH ĐÃ CHIẾU QUA: LÀM MỜ NHẸ NHÀNG */
+    .epg-schedule-item.past {
+      opacity: 0.35;
+      background: rgba(255, 255, 255, 0.04);
+      cursor: not-allowed;
     }
+    .epg-schedule-item.past .epg-item-title {
+      color: #94a3b8 !important;
+    }
+    .epg-schedule-item.past .epg-time-range {
+      color: #64748b !important;
+    }
+
     .epg-schedule-item.focused,
     .epg-schedule-item:hover {
-      background: #1e293b;
-      border-color: #ffffff !important;
-      box-shadow: 0 0 10px rgba(255, 255, 255, 0.2);
+      background: #ffffff !important;
+      color: #0b0d14 !important;
+      font-weight: 600 !important;
+      opacity: 1 !important;
+      box-shadow: none !important;
+      border-color: transparent !important;
+    }
+    .epg-schedule-item.focused .epg-item-title,
+    .epg-schedule-item.focused .epg-time-range,
+    .epg-schedule-item:hover .epg-item-title,
+    .epg-schedule-item:hover .epg-time-range {
+      color: #0b0d14 !important;
+    }
+    .epg-schedule-item:not(.focused):not(:hover):not(.past) .epg-item-title {
+      color: #e2e8f0 !important;
+      font-weight: 500 !important;
+    }
+    .epg-schedule-item:not(.focused):not(:hover):not(.past) .epg-time-range {
+      color: #94a3b8 !important;
+      font-weight: 600 !important;
     }
     .epg-time-range {
       font-size: 12px;
-      font-weight: 700;
+      font-weight: 600;
       color: #94a3b8;
       font-variant-numeric: tabular-nums;
       white-space: nowrap;
@@ -775,22 +911,19 @@ export const globalStyles = `
     }
     .epg-item-title {
       font-size: 13.5px;
-      font-weight: 700;
-      color: #ffffff;
+      font-weight: 500;
+      color: #e2e8f0;
       flex: 1;
       white-space: nowrap;
       overflow: hidden;
       text-overflow: ellipsis;
-    }
-    .epg-schedule-item.current .epg-item-title {
-      color: #f97316;
     }
     .epg-live-badge {
       padding: 2px 6px;
       background: #dc2626;
       border-radius: 4px;
       font-size: 10px;
-      font-weight: 900;
+      font-weight: 800;
       color: #ffffff;
     }
 `;

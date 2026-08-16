@@ -39,55 +39,19 @@ function removeVietnameseTones(str) {
   return str;
 }
 
-export function normalizeEpgName(str) {
-  if (!str) return '';
-  let s = str.toLowerCase();
+export function normalizeEpgName(name) {
+  if (!name) return '';
+  let s = removeVietnameseTones(name.toLowerCase());
+  s = s.replace(/[\s\-_.:/()\[\]]/g, '');
+  s = s.replace(/(fhd|uhd|4k|2k|hd|sd|50fps|60fps|hevc|h265|raw|tv)$/g, '');
 
-  // Bóc tách tiền tố / hậu tố
-  if (/\|\s*th\s*/i.test(s)) s = s.replace(/^.*?\|\s*th\s*/i, '');
-  s = s.split(' - đài ptth')[0];
-  s = s.split(' - báo và ptth')[0];
-  s = s.split(' - đài truyền hình')[0];
-  s = s.split(' | báo và ptth')[0];
-  s = s.split(' - vie channel')[0];
-  s = s.split(' - you tv')[0];
-
-  s = removeVietnameseTones(s);
-  s = s.replace(/\b(hd|sd|fhd|4k|2k|uhd|50fps|60fps|raw|vip|tivi|tv|channel)\b/g, '');
-  s = s.replace(/[^a-z0-9]/g, '').trim();
-
-  // Quy đổi alias
-  if (s.startsWith('vinhlong') || s.startsWith('thvl')) {
+  if (s.startsWith('vinhlong') || /^thvl\d+$/.test(s)) {
     const num = s.match(/\d+/);
     return num ? `thvl${num[0]}` : 'thvl1';
   }
-  if (s.startsWith('hanoi') || s.startsWith('hn') || /^h\d+$/.test(s)) {
+  if (s.startsWith('hanoi') || /^h\d+$/.test(s)) {
     const num = s.match(/\d+/);
     return num ? `hanoi${num[0]}` : 'hanoi1';
-  }
-  if (s.startsWith('danang') || s.startsWith('dnrt') || s.startsWith('dnang')) {
-    const num = s.match(/\d+/);
-    return num ? `danang${num[0]}` : 'danang1';
-  }
-  if (s.startsWith('dongnai') || s.startsWith('dnnrtv') || s.startsWith('dnrtv') || /^dn\d+$/.test(s)) {
-    const num = s.match(/\d+/);
-    return num ? `dongnai${num[0]}` : 'dongnai1';
-  }
-  if (s.startsWith('dongthap') || s.startsWith('thdt') || s.startsWith('dthap')) {
-    const num = s.match(/\d+/);
-    return num ? `dongthap${num[0]}` : 'dongthap1';
-  }
-  if (s.startsWith('quangninh') || s.startsWith('qtv') || s.startsWith('qni')) {
-    const num = s.match(/\d+/);
-    return num ? `quangninh${num[0]}` : 'quangninh1';
-  }
-  if (s.startsWith('cantho') || s.startsWith('ctho')) {
-    const num = s.match(/\d+/);
-    return num ? `cantho${num[0]}` : 'cantho1';
-  }
-  if (s.startsWith('quangngai') || s.startsWith('qngtv') || /^qn\d+$/.test(s)) {
-    const num = s.match(/\d+/);
-    return num ? `quangngai${num[0]}` : 'quangngai1';
   }
   if (s.startsWith('angiang') || /^atv\d+$/.test(s)) {
     const num = s.match(/\d+/);
@@ -188,7 +152,6 @@ function parseEpgXml(xmlText) {
       const titleEl = p.getElementsByTagName('title')[0];
       const descEl = p.getElementsByTagName('desc')[0];
       
-      // ĐỒNG NHẤT IN HOA TOÀN BỘ TIÊU ĐỀ CHƯƠNG TRÌNH THEO YÊU CẦU
       const rawTitle = titleEl ? titleEl.textContent.trim() : '';
       const title = rawTitle.toUpperCase();
       const desc = descEl ? descEl.textContent.trim() : '';
@@ -212,7 +175,7 @@ function fetchXml(url, callback) {
     : bustUrl;
 
   xhr.open('GET', fetchUrl, true);
-  xhr.timeout = 7000;
+  xhr.timeout = 15000; // 15s để tải đầy đủ dữ liệu EPG 6MB
   xhr.setRequestHeader('Cache-Control', 'no-cache, no-store, must-revalidate');
   xhr.setRequestHeader('Pragma', 'no-cache');
   xhr.setRequestHeader('Expires', '0');
@@ -240,6 +203,8 @@ function fetchXml(url, callback) {
 }
 
 export function loadEPG(onLoaded) {
+  // NGUYÊN TẮC HỢP NHẤT EPG THÔNG MINH:
+  // 1. Tải Nguồn 1 (LichPhatSong)
   fetchXml(EPG_SOURCE_1, (err1, xml1) => {
     if (!err1 && xml1) {
       const src1Data = parseEpgXml(xml1);
@@ -249,27 +214,48 @@ export function loadEPG(onLoaded) {
       if (onLoaded) onLoaded();
     }
 
+    // 2. Tải tiếp Nguồn 2 (BlaoSolar) và hợp nhất thông minh (bổ sung kênh thiếu HOẶC cập nhật kênh bị hết hạn ở Nguồn 1)
     fetchXml(EPG_SOURCE_2, (err2, xml2) => {
       if (!err2 && xml2) {
         const src2Data = parseEpgXml(xml2);
+        const now = new Date();
         let added = 0;
+        let updated = 0;
+
         Object.keys(src2Data).forEach(key => {
-          if (!epgData[key] || epgData[key].length === 0) {
-            epgData[key] = src2Data[key];
+          const s2List = src2Data[key] || [];
+          if (s2List.length === 0) return;
+
+          const s1List = epgData[key] || [];
+          const s1HasValid = s1List.some(p => p.stop >= now);
+          const s2HasValid = s2List.some(p => p.stop >= now);
+
+          if (s1List.length === 0) {
+            epgData[key] = s2List;
             added++;
+          } else if (!s1HasValid && s2HasValid) {
+            // Nguồn 1 chỉ có lịch cũ của hôm qua, Nguồn 2 có lịch hôm nay -> Cập nhật sang Nguồn 2!
+            epgData[key] = s2List;
+            updated++;
           }
         });
+
         isLoaded = true;
-        console.log(`[EPG] Đã bổ sung thêm ${added} kênh từ Nguồn 2 (BlaoSolar). Tổng cộng: ${Object.keys(epgData).length} kênh EPG!`);
+        console.log(`[EPG] Nguồn 2 (BlaoSolar): Thêm mới ${added} kênh, Cập nhật mới ${updated} kênh. Tổng: ${Object.keys(epgData).length} kênh EPG!`);
         if (onLoaded) onLoaded();
       } else {
-        console.warn('[EPG] Nguồn 2 (BlaoSolar) không khả dụng hoặc bị chặn CORS, tiếp tục với Nguồn 1.');
+        console.warn('[EPG] Nguồn 2 (BlaoSolar) lỗi hoặc quá tải, tiếp tục với Nguồn 1.');
         isLoaded = true;
         if (onLoaded) onLoaded();
       }
     });
   });
 }
+
+const formatHM = (d) => {
+  if (!d) return '--:--';
+  return `${String(d.getHours()).padStart(2, '0')}:${String(d.getMinutes()).padStart(2, '0')}`;
+};
 
 export function getChannelEPG(channelName) {
   const norm = normalizeEpgName(channelName);
@@ -295,8 +281,6 @@ export function getChannelEPG(channelName) {
   const elapsed = now.getTime() - currentProg.start.getTime();
   const progressPercent = Math.min(100, Math.max(0, Math.round((elapsed / Math.max(1, total)) * 100)));
 
-  const formatHM = (d) => `${String(d.getHours()).padStart(2, '0')}:${String(d.getMinutes()).padStart(2, '0')}`;
-
   return {
     current: {
       title: currentProg.title,
@@ -316,17 +300,20 @@ export function getChannelEPG(channelName) {
 export function getChannelFullSchedule(channelName) {
   const norm = normalizeEpgName(channelName);
   const list = epgData[norm] || [];
-  const formatHM = (d) => `${String(d.getHours()).padStart(2, '0')}:${String(d.getMinutes()).padStart(2, '0')}`;
-  const now = new Date();
+  if (list.length === 0) return [];
 
+  const now = new Date();
   return list.map(p => {
-    const isCurrent = (p.start && p.stop && now >= p.start && now <= p.stop);
+    const isPast = p.stop < now;
+    const isCurrent = p.start <= now && p.stop >= now;
+    const isFuture = p.start > now;
     return {
       title: p.title,
-      desc: p.desc,
-      startStr: p.start ? formatHM(p.start) : '--:--',
-      stopStr: p.stop ? formatHM(p.stop) : '--:--',
-      isCurrent
+      startStr: formatHM(p.start),
+      stopStr: formatHM(p.stop),
+      isPast,
+      isCurrent,
+      isFuture
     };
   });
 }

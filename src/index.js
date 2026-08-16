@@ -4,6 +4,7 @@ import {
   updateLiveVideoSpecs, 
   showCenterPlayPause, 
   setOpenDrawerCallback, 
+  setPlayChannelCallback,
   setupPillClickEvents, 
   navigateActionBar, 
   executeActionPill,
@@ -134,7 +135,7 @@ function setupDOM() {
         <span id="osd-stop-time" class="osd-time-bound">00:45</span>
       </div>
 
-      <!-- HÀNG 3: CÁC NÚT VIÊN THUỐC ĐIỀU KHIỂN (MẶC ĐỊNH ẨN TRONG CHẾ ĐỘ PIP MỞ MENU) -->
+      <!-- HÀNG 3: CÁC NÚT VIÊN THUỐC ĐIỀU KHIỂN -->
       <div class="osd-action-pills-row" style="display: none;">
         <button id="btn-action-drawer" class="bottom-pill-btn focused">
           <svg viewBox="0 0 24 24"><path d="M16 12H3"/><path d="M16 18H3"/><path d="M16 6H3"/><path d="M21 12h.01"/><path d="M21 18h.01"/><path d="M21 6h.01"/></svg>
@@ -155,12 +156,13 @@ function setupDOM() {
       </div>
     </div>
 
-    <!-- POPUP CHỌN LỊCH PHÁT SÓNG, CHẤT LƯỢNG VÀ ÂM THANH -->
+    <!-- POPUP CHỌN LỊCH PHÁT SÓNG 2 CỘT, CHẤT LƯỢNG VÀ ÂM THANH (GÓC PHẢI) -->
     <div id="quality-audio-dialog"></div>
   `;
 
-  setupPillClickEvents(() => currentPlayingChannel);
+  setupPillClickEvents(() => currentPlayingChannel, () => allChannels);
   setOpenDrawerCallback(openDrawer);
+  setPlayChannelCallback(playSelectedChannel);
 }
 
 function showVideoSpinner() {
@@ -306,12 +308,20 @@ function handleKeyDown(e) {
 
   // 1. KHI POPUP CHỌN LỊCH PHÁT SÓNG / CHẤT LƯỢNG / ÂM THANH ĐANG MỞ
   if (isQualityOrAudioDialogOpen()) {
+    if (key === TV_KEYS.LEFT) {
+      navigateDialog('left', currentPlayingChannel);
+      return;
+    }
+    if (key === TV_KEYS.RIGHT) {
+      navigateDialog('right', currentPlayingChannel);
+      return;
+    }
     if (key === TV_KEYS.UP) {
-      navigateDialog('up', currentPlayingChannel ? currentPlayingChannel.name : '');
+      navigateDialog('up', currentPlayingChannel);
       return;
     }
     if (key === TV_KEYS.DOWN) {
-      navigateDialog('down', currentPlayingChannel ? currentPlayingChannel.name : '');
+      navigateDialog('down', currentPlayingChannel);
       return;
     }
     if (key === TV_KEYS.ENTER) {
@@ -319,7 +329,7 @@ function handleKeyDown(e) {
       return;
     }
     if (key === TV_KEYS.BACK_PC || key === TV_KEYS.RETURN || key === 8 || key === 27) {
-      closeQualityAudioDialog();
+      closeQualityAudioDialog(currentPlayingChannel);
       return;
     }
     return;
@@ -350,7 +360,7 @@ function handleKeyDown(e) {
     // B. Phím ENTER (OK):
     if (key === TV_KEYS.ENTER) {
       if (isOsdVisible()) {
-        executeActionPill(currentPlayingChannel);
+        executeActionPill(currentPlayingChannel, allChannels);
       } else {
         togglePlayPause();
       }
