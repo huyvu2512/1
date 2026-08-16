@@ -7,7 +7,7 @@ var require_shaka_player_compiled=__commonJS({"node_modules/shaka-player/dist/sh
 function parseM3U(content){if(!content||typeof content!=="string")return[];var lines=content.split(/\r?\n/);var channels=[];var current={};var _iterator2=_createForOfIteratorHelper(lines),_step2;try{for(_iterator2.s();!(_step2=_iterator2.n()).done;){var rawLine=_step2.value;var line=rawLine.trim();if(!line)continue;if(line.startsWith("#EXTINF:")){var commaIndex=line.lastIndexOf(",");var name=commaIndex!==-1?line.substring(commaIndex+1).trim():"Kênh truyền hình";var logoMatch=line.match(/tvg-logo="([^"]+)"/i);var groupMatch=line.match(/group-title="([^"]+)"/i);var idMatch=line.match(/tvg-id="([^"]+)"/i);current={name:name||"Kênh không tên",logo:logoMatch?logoMatch[1]:"",group:groupMatch?groupMatch[1]:"Mặc định",id:idMatch?idMatch[1]:""}}else if(line.startsWith("#KODIPROP:inputstream.adaptive.license_key=")){current.licenseKey=line.split("=")[1].trim()}else if(line.startsWith("#KODIPROP:inputstream.adaptive.manifest_type=")){current.manifestType=line.split("=")[1].trim()}else if(line.startsWith("#KODIPROP:inputstream.adaptive.license_type=")){current.licenseType=line.split("=")[1].trim()}else if(line.startsWith("#EXTVLCOPT:http-user-agent=")){current.userAgent=line.split("=")[1].trim()}else if(line.startsWith("http://")||line.startsWith("https://")){current.url=line;if(current.name){channels.push(_objectSpread({},current))}current={}}}}catch(err){_iterator2.e(err)}finally{_iterator2.f()}return channels}// src/player.js
 var import_shaka_player_compiled=__toESM(require_shaka_player_compiled());var playerInstance=null;var currentChannelData=null;function initPlayer(_x,_x2){return _initPlayer.apply(this,arguments)}function _initPlayer(){_initPlayer=_asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee(videoElement,onStatusUpdate){var netEngine,_t;return _regenerator().w(function(_context){while(1)switch(_context.p=_context.n){case 0:_context.p=0;import_shaka_player_compiled.default.polyfill.installAll();if(import_shaka_player_compiled.default.Player.isBrowserSupported()){_context.n=1;break}if(onStatusUpdate)onStatusUpdate("Trình duyệt không hỗ trợ Shaka Player.");return _context.a(2,null);case 1:playerInstance=new import_shaka_player_compiled.default.Player(videoElement);playerInstance.configure({streaming:{bufferingGoal:10,rebufferingGoal:2,bufferBehind:15,retryParameters:{maxAttempts:3,baseDelay:1e3,backoffFactor:2}}});netEngine=playerInstance.getNetworkingEngine();if(netEngine){netEngine.registerRequestFilter((type,request)=>{if(currentChannelData&&currentChannelData.userAgent){request.headers["User-Agent"]=currentChannelData.userAgent}})}playerInstance.addEventListener("error",event=>{var err=event.detail;console.error("Shaka Player Error:",err);if(onStatusUpdate){onStatusUpdate(`L\u1ED7i ph\xE1t (${err.code||"DRM"})`)}});return _context.a(2,playerInstance);case 2:_context.p=2;_t=_context.v;console.error("initPlayer error:",_t);if(onStatusUpdate)onStatusUpdate("Lỗi khởi tạo Player");return _context.a(2,null)}},_callee,null,[[0,2]])}));return _initPlayer.apply(this,arguments)}function playStream(_x3,_x4){return _playStream.apply(this,arguments)}function _playStream(){_playStream=_asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee2(channel,onStatusUpdate){var drmConfig,_t2;return _regenerator().w(function(_context2){while(1)switch(_context2.p=_context2.n){case 0:if(playerInstance){_context2.n=1;break}return _context2.a(2);case 1:currentChannelData=channel;_context2.p=2;if(onStatusUpdate)onStatusUpdate(`\u0110ang n\u1EA1p: ${channel.name}...`);drmConfig={servers:{},advanced:{}};if(channel.licenseKey){drmConfig.servers["com.widevine.alpha"]=channel.licenseKey;drmConfig.advanced["com.widevine.alpha"]={videoRobustness:"SW_SECURE_CRYPTO",audioRobustness:"SW_SECURE_CRYPTO"}}playerInstance.configure({drm:drmConfig});_context2.n=3;return playerInstance.load(channel.url);case 3:if(onStatusUpdate)onStatusUpdate(`\u0110ang ph\xE1t: ${channel.name}`);_context2.n=5;break;case 4:_context2.p=4;_t2=_context2.v;console.error(`[Playback Failed] ${channel.name}:`,_t2);if(onStatusUpdate){onStatusUpdate(`L\u1ED7i ph\xE1t: ${_t2.message||"Stream/DRM error"}`)}case 5:return _context2.a(2)}},_callee2,null,[[2,4]])}));return _playStream.apply(this,arguments)}function stopStream(){return _stopStream.apply(this,arguments)}// src/remote.js
 function _stopStream(){_stopStream=_asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee3(){var _t3;return _regenerator().w(function(_context3){while(1)switch(_context3.p=_context3.n){case 0:if(!playerInstance){_context3.n=4;break}_context3.p=1;_context3.n=2;return playerInstance.unload();case 2:_context3.n=4;break;case 3:_context3.p=3;_t3=_context3.v;console.error(_t3);case 4:return _context3.a(2)}},_callee3,null,[[1,3]])}));return _stopStream.apply(this,arguments)}var TV_KEYS={UP:38,DOWN:40,LEFT:37,RIGHT:39,ENTER:13,RETURN:10009,BACK_PC:27,RED:403,GREEN:404,YELLOW:405,BLUE:406,PLAY:415,PAUSE:19,STOP:413,PLAY_PAUSE:10252,INFO:457};function registerTizenKeys(){try{if(window.tizen&&window.tizen.tvinputdevice){var keysToRegister=["ColorF0Red","ColorF1Green","ColorF2Yellow","ColorF3Blue","MediaPlay","MediaPause","MediaStop","MediaPlayPause"];keysToRegister.forEach(keyName=>{try{window.tizen.tvinputdevice.registerKey(keyName)}catch(e){console.warn("Không thể đăng ký phím:",keyName,e)}})}}catch(err){console.warn("Không phát hiện Tizen TV input device API")}}// src/index.js
-var STORAGE_KEY="tb_iptv_drm_playlist_url";var WORKER_URL="https://w-iptv-setup.dvt-kisu.workers.dev";var allChannels=[];var filteredChannels=[];var categories=["Tất cả"];var activeCategory="Tất cả";var selectedIndex=0;var currentPlayingChannel=null;var isSidebarVisible=true;var setupTimer=null;var setupCode="";function generateCode(){var chars="ABCDEFGHJKLMNPQRSTUVWXYZ23456789";var res="";for(var i=0;i<6;i++){res+=chars.charAt(Math.floor(Math.random()*chars.length))}return res}function xhrGet(url,callback){var xhr=new XMLHttpRequest;xhr.open("GET",url,true);xhr.onreadystatechange=function(){if(xhr.readyState===4){if(xhr.status>=200&&xhr.status<300){callback(null,xhr.responseText)}else{callback(new Error(`HTTP ${xhr.status}`),null)}}};xhr.onerror=function(){callback(new Error("Network error (CORS hoặc mất mạng)"),null)};try{xhr.send()}catch(e){callback(e,null)}}function setupUI(){document.body.innerHTML=`
+var STORAGE_KEY="tb_iptv_drm_playlist_url";var allChannels=[];var filteredChannels=[];var categories=["Tất cả"];var activeCategory="Tất cả";var selectedIndex=0;var currentPlayingChannel=null;var isSidebarVisible=true;var isModalOpen=false;function xhrGet(url,callback){var xhr=new XMLHttpRequest;xhr.open("GET",url,true);xhr.onreadystatechange=function(){if(xhr.readyState===4){if(xhr.status>=200&&xhr.status<300){callback(null,xhr.responseText)}else{callback(new Error(`HTTP ${xhr.status}`),null)}}};xhr.onerror=function(){callback(new Error("Network error (CORS hoặc mất mạng)"),null)};try{xhr.send()}catch(e){callback(e,null)}}function setupUI(){document.body.innerHTML=`
     <style>
       * { box-sizing: border-box; margin: 0; padding: 0; }
       body {
@@ -16,7 +16,6 @@ var STORAGE_KEY="tb_iptv_drm_playlist_url";var WORKER_URL="https://w-iptv-setup.
         font-family: 'Segoe UI', -apple-system, BlinkMacSystemFont, Roboto, sans-serif;
         height: 100vh;
         overflow: hidden;
-        user-select: none;
       }
       #video-screen {
         position: absolute;
@@ -33,48 +32,58 @@ var STORAGE_KEY="tb_iptv_drm_playlist_url";var WORKER_URL="https://w-iptv-setup.
       }
       .sidebar {
         position: absolute;
-        top: 24px; left: 24px; bottom: 24px;
-        width: 420px;
+        top: 20px; left: 20px; bottom: 20px;
+        width: 400px;
         background: rgba(15, 23, 42, 0.94);
         backdrop-filter: blur(16px);
         border: 1px solid rgba(255, 255, 255, 0.12);
         border-radius: 16px;
-        padding: 20px;
+        padding: 18px;
         display: flex;
         flex-direction: column;
-        gap: 14px;
+        gap: 12px;
         box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.85);
-        transition: transform 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+        transition: transform 0.25s ease;
         pointer-events: auto;
       }
       .sidebar.hidden {
-        transform: translateX(-460px);
+        transform: translateX(-440px);
       }
       .header-title {
         display: flex;
         align-items: center;
         justify-content: space-between;
-        padding-bottom: 10px;
+        padding-bottom: 8px;
         border-bottom: 1px solid rgba(255, 255, 255, 0.1);
       }
       .header-title h1 {
-        font-size: 20px;
+        font-size: 18px;
         font-weight: 700;
         background: linear-gradient(135deg, #38bdf8, #818cf8);
         -webkit-background-clip: text;
         -webkit-text-fill-color: transparent;
       }
+      .btn-add {
+        background: #2563eb;
+        color: #fff;
+        border: none;
+        padding: 6px 12px;
+        border-radius: 6px;
+        font-size: 12px;
+        cursor: pointer;
+        font-weight: 600;
+      }
       .category-tabs {
         display: flex;
-        gap: 8px;
+        gap: 6px;
         overflow-x: auto;
         padding-bottom: 4px;
       }
       .category-badge {
-        padding: 6px 14px;
+        padding: 5px 12px;
         background: rgba(255, 255, 255, 0.08);
         border-radius: 20px;
-        font-size: 13px;
+        font-size: 12px;
         white-space: nowrap;
         cursor: pointer;
       }
@@ -93,23 +102,23 @@ var STORAGE_KEY="tb_iptv_drm_playlist_url";var WORKER_URL="https://w-iptv-setup.
       .channel-card {
         display: flex;
         align-items: center;
-        gap: 12px;
-        padding: 10px 14px;
+        gap: 10px;
+        padding: 8px 12px;
         background: rgba(255, 255, 255, 0.03);
         border: 1px solid transparent;
-        border-radius: 10px;
+        border-radius: 8px;
         cursor: pointer;
       }
       .channel-card.focused {
         background: rgba(37, 99, 235, 0.25);
         border-color: #3b82f6;
-        transform: scale(1.01);
       }
       .channel-card.playing {
         border-color: #10b981;
+        background: rgba(16, 185, 129, 0.15);
       }
       .channel-logo {
-        width: 40px; height: 40px;
+        width: 36px; height: 36px;
         border-radius: 6px;
         object-fit: contain;
         background: rgba(0, 0, 0, 0.4);
@@ -119,21 +128,21 @@ var STORAGE_KEY="tb_iptv_drm_playlist_url";var WORKER_URL="https://w-iptv-setup.
         overflow: hidden;
       }
       .channel-name {
-        font-size: 15px;
+        font-size: 14px;
         font-weight: 600;
         white-space: nowrap;
         overflow: hidden;
         text-overflow: ellipsis;
       }
       .channel-tag {
-        font-size: 12px;
+        font-size: 11px;
         color: #94a3b8;
         margin-top: 2px;
       }
       .drm-badge {
-        font-size: 10px;
-        padding: 2px 5px;
-        border-radius: 4px;
+        font-size: 9px;
+        padding: 1px 4px;
+        border-radius: 3px;
         background: #f59e0b;
         color: #000;
         font-weight: 700;
@@ -141,28 +150,17 @@ var STORAGE_KEY="tb_iptv_drm_playlist_url";var WORKER_URL="https://w-iptv-setup.
       .footer-hints {
         display: flex;
         justify-content: space-between;
-        font-size: 12px;
+        font-size: 11px;
         color: #94a3b8;
         border-top: 1px solid rgba(255, 255, 255, 0.1);
-        padding-top: 10px;
+        padding-top: 8px;
       }
-      .key-hint span {
-        display: inline-block;
-        padding: 2px 6px;
-        border-radius: 4px;
-        font-weight: bold;
-        color: #fff;
-        margin-right: 4px;
-      }
-      .key-red { background: #ef4444; }
-      .key-green { background: #10b981; }
-      .key-blue { background: #3b82f6; }
 
       #status-bar {
         position: absolute;
-        bottom: 24px; right: 24px;
+        bottom: 20px; right: 20px;
         background: rgba(15, 23, 42, 0.9);
-        padding: 8px 18px;
+        padding: 8px 16px;
         border-radius: 20px;
         border: 1px solid rgba(255, 255, 255, 0.1);
         font-size: 13px;
@@ -170,31 +168,82 @@ var STORAGE_KEY="tb_iptv_drm_playlist_url";var WORKER_URL="https://w-iptv-setup.
         z-index: 20;
       }
 
-      /* M\xE0n h\xECnh QR Setup */
-      #qr-screen {
+      /* Modal Nh\u1EADp Link M3U Th\u1EE7 C\xF4ng */
+      .modal {
         position: absolute;
         top: 0; left: 0; width: 100vw; height: 100vh;
-        background: rgba(10, 15, 30, 0.96);
+        background: rgba(10, 15, 30, 0.9);
         display: flex;
-        flex-direction: column;
         align-items: center;
         justify-content: center;
         z-index: 100;
-        text-align: center;
+        pointer-events: auto;
       }
-      .qr-box {
-        background: #fff;
-        padding: 14px;
-        border-radius: 12px;
-        margin-bottom: 20px;
-        box-shadow: 0 10px 25px rgba(0,0,0,0.5);
+      .modal-box {
+        background: #1e293b;
+        padding: 28px;
+        border-radius: 16px;
+        width: 600px;
+        border: 1px solid rgba(255, 255, 255, 0.2);
+        color: #fff;
       }
-      .qr-code-text {
-        font-size: 28px;
-        font-weight: 800;
-        color: #38bdf8;
-        letter-spacing: 2px;
-        margin: 10px 0;
+      .modal-box h2 {
+        font-size: 20px;
+        margin-bottom: 8px;
+      }
+      .modal-box input {
+        width: 100%;
+        padding: 12px 14px;
+        border-radius: 8px;
+        background: #0f172a;
+        border: 1px solid #334155;
+        color: #fff;
+        font-size: 15px;
+        margin: 14px 0;
+        outline: none;
+      }
+      .modal-box input:focus {
+        border-color: #38bdf8;
+      }
+      .quick-links {
+        display: flex;
+        gap: 8px;
+        margin-bottom: 16px;
+        flex-wrap: wrap;
+      }
+      .quick-btn {
+        background: #334155;
+        border: none;
+        color: #cbd5e1;
+        padding: 6px 12px;
+        border-radius: 6px;
+        font-size: 12px;
+        cursor: pointer;
+      }
+      .quick-btn:hover {
+        background: #475569;
+        color: #fff;
+      }
+      .modal-actions {
+        display: flex;
+        justify-content: flex-end;
+        gap: 10px;
+      }
+      .modal-actions button {
+        padding: 10px 18px;
+        border-radius: 8px;
+        border: none;
+        font-size: 14px;
+        font-weight: 600;
+        cursor: pointer;
+      }
+      .btn-cancel {
+        background: #334155;
+        color: #fff;
+      }
+      .btn-load {
+        background: #2563eb;
+        color: #fff;
       }
     </style>
 
@@ -203,40 +252,47 @@ var STORAGE_KEY="tb_iptv_drm_playlist_url";var WORKER_URL="https://w-iptv-setup.
     <div id="main-app">
       <div id="sidebar" class="sidebar">
         <div class="header-title">
-          <h1>TizenBrew IPTV (DRM)</h1>
-          <span id="channel-count" style="font-size: 12px; color: #38bdf8;">0 k\xEAnh</span>
+          <h1>IPTV DRM Player</h1>
+          <button id="btn-open-modal" class="btn-add">\u0110\u1ED5i Playlist</button>
         </div>
 
         <div id="categories" class="category-tabs"></div>
         <div id="channel-list" class="channel-list"></div>
 
         <div class="footer-hints">
-          <div class="key-hint"><span class="key-red">\u0110\u1ECF</span> Qu\xE9t QR</div>
-          <div class="key-hint"><span class="key-green">Xanh l\xE1</span> T\u1EA3i l\u1EA1i</div>
-          <div class="key-hint"><span class="key-blue">Xanh d\u01B0\u01A1ng</span> \u1EA8n/Hi\u1EC7n</div>
+          <span>Ph\xEDm \u0110\u1ECF: \u0110\u1ED5i Link</span>
+          <span>Xanh l\xE1: T\u1EA3i l\u1EA1i</span>
+          <span>Xanh d\u01B0\u01A1ng: \u1EA8n/Hi\u1EC7n</span>
         </div>
       </div>
 
       <div id="status-bar">\u0110ang kh\u1EDFi \u0111\u1ED9ng...</div>
     </div>
-  `}function showStatus(text){var bar=document.getElementById("status-bar");if(bar)bar.innerText=text}function showQRSetup(){stopSetupPolling();setupCode=generateCode();var setupUrl=`${WORKER_URL}/setup?code=${setupCode}`;var qrImgUrl=`https://api.qrserver.com/v1/create-qr-code/?size=240x240&data=${encodeURIComponent(setupUrl)}`;var modal=document.createElement("div");modal.id="qr-screen";modal.innerHTML=`
-    <h1 style="font-size: 26px; margin-bottom: 8px;">C\xE0i \u0111\u1EB7t Danh s\xE1ch K\xEAnh M3U</h1>
-    <p style="color: #94a3b8; font-size: 16px; margin-bottom: 20px; max-width: 500px;">
-      D\xF9ng camera \u0111i\u1EC7n tho\u1EA1i qu\xE9t m\xE3 QR b\xEAn d\u01B0\u1EDBi \u0111\u1EC3 d\xE1n link Playlist M3U:
-    </p>
-    <div class="qr-box">
-      <img src="${qrImgUrl}" width="220" height="220" alt="QR Code" />
+  `;document.getElementById("btn-open-modal").onclick=()=>openInputModal()}function showStatus(text){var bar=document.getElementById("status-bar");if(bar)bar.innerText=text}function openInputModal(){isModalOpen=true;var current=localStorage.getItem(STORAGE_KEY)||"https://tv.vietanhtv.top/tv/";var modal=document.createElement("div");modal.id="input-modal";modal.className="modal";modal.innerHTML=`
+    <div class="modal-box">
+      <h2>Th\xEAm / \u0110\u1ED5i Playlist IPTV (M3U)</h2>
+      <p style="color: #94a3b8; font-size: 13px;">D\xE1n \u0111\u01B0\u1EDDng link file M3U (h\u1ED7 tr\u1EE3 MPD, HLS, Widevine DRM):</p>
+      
+      <input id="playlist-url-input" type="text" placeholder="https://..." value="${current}" />
+
+      <div style="font-size: 12px; color: #64748b; margin-bottom: 6px;">Ch\u1ECDn nhanh link m\u1EABu \u0111\u1EC3 test:</div>
+      <div class="quick-links">
+        <button class="quick-btn" onclick="document.getElementById('playlist-url-input').value='https://tv.vietanhtv.top/tv/'">VietAnhTV (DRM)</button>
+        <button class="quick-btn" onclick="document.getElementById('playlist-url-input').value='https://raw.githubusercontent.com/iptv-org/iptv/master/streams/vn.m3u'">IPTV-Org VN (HLS)</button>
+      </div>
+
+      <div class="modal-actions">
+        <button class="btn-cancel" id="btn-modal-cancel">H\u1EE7y</button>
+        <button class="btn-load" id="btn-modal-load">T\u1EA3i Playlist</button>
+      </div>
     </div>
-    <div style="font-size: 14px; color: #cbd5e1;">M\xE3 k\u1EBFt n\u1ED1i:</div>
-    <div class="qr-code-text">${setupCode}</div>
-    <p style="color: #64748b; font-size: 13px; margin-top: 14px;">(B\u1EA5m ph\xEDm <b>Return/Back</b> tr\xEAn remote ho\u1EB7c <b>Esc</b> \u0111\u1EC3 quay l\u1EA1i)</p>
-  `;document.body.appendChild(modal);startSetupPolling()}function closeQRSetup(){stopSetupPolling();var modal=document.getElementById("qr-screen");if(modal)modal.remove()}function startSetupPolling(){setupTimer=setInterval(()=>{if(!setupCode)return;xhrGet(`${WORKER_URL}/api/config?code=${encodeURIComponent(setupCode)}`,(err,data)=>{if(err||!data)return;try{var json=JSON.parse(data);if(json&&json.url){console.log("[QR Sync] Nhận được link M3U từ điện thoại:",json.url);localStorage.setItem(STORAGE_KEY,json.url);closeQRSetup();fetchAndLoadPlaylist(json.url)}}catch(e){}})},2e3)}function stopSetupPolling(){if(setupTimer){clearInterval(setupTimer);setupTimer=null}}function fetchAndLoadPlaylist(url){showStatus("Đang tải danh sách kênh...");var cleanUrl=url.trim();function tryFetch(targetUrl){var isProxy=arguments.length>1&&arguments[1]!==undefined?arguments[1]:false;xhrGet(targetUrl,(err,text)=>{if(err){if(!isProxy){console.warn("Direct load failed, trying CORS proxy...");tryFetch(`https://corsproxy.io/?${encodeURIComponent(targetUrl)}`,true)}else{showStatus(`L\u1ED7i t\u1EA3i playlist: ${err.message}`)}return}allChannels=parseM3U(text);if(allChannels.length===0){showStatus("Không tìm thấy kênh hợp lệ trong playlist");return}var groupSet=/* @__PURE__ */new Set(["Tất cả"]);allChannels.forEach(ch=>{if(ch.group)groupSet.add(ch.group)});categories=Array.from(groupSet);renderCategories();filterCategory("Tất cả");showStatus(`\u0110\xE3 n\u1EA1p ${allChannels.length} k\xEAnh.`);if(filteredChannels.length>0){selectChannel(0,true)}})}tryFetch(cleanUrl)}function renderCategories(){var catEl=document.getElementById("categories");if(!catEl)return;catEl.innerHTML="";categories.forEach(cat=>{var badge=document.createElement("div");badge.className=`category-badge ${cat===activeCategory?"active":""}`;badge.innerText=cat;badge.onclick=()=>filterCategory(cat);catEl.appendChild(badge)})}function filterCategory(categoryName){activeCategory=categoryName;if(categoryName==="Tất cả"){filteredChannels=allChannels}else{filteredChannels=allChannels.filter(c=>c.group===categoryName)}selectedIndex=0;renderChannelList();renderCategories()}function renderChannelList(){var listEl=document.getElementById("channel-list");var countEl=document.getElementById("channel-count");if(!listEl)return;if(countEl)countEl.innerText=`${filteredChannels.length} k\xEAnh`;listEl.innerHTML="";filteredChannels.forEach((ch,idx)=>{var card=document.createElement("div");card.className=`channel-card ${idx===selectedIndex?"focused":""} ${currentPlayingChannel===ch?"playing":""}`;var logoImg=ch.logo?`<img class="channel-logo" src="${ch.logo}" alt="logo" onerror="this.style.display='none'"/>`:"";var drmTag=ch.licenseKey?`<span class="drm-badge">DRM</span>`:"";card.innerHTML=`
+  `;document.body.appendChild(modal);document.getElementById("btn-modal-cancel").onclick=()=>closeInputModal();document.getElementById("btn-modal-load").onclick=()=>{var val=document.getElementById("playlist-url-input").value.trim();if(val){localStorage.setItem(STORAGE_KEY,val);closeInputModal();fetchAndLoadPlaylist(val)}};var input=document.getElementById("playlist-url-input");input.focus();input.onkeydown=e=>{if(e.keyCode===13){document.getElementById("btn-modal-load").click()}}}function closeInputModal(){isModalOpen=false;var m=document.getElementById("input-modal");if(m)m.remove()}function fetchAndLoadPlaylist(url){showStatus("Đang tải danh sách kênh...");var cleanUrl=url.trim();if(cleanUrl.indexOf("tv.vietanhtv.top/tv")!==-1&&cleanUrl.slice(-1)!=="/"){cleanUrl+="/"}function tryFetch(targetUrl){var isProxy=arguments.length>1&&arguments[1]!==undefined?arguments[1]:false;xhrGet(targetUrl,(err,text)=>{if(err){if(!isProxy){console.warn("Direct load failed, trying CORS proxy...");tryFetch(`https://corsproxy.io/?${encodeURIComponent(targetUrl)}`,true)}else{showStatus(`L\u1ED7i t\u1EA3i playlist: ${err.message}`)}return}allChannels=parseM3U(text);if(allChannels.length===0){showStatus("Không tìm thấy kênh hợp lệ trong playlist");return}var groupSet=/* @__PURE__ */new Set(["Tất cả"]);allChannels.forEach(ch=>{if(ch.group)groupSet.add(ch.group)});categories=Array.from(groupSet);renderCategories();filterCategory("Tất cả");showStatus(`\u0110\xE3 n\u1EA1p ${allChannels.length} k\xEAnh.`);if(filteredChannels.length>0){selectChannel(0,true)}})}tryFetch(cleanUrl)}function renderCategories(){var catEl=document.getElementById("categories");if(!catEl)return;catEl.innerHTML="";categories.forEach(cat=>{var badge=document.createElement("div");badge.className=`category-badge ${cat===activeCategory?"active":""}`;badge.innerText=cat;badge.onclick=()=>filterCategory(cat);catEl.appendChild(badge)})}function filterCategory(categoryName){activeCategory=categoryName;if(categoryName==="Tất cả"){filteredChannels=allChannels}else{filteredChannels=allChannels.filter(c=>c.group===categoryName)}selectedIndex=0;renderChannelList();renderCategories()}function renderChannelList(){var listEl=document.getElementById("channel-list");if(!listEl)return;listEl.innerHTML="";filteredChannels.forEach((ch,idx)=>{var card=document.createElement("div");card.className=`channel-card ${idx===selectedIndex?"focused":""} ${currentPlayingChannel===ch?"playing":""}`;var logoImg=ch.logo?`<img class="channel-logo" src="${ch.logo}" alt="logo" onerror="this.style.display='none'"/>`:"";var drmTag=ch.licenseKey?`<span class="drm-badge">DRM</span>`:"";card.innerHTML=`
       ${logoImg}
       <div class="channel-info">
         <div class="channel-name">${ch.name}</div>
         <div class="channel-tag">${ch.group} ${drmTag}</div>
       </div>
-    `;card.onclick=()=>selectChannel(idx,true);listEl.appendChild(card)});updateFocus()}function updateFocus(){var cards=document.querySelectorAll(".channel-card");cards.forEach((c,idx)=>{c.classList.toggle("focused",idx===selectedIndex);if(idx===selectedIndex){c.scrollIntoView({block:"nearest",behavior:"smooth"})}})}function selectChannel(_x5){return _selectChannel.apply(this,arguments)}function _selectChannel(){_selectChannel=_asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee4(idx){var playImmediately,_args4=arguments;return _regenerator().w(function(_context4){while(1)switch(_context4.n){case 0:playImmediately=_args4.length>1&&_args4[1]!==undefined?_args4[1]:false;if(!(idx<0||idx>=filteredChannels.length)){_context4.n=1;break}return _context4.a(2);case 1:selectedIndex=idx;updateFocus();if(!playImmediately){_context4.n=2;break}currentPlayingChannel=filteredChannels[idx];renderChannelList();_context4.n=2;return playStream(currentPlayingChannel,showStatus);case 2:return _context4.a(2)}},_callee4)}));return _selectChannel.apply(this,arguments)}function handleKeyDown(e){var key=e.keyCode;if(document.getElementById("qr-screen")){if(key===TV_KEYS.RETURN||key===TV_KEYS.BACK_PC){closeQRSetup()}return}switch(key){case TV_KEYS.UP:if(selectedIndex>0){selectedIndex--;updateFocus()}break;case TV_KEYS.DOWN:if(selectedIndex<filteredChannels.length-1){selectedIndex++;updateFocus()}break;case TV_KEYS.LEFT:shiftCategory(-1);break;case TV_KEYS.RIGHT:shiftCategory(1);break;case TV_KEYS.ENTER:selectChannel(selectedIndex,true);break;case TV_KEYS.RED:showQRSetup();break;case TV_KEYS.GREEN:var cur=localStorage.getItem(STORAGE_KEY);if(cur)fetchAndLoadPlaylist(cur);else showQRSetup();break;case TV_KEYS.BLUE:isSidebarVisible=!isSidebarVisible;document.getElementById("sidebar").classList.toggle("hidden",!isSidebarVisible);break;case TV_KEYS.STOP:stopStream();showStatus("Đã dừng phát");break}}function shiftCategory(direction){var idx=categories.indexOf(activeCategory);idx=(idx+direction+categories.length)%categories.length;filterCategory(categories[idx])}function initApp(){return _initApp.apply(this,arguments)}function _initApp(){_initApp=_asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee5(){var video,savedUrl,_t4;return _regenerator().w(function(_context5){while(1)switch(_context5.p=_context5.n){case 0:setupUI();registerTizenKeys();video=document.getElementById("video-screen");_context5.p=1;_context5.n=2;return initPlayer(video,showStatus);case 2:_context5.n=4;break;case 3:_context5.p=3;_t4=_context5.v;showStatus(_t4.message);case 4:window.addEventListener("keydown",handleKeyDown);savedUrl=localStorage.getItem(STORAGE_KEY);if(savedUrl){fetchAndLoadPlaylist(savedUrl)}else{showQRSetup()}case 5:return _context5.a(2)}},_callee5,null,[[1,3]])}));return _initApp.apply(this,arguments)}initApp()})();/*! Bundled license information:
+    `;card.onclick=()=>selectChannel(idx,true);listEl.appendChild(card)});updateFocus()}function updateFocus(){var cards=document.querySelectorAll(".channel-card");cards.forEach((c,idx)=>{c.classList.toggle("focused",idx===selectedIndex);if(idx===selectedIndex){c.scrollIntoView({block:"nearest",behavior:"smooth"})}})}function selectChannel(_x5){return _selectChannel.apply(this,arguments)}function _selectChannel(){_selectChannel=_asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee4(idx){var playImmediately,_args4=arguments;return _regenerator().w(function(_context4){while(1)switch(_context4.n){case 0:playImmediately=_args4.length>1&&_args4[1]!==undefined?_args4[1]:false;if(!(idx<0||idx>=filteredChannels.length)){_context4.n=1;break}return _context4.a(2);case 1:selectedIndex=idx;updateFocus();if(!playImmediately){_context4.n=2;break}currentPlayingChannel=filteredChannels[idx];renderChannelList();_context4.n=2;return playStream(currentPlayingChannel,showStatus);case 2:return _context4.a(2)}},_callee4)}));return _selectChannel.apply(this,arguments)}function handleKeyDown(e){var key=e.keyCode;if(isModalOpen){if(key===TV_KEYS.RETURN||key===TV_KEYS.BACK_PC){closeInputModal()}return}switch(key){case TV_KEYS.UP:if(selectedIndex>0){selectedIndex--;updateFocus()}break;case TV_KEYS.DOWN:if(selectedIndex<filteredChannels.length-1){selectedIndex++;updateFocus()}break;case TV_KEYS.LEFT:shiftCategory(-1);break;case TV_KEYS.RIGHT:shiftCategory(1);break;case TV_KEYS.ENTER:selectChannel(selectedIndex,true);break;case TV_KEYS.RED:openInputModal();break;case TV_KEYS.GREEN:var cur=localStorage.getItem(STORAGE_KEY);if(cur)fetchAndLoadPlaylist(cur);else openInputModal();break;case TV_KEYS.BLUE:isSidebarVisible=!isSidebarVisible;document.getElementById("sidebar").classList.toggle("hidden",!isSidebarVisible);break;case TV_KEYS.STOP:stopStream();showStatus("Đã dừng phát");break}}function shiftCategory(direction){var idx=categories.indexOf(activeCategory);idx=(idx+direction+categories.length)%categories.length;filterCategory(categories[idx])}function initApp(){return _initApp.apply(this,arguments)}function _initApp(){_initApp=_asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee5(){var video,savedUrl,_t4;return _regenerator().w(function(_context5){while(1)switch(_context5.p=_context5.n){case 0:setupUI();registerTizenKeys();video=document.getElementById("video-screen");_context5.p=1;_context5.n=2;return initPlayer(video,showStatus);case 2:_context5.n=4;break;case 3:_context5.p=3;_t4=_context5.v;showStatus(_t4.message);case 4:window.addEventListener("keydown",handleKeyDown);savedUrl=localStorage.getItem(STORAGE_KEY);if(savedUrl){fetchAndLoadPlaylist(savedUrl)}else{openInputModal()}case 5:return _context5.a(2)}},_callee5,null,[[1,3]])}));return _initApp.apply(this,arguments)}initApp()})();/*! Bundled license information:
 
 shaka-player/dist/shaka-player.compiled.js:
   (*

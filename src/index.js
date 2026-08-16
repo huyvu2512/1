@@ -3,7 +3,6 @@ import { initPlayer, playStream, stopStream } from './player.js';
 import { TV_KEYS, registerTizenKeys } from './remote.js';
 
 const STORAGE_KEY = 'tb_iptv_drm_playlist_url';
-const WORKER_URL = 'https://w-iptv-setup.dvt-kisu.workers.dev';
 
 let allChannels = [];
 let filteredChannels = [];
@@ -12,20 +11,9 @@ let activeCategory = 'Tất cả';
 let selectedIndex = 0;
 let currentPlayingChannel = null;
 let isSidebarVisible = true;
-let setupTimer = null;
-let setupCode = '';
+let isModalOpen = false;
 
-// Helper tạo mã code ngẫu nhiên
-function generateCode() {
-  const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
-  let res = '';
-  for (let i = 0; i < 6; i++) {
-    res += chars.charAt(Math.floor(Math.random() * chars.length));
-  }
-  return res;
-}
-
-// XHR Helper tương thích tốt với Tizen Web
+// XHR Helper
 function xhrGet(url, callback) {
   const xhr = new XMLHttpRequest();
   xhr.open('GET', url, true);
@@ -48,7 +36,6 @@ function xhrGet(url, callback) {
   }
 }
 
-// Giao diện chính của Trình phát IPTV
 function setupUI() {
   document.body.innerHTML = `
     <style>
@@ -59,7 +46,6 @@ function setupUI() {
         font-family: 'Segoe UI', -apple-system, BlinkMacSystemFont, Roboto, sans-serif;
         height: 100vh;
         overflow: hidden;
-        user-select: none;
       }
       #video-screen {
         position: absolute;
@@ -76,48 +62,58 @@ function setupUI() {
       }
       .sidebar {
         position: absolute;
-        top: 24px; left: 24px; bottom: 24px;
-        width: 420px;
+        top: 20px; left: 20px; bottom: 20px;
+        width: 400px;
         background: rgba(15, 23, 42, 0.94);
         backdrop-filter: blur(16px);
         border: 1px solid rgba(255, 255, 255, 0.12);
         border-radius: 16px;
-        padding: 20px;
+        padding: 18px;
         display: flex;
         flex-direction: column;
-        gap: 14px;
+        gap: 12px;
         box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.85);
-        transition: transform 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+        transition: transform 0.25s ease;
         pointer-events: auto;
       }
       .sidebar.hidden {
-        transform: translateX(-460px);
+        transform: translateX(-440px);
       }
       .header-title {
         display: flex;
         align-items: center;
         justify-content: space-between;
-        padding-bottom: 10px;
+        padding-bottom: 8px;
         border-bottom: 1px solid rgba(255, 255, 255, 0.1);
       }
       .header-title h1 {
-        font-size: 20px;
+        font-size: 18px;
         font-weight: 700;
         background: linear-gradient(135deg, #38bdf8, #818cf8);
         -webkit-background-clip: text;
         -webkit-text-fill-color: transparent;
       }
+      .btn-add {
+        background: #2563eb;
+        color: #fff;
+        border: none;
+        padding: 6px 12px;
+        border-radius: 6px;
+        font-size: 12px;
+        cursor: pointer;
+        font-weight: 600;
+      }
       .category-tabs {
         display: flex;
-        gap: 8px;
+        gap: 6px;
         overflow-x: auto;
         padding-bottom: 4px;
       }
       .category-badge {
-        padding: 6px 14px;
+        padding: 5px 12px;
         background: rgba(255, 255, 255, 0.08);
         border-radius: 20px;
-        font-size: 13px;
+        font-size: 12px;
         white-space: nowrap;
         cursor: pointer;
       }
@@ -136,23 +132,23 @@ function setupUI() {
       .channel-card {
         display: flex;
         align-items: center;
-        gap: 12px;
-        padding: 10px 14px;
+        gap: 10px;
+        padding: 8px 12px;
         background: rgba(255, 255, 255, 0.03);
         border: 1px solid transparent;
-        border-radius: 10px;
+        border-radius: 8px;
         cursor: pointer;
       }
       .channel-card.focused {
         background: rgba(37, 99, 235, 0.25);
         border-color: #3b82f6;
-        transform: scale(1.01);
       }
       .channel-card.playing {
         border-color: #10b981;
+        background: rgba(16, 185, 129, 0.15);
       }
       .channel-logo {
-        width: 40px; height: 40px;
+        width: 36px; height: 36px;
         border-radius: 6px;
         object-fit: contain;
         background: rgba(0, 0, 0, 0.4);
@@ -162,21 +158,21 @@ function setupUI() {
         overflow: hidden;
       }
       .channel-name {
-        font-size: 15px;
+        font-size: 14px;
         font-weight: 600;
         white-space: nowrap;
         overflow: hidden;
         text-overflow: ellipsis;
       }
       .channel-tag {
-        font-size: 12px;
+        font-size: 11px;
         color: #94a3b8;
         margin-top: 2px;
       }
       .drm-badge {
-        font-size: 10px;
-        padding: 2px 5px;
-        border-radius: 4px;
+        font-size: 9px;
+        padding: 1px 4px;
+        border-radius: 3px;
         background: #f59e0b;
         color: #000;
         font-weight: 700;
@@ -184,28 +180,17 @@ function setupUI() {
       .footer-hints {
         display: flex;
         justify-content: space-between;
-        font-size: 12px;
+        font-size: 11px;
         color: #94a3b8;
         border-top: 1px solid rgba(255, 255, 255, 0.1);
-        padding-top: 10px;
+        padding-top: 8px;
       }
-      .key-hint span {
-        display: inline-block;
-        padding: 2px 6px;
-        border-radius: 4px;
-        font-weight: bold;
-        color: #fff;
-        margin-right: 4px;
-      }
-      .key-red { background: #ef4444; }
-      .key-green { background: #10b981; }
-      .key-blue { background: #3b82f6; }
 
       #status-bar {
         position: absolute;
-        bottom: 24px; right: 24px;
+        bottom: 20px; right: 20px;
         background: rgba(15, 23, 42, 0.9);
-        padding: 8px 18px;
+        padding: 8px 16px;
         border-radius: 20px;
         border: 1px solid rgba(255, 255, 255, 0.1);
         font-size: 13px;
@@ -213,31 +198,82 @@ function setupUI() {
         z-index: 20;
       }
 
-      /* Màn hình QR Setup */
-      #qr-screen {
+      /* Modal Nhập Link M3U Thủ Công */
+      .modal {
         position: absolute;
         top: 0; left: 0; width: 100vw; height: 100vh;
-        background: rgba(10, 15, 30, 0.96);
+        background: rgba(10, 15, 30, 0.9);
         display: flex;
-        flex-direction: column;
         align-items: center;
         justify-content: center;
         z-index: 100;
-        text-align: center;
+        pointer-events: auto;
       }
-      .qr-box {
-        background: #fff;
-        padding: 14px;
-        border-radius: 12px;
-        margin-bottom: 20px;
-        box-shadow: 0 10px 25px rgba(0,0,0,0.5);
+      .modal-box {
+        background: #1e293b;
+        padding: 28px;
+        border-radius: 16px;
+        width: 600px;
+        border: 1px solid rgba(255, 255, 255, 0.2);
+        color: #fff;
       }
-      .qr-code-text {
-        font-size: 28px;
-        font-weight: 800;
-        color: #38bdf8;
-        letter-spacing: 2px;
-        margin: 10px 0;
+      .modal-box h2 {
+        font-size: 20px;
+        margin-bottom: 8px;
+      }
+      .modal-box input {
+        width: 100%;
+        padding: 12px 14px;
+        border-radius: 8px;
+        background: #0f172a;
+        border: 1px solid #334155;
+        color: #fff;
+        font-size: 15px;
+        margin: 14px 0;
+        outline: none;
+      }
+      .modal-box input:focus {
+        border-color: #38bdf8;
+      }
+      .quick-links {
+        display: flex;
+        gap: 8px;
+        margin-bottom: 16px;
+        flex-wrap: wrap;
+      }
+      .quick-btn {
+        background: #334155;
+        border: none;
+        color: #cbd5e1;
+        padding: 6px 12px;
+        border-radius: 6px;
+        font-size: 12px;
+        cursor: pointer;
+      }
+      .quick-btn:hover {
+        background: #475569;
+        color: #fff;
+      }
+      .modal-actions {
+        display: flex;
+        justify-content: flex-end;
+        gap: 10px;
+      }
+      .modal-actions button {
+        padding: 10px 18px;
+        border-radius: 8px;
+        border: none;
+        font-size: 14px;
+        font-weight: 600;
+        cursor: pointer;
+      }
+      .btn-cancel {
+        background: #334155;
+        color: #fff;
+      }
+      .btn-load {
+        background: #2563eb;
+        color: #fff;
       }
     </style>
 
@@ -246,23 +282,25 @@ function setupUI() {
     <div id="main-app">
       <div id="sidebar" class="sidebar">
         <div class="header-title">
-          <h1>TizenBrew IPTV (DRM)</h1>
-          <span id="channel-count" style="font-size: 12px; color: #38bdf8;">0 kênh</span>
+          <h1>IPTV DRM Player</h1>
+          <button id="btn-open-modal" class="btn-add">Đổi Playlist</button>
         </div>
 
         <div id="categories" class="category-tabs"></div>
         <div id="channel-list" class="channel-list"></div>
 
         <div class="footer-hints">
-          <div class="key-hint"><span class="key-red">Đỏ</span> Quét QR</div>
-          <div class="key-hint"><span class="key-green">Xanh lá</span> Tải lại</div>
-          <div class="key-hint"><span class="key-blue">Xanh dương</span> Ẩn/Hiện</div>
+          <span>Phím Đỏ: Đổi Link</span>
+          <span>Xanh lá: Tải lại</span>
+          <span>Xanh dương: Ẩn/Hiện</span>
         </div>
       </div>
 
       <div id="status-bar">Đang khởi động...</div>
     </div>
   `;
+
+  document.getElementById('btn-open-modal').onclick = () => openInputModal();
 }
 
 function showStatus(text) {
@@ -270,69 +308,68 @@ function showStatus(text) {
   if (bar) bar.innerText = text;
 }
 
-// Hiển thị màn hình Quét QR để nạp playlist từ điện thoại
-function showQRSetup() {
-  stopSetupPolling();
-  setupCode = generateCode();
-  const setupUrl = `${WORKER_URL}/setup?code=${setupCode}`;
-  const qrImgUrl = `https://api.qrserver.com/v1/create-qr-code/?size=240x240&data=${encodeURIComponent(setupUrl)}`;
+// Modal nhập link M3U thủ công
+function openInputModal() {
+  isModalOpen = true;
+  const current = localStorage.getItem(STORAGE_KEY) || 'https://tv.vietanhtv.top/tv/';
 
   const modal = document.createElement('div');
-  modal.id = 'qr-screen';
+  modal.id = 'input-modal';
+  modal.className = 'modal';
   modal.innerHTML = `
-    <h1 style="font-size: 26px; margin-bottom: 8px;">Cài đặt Danh sách Kênh M3U</h1>
-    <p style="color: #94a3b8; font-size: 16px; margin-bottom: 20px; max-width: 500px;">
-      Dùng camera điện thoại quét mã QR bên dưới để dán link Playlist M3U:
-    </p>
-    <div class="qr-box">
-      <img src="${qrImgUrl}" width="220" height="220" alt="QR Code" />
+    <div class="modal-box">
+      <h2>Thêm / Đổi Playlist IPTV (M3U)</h2>
+      <p style="color: #94a3b8; font-size: 13px;">Dán đường link file M3U (hỗ trợ MPD, HLS, Widevine DRM):</p>
+      
+      <input id="playlist-url-input" type="text" placeholder="https://..." value="${current}" />
+
+      <div style="font-size: 12px; color: #64748b; margin-bottom: 6px;">Chọn nhanh link mẫu để test:</div>
+      <div class="quick-links">
+        <button class="quick-btn" onclick="document.getElementById('playlist-url-input').value='https://tv.vietanhtv.top/tv/'">VietAnhTV (DRM)</button>
+        <button class="quick-btn" onclick="document.getElementById('playlist-url-input').value='https://raw.githubusercontent.com/iptv-org/iptv/master/streams/vn.m3u'">IPTV-Org VN (HLS)</button>
+      </div>
+
+      <div class="modal-actions">
+        <button class="btn-cancel" id="btn-modal-cancel">Hủy</button>
+        <button class="btn-load" id="btn-modal-load">Tải Playlist</button>
+      </div>
     </div>
-    <div style="font-size: 14px; color: #cbd5e1;">Mã kết nối:</div>
-    <div class="qr-code-text">${setupCode}</div>
-    <p style="color: #64748b; font-size: 13px; margin-top: 14px;">(Bấm phím <b>Return/Back</b> trên remote hoặc <b>Esc</b> để quay lại)</p>
   `;
   document.body.appendChild(modal);
 
-  startSetupPolling();
+  document.getElementById('btn-modal-cancel').onclick = () => closeInputModal();
+  document.getElementById('btn-modal-load').onclick = () => {
+    const val = document.getElementById('playlist-url-input').value.trim();
+    if (val) {
+      localStorage.setItem(STORAGE_KEY, val);
+      closeInputModal();
+      fetchAndLoadPlaylist(val);
+    }
+  };
+
+  const input = document.getElementById('playlist-url-input');
+  input.focus();
+  input.onkeydown = (e) => {
+    if (e.keyCode === 13) { // Enter
+      document.getElementById('btn-modal-load').click();
+    }
+  };
 }
 
-function closeQRSetup() {
-  stopSetupPolling();
-  const modal = document.getElementById('qr-screen');
-  if (modal) modal.remove();
+function closeInputModal() {
+  isModalOpen = false;
+  const m = document.getElementById('input-modal');
+  if (m) m.remove();
 }
 
-function startSetupPolling() {
-  setupTimer = setInterval(() => {
-    if (!setupCode) return;
-    xhrGet(`${WORKER_URL}/api/config?code=${encodeURIComponent(setupCode)}`, (err, data) => {
-      if (err || !data) return;
-      try {
-        const json = JSON.parse(data);
-        if (json && json.url) {
-          console.log('[QR Sync] Nhận được link M3U từ điện thoại:', json.url);
-          localStorage.setItem(STORAGE_KEY, json.url);
-          closeQRSetup();
-          fetchAndLoadPlaylist(json.url);
-        }
-      } catch (e) {}
-    });
-  }, 2000);
-}
-
-function stopSetupPolling() {
-  if (setupTimer) {
-    clearInterval(setupTimer);
-    setupTimer = null;
-  }
-}
-
-// Tải danh sách phát M3U
+// Tải playlist M3U
 function fetchAndLoadPlaylist(url) {
   showStatus('Đang tải danh sách kênh...');
   let cleanUrl = url.trim();
+  if (cleanUrl.indexOf('tv.vietanhtv.top/tv') !== -1 && cleanUrl.slice(-1) !== '/') {
+    cleanUrl += '/';
+  }
 
-  // Helper tải qua proxy nếu bị lỗi CORS
   function tryFetch(targetUrl, isProxy = false) {
     xhrGet(targetUrl, (err, text) => {
       if (err) {
@@ -398,12 +435,9 @@ function filterCategory(categoryName) {
 
 function renderChannelList() {
   const listEl = document.getElementById('channel-list');
-  const countEl = document.getElementById('channel-count');
   if (!listEl) return;
 
-  if (countEl) countEl.innerText = `${filteredChannels.length} kênh`;
   listEl.innerHTML = '';
-
   filteredChannels.forEach((ch, idx) => {
     const card = document.createElement('div');
     card.className = `channel-card ${idx === selectedIndex ? 'focused' : ''} ${currentPlayingChannel === ch ? 'playing' : ''}`;
@@ -448,14 +482,13 @@ async function selectChannel(idx, playImmediately = false) {
   }
 }
 
-// Xử lý phím Remote TV & Bàn phím Máy Tính
+// Xử lý phím bấm điều khiển
 function handleKeyDown(e) {
   const key = e.keyCode;
 
-  // Nếu đang ở màn hình QR
-  if (document.getElementById('qr-screen')) {
+  if (isModalOpen) {
     if (key === TV_KEYS.RETURN || key === TV_KEYS.BACK_PC) {
-      closeQRSetup();
+      closeInputModal();
     }
     return;
   }
@@ -488,13 +521,13 @@ function handleKeyDown(e) {
       break;
 
     case TV_KEYS.RED:
-      showQRSetup();
+      openInputModal();
       break;
 
     case TV_KEYS.GREEN:
       const cur = localStorage.getItem(STORAGE_KEY);
       if (cur) fetchAndLoadPlaylist(cur);
-      else showQRSetup();
+      else openInputModal();
       break;
 
     case TV_KEYS.BLUE:
@@ -532,8 +565,8 @@ async function initApp() {
   if (savedUrl) {
     fetchAndLoadPlaylist(savedUrl);
   } else {
-    // Nếu chưa có playlist, hiện màn hình QR để quét từ điện thoại
-    showQRSetup();
+    // Hiện popup nhập link nếu chưa có
+    openInputModal();
   }
 }
 
