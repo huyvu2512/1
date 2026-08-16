@@ -13,7 +13,6 @@ let currentPlayingChannel = null;
 let isSidebarVisible = true;
 let isModalOpen = false;
 
-// XHR Helper
 function xhrGet(url, callback) {
   const xhr = new XMLHttpRequest();
   xhr.open('GET', url, true);
@@ -27,7 +26,7 @@ function xhrGet(url, callback) {
     }
   };
   xhr.onerror = function () {
-    callback(new Error('Network error (CORS hoặc mất mạng)'), null);
+    callback(new Error('Network error'), null);
   };
   try {
     xhr.send();
@@ -63,7 +62,7 @@ function setupUI() {
       .sidebar {
         position: absolute;
         top: 20px; left: 20px; bottom: 20px;
-        width: 400px;
+        width: 380px;
         background: rgba(15, 23, 42, 0.94);
         backdrop-filter: blur(16px);
         border: 1px solid rgba(255, 255, 255, 0.12);
@@ -77,7 +76,7 @@ function setupUI() {
         pointer-events: auto;
       }
       .sidebar.hidden {
-        transform: translateX(-440px);
+        transform: translateX(-420px);
       }
       .header-title {
         display: flex;
@@ -198,7 +197,6 @@ function setupUI() {
         z-index: 20;
       }
 
-      /* Modal Nhập Link M3U Thủ Công */
       .modal {
         position: absolute;
         top: 0; left: 0; width: 100vw; height: 100vh;
@@ -250,10 +248,6 @@ function setupUI() {
         font-size: 12px;
         cursor: pointer;
       }
-      .quick-btn:hover {
-        background: #475569;
-        color: #fff;
-      }
       .modal-actions {
         display: flex;
         justify-content: flex-end;
@@ -267,17 +261,11 @@ function setupUI() {
         font-weight: 600;
         cursor: pointer;
       }
-      .btn-cancel {
-        background: #334155;
-        color: #fff;
-      }
-      .btn-load {
-        background: #2563eb;
-        color: #fff;
-      }
+      .btn-cancel { background: #334155; color: #fff; }
+      .btn-load { background: #2563eb; color: #fff; }
     </style>
 
-    <video id="video-screen" autoplay playsinline></video>
+    <video id="video-screen" autoplay playsinline controls></video>
     
     <div id="main-app">
       <div id="sidebar" class="sidebar">
@@ -308,7 +296,6 @@ function showStatus(text) {
   if (bar) bar.innerText = text;
 }
 
-// Modal nhập link M3U thủ công
 function openInputModal() {
   isModalOpen = true;
   const current = localStorage.getItem(STORAGE_KEY) || 'https://tv.vietanhtv.top/tv/';
@@ -319,14 +306,14 @@ function openInputModal() {
   modal.innerHTML = `
     <div class="modal-box">
       <h2>Thêm / Đổi Playlist IPTV (M3U)</h2>
-      <p style="color: #94a3b8; font-size: 13px;">Dán đường link file M3U (hỗ trợ MPD, HLS, Widevine DRM):</p>
+      <p style="color: #94a3b8; font-size: 13px;">Dán đường link file M3U (hỗ trợ MPD, HLS, Widevine/ClearKey DRM):</p>
       
       <input id="playlist-url-input" type="text" placeholder="https://..." value="${current}" />
 
       <div style="font-size: 12px; color: #64748b; margin-bottom: 6px;">Chọn nhanh link mẫu để test:</div>
       <div class="quick-links">
-        <button class="quick-btn" onclick="document.getElementById('playlist-url-input').value='https://tv.vietanhtv.top/tv/'">VietAnhTV (DRM)</button>
-        <button class="quick-btn" onclick="document.getElementById('playlist-url-input').value='https://raw.githubusercontent.com/iptv-org/iptv/master/streams/vn.m3u'">IPTV-Org VN (HLS)</button>
+        <button class="quick-btn" id="qbtn-vietanh">VietAnhTV (DRM)</button>
+        <button class="quick-btn" id="qbtn-iptvorg">IPTV-Org VN (HLS)</button>
       </div>
 
       <div class="modal-actions">
@@ -336,6 +323,13 @@ function openInputModal() {
     </div>
   `;
   document.body.appendChild(modal);
+
+  document.getElementById('qbtn-vietanh').onclick = () => {
+    document.getElementById('playlist-url-input').value = 'https://tv.vietanhtv.top/tv/';
+  };
+  document.getElementById('qbtn-iptvorg').onclick = () => {
+    document.getElementById('playlist-url-input').value = 'https://raw.githubusercontent.com/iptv-org/iptv/master/streams/vn.m3u';
+  };
 
   document.getElementById('btn-modal-cancel').onclick = () => closeInputModal();
   document.getElementById('btn-modal-load').onclick = () => {
@@ -350,7 +344,7 @@ function openInputModal() {
   const input = document.getElementById('playlist-url-input');
   input.focus();
   input.onkeydown = (e) => {
-    if (e.keyCode === 13) { // Enter
+    if (e.keyCode === 13) {
       document.getElementById('btn-modal-load').click();
     }
   };
@@ -362,7 +356,6 @@ function closeInputModal() {
   if (m) m.remove();
 }
 
-// Tải playlist M3U
 function fetchAndLoadPlaylist(url) {
   showStatus('Đang tải danh sách kênh...');
   let cleanUrl = url.trim();
@@ -370,41 +363,57 @@ function fetchAndLoadPlaylist(url) {
     cleanUrl += '/';
   }
 
-  function tryFetch(targetUrl, isProxy = false) {
-    xhrGet(targetUrl, (err, text) => {
-      if (err) {
-        if (!isProxy) {
-          console.warn('Direct load failed, trying CORS proxy...');
-          tryFetch(`https://corsproxy.io/?${encodeURIComponent(targetUrl)}`, true);
-        } else {
-          showStatus(`Lỗi tải playlist: ${err.message}`);
-        }
-        return;
-      }
-
-      allChannels = parseM3U(text);
-      if (allChannels.length === 0) {
-        showStatus('Không tìm thấy kênh hợp lệ trong playlist');
-        return;
-      }
-
-      const groupSet = new Set(['Tất cả']);
-      allChannels.forEach(ch => {
-        if (ch.group) groupSet.add(ch.group);
-      });
-      categories = Array.from(groupSet);
-
-      renderCategories();
-      filterCategory('Tất cả');
-      showStatus(`Đã nạp ${allChannels.length} kênh.`);
-
-      if (filteredChannels.length > 0) {
-        selectChannel(0, true);
-      }
-    });
+  // Trên localhost, proxy luôn request playlist để tránh 100% CORS
+  let targetFetchUrl = cleanUrl;
+  if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') {
+    targetFetchUrl = `/api/stream?url=${encodeURIComponent(cleanUrl)}`;
   }
 
-  tryFetch(cleanUrl);
+  xhrGet(targetFetchUrl, (err, text) => {
+    if (err) {
+      // Thử fallback CORS Proxy
+      xhrGet(`https://corsproxy.io/?${encodeURIComponent(cleanUrl)}`, (pErr, pText) => {
+        if (pErr) {
+          showStatus(`Lỗi tải playlist: ${err.message}`);
+          return;
+        }
+        processPlaylistText(pText);
+      });
+      return;
+    }
+    processPlaylistText(text);
+  });
+}
+
+function processPlaylistText(text) {
+  allChannels = parseM3U(text);
+  if (allChannels.length === 0) {
+    showStatus('Không tìm thấy kênh hợp lệ trong playlist');
+    return;
+  }
+
+  const groupSet = new Set(['Tất cả']);
+  allChannels.forEach(ch => {
+    if (ch.group) groupSet.add(ch.group);
+  });
+  categories = Array.from(groupSet);
+
+  renderCategories();
+  filterCategory('Tất cả');
+  showStatus(`Đã nạp ${allChannels.length} kênh.`);
+
+  // Tìm kênh truyền hình thực tế đầu tiên (bỏ qua banner update)
+  let firstRealIdx = 0;
+  for (let i = 0; i < filteredChannels.length; i++) {
+    if (!filteredChannels[i].name.toLowerCase().includes('update')) {
+      firstRealIdx = i;
+      break;
+    }
+  }
+
+  if (filteredChannels.length > 0) {
+    selectChannel(firstRealIdx, true);
+  }
 }
 
 function renderCategories() {
@@ -482,7 +491,6 @@ async function selectChannel(idx, playImmediately = false) {
   }
 }
 
-// Xử lý phím bấm điều khiển
 function handleKeyDown(e) {
   const key = e.keyCode;
 
@@ -565,7 +573,6 @@ async function initApp() {
   if (savedUrl) {
     fetchAndLoadPlaylist(savedUrl);
   } else {
-    // Hiện popup nhập link nếu chưa có
     openInputModal();
   }
 }

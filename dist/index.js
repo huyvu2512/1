@@ -7,7 +7,7 @@ var require_shaka_player_compiled=__commonJS({"node_modules/shaka-player/dist/sh
 function parseM3U(content){if(!content||typeof content!=="string")return[];var lines=content.split(/\r?\n/);var channels=[];var current={};var _iterator2=_createForOfIteratorHelper(lines),_step2;try{for(_iterator2.s();!(_step2=_iterator2.n()).done;){var rawLine=_step2.value;var line=rawLine.trim();if(!line)continue;if(line.startsWith("#EXTINF:")){var commaIndex=line.lastIndexOf(",");var name=commaIndex!==-1?line.substring(commaIndex+1).trim():"Kênh truyền hình";var logoMatch=line.match(/tvg-logo="([^"]+)"/i);var groupMatch=line.match(/group-title="([^"]+)"/i);var idMatch=line.match(/tvg-id="([^"]+)"/i);current={name:name||"Kênh không tên",logo:logoMatch?logoMatch[1]:"",group:groupMatch?groupMatch[1]:"Mặc định",id:idMatch?idMatch[1]:""}}else if(line.startsWith("#KODIPROP:inputstream.adaptive.license_key=")){current.licenseKey=line.split("=")[1].trim()}else if(line.startsWith("#KODIPROP:inputstream.adaptive.manifest_type=")){current.manifestType=line.split("=")[1].trim()}else if(line.startsWith("#KODIPROP:inputstream.adaptive.license_type=")){current.licenseType=line.split("=")[1].trim()}else if(line.startsWith("#EXTVLCOPT:http-user-agent=")){current.userAgent=line.split("=")[1].trim()}else if(line.startsWith("http://")||line.startsWith("https://")){current.url=line;if(current.name){channels.push(_objectSpread({},current))}current={}}}}catch(err){_iterator2.e(err)}finally{_iterator2.f()}return channels}// src/player.js
 var import_shaka_player_compiled=__toESM(require_shaka_player_compiled());var playerInstance=null;var currentChannelData=null;var currentVideoElement=null;function parseClearKey(drmString){if(!drmString)return null;if(_typeof(drmString)==="object")return drmString;try{var keyString=drmString.trim();if(keyString.startsWith("http")){if(keyString.includes("?id=")){keyString=keyString.split("?id=")[1]||""}else if(keyString.includes("&id=")){keyString=keyString.split("&id=")[1]||""}}var parts=keyString.split(":");if(parts.length===2&&parts[0].length>=16&&parts[1].length>=16){return{[parts[0].trim().toLowerCase()]:parts[1].trim().toLowerCase()}}}catch(e){console.error("Lỗi parse ClearKey:",e)}return null}function initPlayer(_x,_x2){return _initPlayer.apply(this,arguments)}function _initPlayer(){_initPlayer=_asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee(videoElement,onStatusUpdate){var _t;return _regenerator().w(function(_context){while(1)switch(_context.p=_context.n){case 0:_context.p=0;currentVideoElement=videoElement;import_shaka_player_compiled.default.polyfill.installAll();if(import_shaka_player_compiled.default.Player.isBrowserSupported()){_context.n=1;break}if(onStatusUpdate)onStatusUpdate("Trình duyệt không hỗ trợ Shaka Player.");return _context.a(2,null);case 1:playerInstance=new import_shaka_player_compiled.default.Player(videoElement);playerInstance.configure({streaming:{bufferingGoal:10,rebufferingGoal:2,bufferBehind:15,retryParameters:{maxAttempts:3,baseDelay:1e3,backoffFactor:2}}});playerInstance.getNetworkingEngine().registerRequestFilter((type,request)=>{var ua=currentChannelData&&currentChannelData.userAgent?currentChannelData.userAgent:"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36";request.headers["User-Agent"]=ua;if(currentChannelData&&currentChannelData.url){try{request.headers["Referer"]=new URL(currentChannelData.url).origin+"/"}catch(e){}}request.allowCrossSiteCredentials=false});playerInstance.addEventListener("error",event=>{var err=event.detail;console.error("🚨 Shaka Error Detail:",err);if(onStatusUpdate){onStatusUpdate(`L\u1ED7i: Code ${err.code} (Xem Console F12)`)}});return _context.a(2,playerInstance);case 2:_context.p=2;_t=_context.v;console.error("initPlayer error:",_t);if(onStatusUpdate)onStatusUpdate("Lỗi khởi tạo Player");return _context.a(2,null)}},_callee,null,[[0,2]])}));return _initPlayer.apply(this,arguments)}function playStream(_x3,_x4){return _playStream.apply(this,arguments)}function _playStream(){_playStream=_asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee2(channel,onStatusUpdate){var drmConfig,clearKeyObj,streamUrl,_t2;return _regenerator().w(function(_context2){while(1)switch(_context2.p=_context2.n){case 0:if(playerInstance){_context2.n=1;break}return _context2.a(2);case 1:currentChannelData=channel;_context2.p=2;if(onStatusUpdate)onStatusUpdate(`\u0110ang n\u1EA1p: ${channel.name}...`);drmConfig={servers:{},clearKeys:{},advanced:{}};if(channel.licenseKey){clearKeyObj=parseClearKey(channel.licenseKey);if(clearKeyObj){drmConfig.clearKeys=clearKeyObj;console.log(`[DRM] K\xEDch ho\u1EA1t ClearKey DRM:`,clearKeyObj)}else{drmConfig.servers["com.widevine.alpha"]=channel.licenseKey;drmConfig.advanced["com.widevine.alpha"]={videoRobustness:"SW_SECURE_CRYPTO",audioRobustness:"SW_SECURE_CRYPTO"};console.log(`[DRM] K\xEDch ho\u1EA1t Widevine license:`,channel.licenseKey)}}playerInstance.configure({drm:drmConfig});streamUrl=channel.url;if(window.location.hostname==="localhost"||window.location.hostname==="127.0.0.1"){streamUrl=`/api/stream?url=${encodeURIComponent(channel.url)}`}_context2.n=3;return playerInstance.load(streamUrl);case 3:if(currentVideoElement){currentVideoElement.play().catch(err=>console.log("Autoplay play error:",err))}if(onStatusUpdate)onStatusUpdate(`\u0110ang ph\xE1t: ${channel.name}`);_context2.n=5;break;case 4:_context2.p=4;_t2=_context2.v;console.error(`\u{1F6A8} [Playback Failed] ${channel.name}:`,_t2);if(onStatusUpdate){onStatusUpdate(`L\u1ED7i ph\xE1t: Code ${_t2.code||"UNKNOWN"} (Xem Console)`)}case 5:return _context2.a(2)}},_callee2,null,[[2,4]])}));return _playStream.apply(this,arguments)}function stopStream(){return _stopStream.apply(this,arguments)}// src/remote.js
 function _stopStream(){_stopStream=_asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee3(){var _t3;return _regenerator().w(function(_context3){while(1)switch(_context3.p=_context3.n){case 0:if(!playerInstance){_context3.n=4;break}_context3.p=1;_context3.n=2;return playerInstance.unload();case 2:_context3.n=4;break;case 3:_context3.p=3;_t3=_context3.v;console.error(_t3);case 4:return _context3.a(2)}},_callee3,null,[[1,3]])}));return _stopStream.apply(this,arguments)}var TV_KEYS={UP:38,DOWN:40,LEFT:37,RIGHT:39,ENTER:13,RETURN:10009,BACK_PC:27,RED:403,GREEN:404,YELLOW:405,BLUE:406,PLAY:415,PAUSE:19,STOP:413,PLAY_PAUSE:10252,INFO:457};function registerTizenKeys(){try{if(window.tizen&&window.tizen.tvinputdevice){var keysToRegister=["ColorF0Red","ColorF1Green","ColorF2Yellow","ColorF3Blue","MediaPlay","MediaPause","MediaStop","MediaPlayPause"];keysToRegister.forEach(keyName=>{try{window.tizen.tvinputdevice.registerKey(keyName)}catch(e){console.warn("Không thể đăng ký phím:",keyName,e)}})}}catch(err){console.warn("Không phát hiện Tizen TV input device API")}}// src/index.js
-var STORAGE_KEY="tb_iptv_drm_playlist_url";var allChannels=[];var filteredChannels=[];var categories=["Tất cả"];var activeCategory="Tất cả";var selectedIndex=0;var currentPlayingChannel=null;var isSidebarVisible=true;var isModalOpen=false;function xhrGet(url,callback){var xhr=new XMLHttpRequest;xhr.open("GET",url,true);xhr.onreadystatechange=function(){if(xhr.readyState===4){if(xhr.status>=200&&xhr.status<300){callback(null,xhr.responseText)}else{callback(new Error(`HTTP ${xhr.status}`),null)}}};xhr.onerror=function(){callback(new Error("Network error (CORS hoặc mất mạng)"),null)};try{xhr.send()}catch(e){callback(e,null)}}function setupUI(){document.body.innerHTML=`
+var STORAGE_KEY="tb_iptv_drm_playlist_url";var allChannels=[];var filteredChannels=[];var categories=["Tất cả"];var activeCategory="Tất cả";var selectedIndex=0;var currentPlayingChannel=null;var isSidebarVisible=true;var isModalOpen=false;function xhrGet(url,callback){var xhr=new XMLHttpRequest;xhr.open("GET",url,true);xhr.onreadystatechange=function(){if(xhr.readyState===4){if(xhr.status>=200&&xhr.status<300){callback(null,xhr.responseText)}else{callback(new Error(`HTTP ${xhr.status}`),null)}}};xhr.onerror=function(){callback(new Error("Network error"),null)};try{xhr.send()}catch(e){callback(e,null)}}function setupUI(){document.body.innerHTML=`
     <style>
       * { box-sizing: border-box; margin: 0; padding: 0; }
       body {
@@ -33,7 +33,7 @@ var STORAGE_KEY="tb_iptv_drm_playlist_url";var allChannels=[];var filteredChanne
       .sidebar {
         position: absolute;
         top: 20px; left: 20px; bottom: 20px;
-        width: 400px;
+        width: 380px;
         background: rgba(15, 23, 42, 0.94);
         backdrop-filter: blur(16px);
         border: 1px solid rgba(255, 255, 255, 0.12);
@@ -47,7 +47,7 @@ var STORAGE_KEY="tb_iptv_drm_playlist_url";var allChannels=[];var filteredChanne
         pointer-events: auto;
       }
       .sidebar.hidden {
-        transform: translateX(-440px);
+        transform: translateX(-420px);
       }
       .header-title {
         display: flex;
@@ -168,7 +168,6 @@ var STORAGE_KEY="tb_iptv_drm_playlist_url";var allChannels=[];var filteredChanne
         z-index: 20;
       }
 
-      /* Modal Nh\u1EADp Link M3U Th\u1EE7 C\xF4ng */
       .modal {
         position: absolute;
         top: 0; left: 0; width: 100vw; height: 100vh;
@@ -220,10 +219,6 @@ var STORAGE_KEY="tb_iptv_drm_playlist_url";var allChannels=[];var filteredChanne
         font-size: 12px;
         cursor: pointer;
       }
-      .quick-btn:hover {
-        background: #475569;
-        color: #fff;
-      }
       .modal-actions {
         display: flex;
         justify-content: flex-end;
@@ -237,17 +232,11 @@ var STORAGE_KEY="tb_iptv_drm_playlist_url";var allChannels=[];var filteredChanne
         font-weight: 600;
         cursor: pointer;
       }
-      .btn-cancel {
-        background: #334155;
-        color: #fff;
-      }
-      .btn-load {
-        background: #2563eb;
-        color: #fff;
-      }
+      .btn-cancel { background: #334155; color: #fff; }
+      .btn-load { background: #2563eb; color: #fff; }
     </style>
 
-    <video id="video-screen" autoplay playsinline></video>
+    <video id="video-screen" autoplay playsinline controls></video>
     
     <div id="main-app">
       <div id="sidebar" class="sidebar">
@@ -271,14 +260,14 @@ var STORAGE_KEY="tb_iptv_drm_playlist_url";var allChannels=[];var filteredChanne
   `;document.getElementById("btn-open-modal").onclick=()=>openInputModal()}function showStatus(text){var bar=document.getElementById("status-bar");if(bar)bar.innerText=text}function openInputModal(){isModalOpen=true;var current=localStorage.getItem(STORAGE_KEY)||"https://tv.vietanhtv.top/tv/";var modal=document.createElement("div");modal.id="input-modal";modal.className="modal";modal.innerHTML=`
     <div class="modal-box">
       <h2>Th\xEAm / \u0110\u1ED5i Playlist IPTV (M3U)</h2>
-      <p style="color: #94a3b8; font-size: 13px;">D\xE1n \u0111\u01B0\u1EDDng link file M3U (h\u1ED7 tr\u1EE3 MPD, HLS, Widevine DRM):</p>
+      <p style="color: #94a3b8; font-size: 13px;">D\xE1n \u0111\u01B0\u1EDDng link file M3U (h\u1ED7 tr\u1EE3 MPD, HLS, Widevine/ClearKey DRM):</p>
       
       <input id="playlist-url-input" type="text" placeholder="https://..." value="${current}" />
 
       <div style="font-size: 12px; color: #64748b; margin-bottom: 6px;">Ch\u1ECDn nhanh link m\u1EABu \u0111\u1EC3 test:</div>
       <div class="quick-links">
-        <button class="quick-btn" onclick="document.getElementById('playlist-url-input').value='https://tv.vietanhtv.top/tv/'">VietAnhTV (DRM)</button>
-        <button class="quick-btn" onclick="document.getElementById('playlist-url-input').value='https://raw.githubusercontent.com/iptv-org/iptv/master/streams/vn.m3u'">IPTV-Org VN (HLS)</button>
+        <button class="quick-btn" id="qbtn-vietanh">VietAnhTV (DRM)</button>
+        <button class="quick-btn" id="qbtn-iptvorg">IPTV-Org VN (HLS)</button>
       </div>
 
       <div class="modal-actions">
@@ -286,7 +275,7 @@ var STORAGE_KEY="tb_iptv_drm_playlist_url";var allChannels=[];var filteredChanne
         <button class="btn-load" id="btn-modal-load">T\u1EA3i Playlist</button>
       </div>
     </div>
-  `;document.body.appendChild(modal);document.getElementById("btn-modal-cancel").onclick=()=>closeInputModal();document.getElementById("btn-modal-load").onclick=()=>{var val=document.getElementById("playlist-url-input").value.trim();if(val){localStorage.setItem(STORAGE_KEY,val);closeInputModal();fetchAndLoadPlaylist(val)}};var input=document.getElementById("playlist-url-input");input.focus();input.onkeydown=e=>{if(e.keyCode===13){document.getElementById("btn-modal-load").click()}}}function closeInputModal(){isModalOpen=false;var m=document.getElementById("input-modal");if(m)m.remove()}function fetchAndLoadPlaylist(url){showStatus("Đang tải danh sách kênh...");var cleanUrl=url.trim();if(cleanUrl.indexOf("tv.vietanhtv.top/tv")!==-1&&cleanUrl.slice(-1)!=="/"){cleanUrl+="/"}function tryFetch(targetUrl){var isProxy=arguments.length>1&&arguments[1]!==undefined?arguments[1]:false;xhrGet(targetUrl,(err,text)=>{if(err){if(!isProxy){console.warn("Direct load failed, trying CORS proxy...");tryFetch(`https://corsproxy.io/?${encodeURIComponent(targetUrl)}`,true)}else{showStatus(`L\u1ED7i t\u1EA3i playlist: ${err.message}`)}return}allChannels=parseM3U(text);if(allChannels.length===0){showStatus("Không tìm thấy kênh hợp lệ trong playlist");return}var groupSet=/* @__PURE__ */new Set(["Tất cả"]);allChannels.forEach(ch=>{if(ch.group)groupSet.add(ch.group)});categories=Array.from(groupSet);renderCategories();filterCategory("Tất cả");showStatus(`\u0110\xE3 n\u1EA1p ${allChannels.length} k\xEAnh.`);if(filteredChannels.length>0){selectChannel(0,true)}})}tryFetch(cleanUrl)}function renderCategories(){var catEl=document.getElementById("categories");if(!catEl)return;catEl.innerHTML="";categories.forEach(cat=>{var badge=document.createElement("div");badge.className=`category-badge ${cat===activeCategory?"active":""}`;badge.innerText=cat;badge.onclick=()=>filterCategory(cat);catEl.appendChild(badge)})}function filterCategory(categoryName){activeCategory=categoryName;if(categoryName==="Tất cả"){filteredChannels=allChannels}else{filteredChannels=allChannels.filter(c=>c.group===categoryName)}selectedIndex=0;renderChannelList();renderCategories()}function renderChannelList(){var listEl=document.getElementById("channel-list");if(!listEl)return;listEl.innerHTML="";filteredChannels.forEach((ch,idx)=>{var card=document.createElement("div");card.className=`channel-card ${idx===selectedIndex?"focused":""} ${currentPlayingChannel===ch?"playing":""}`;var logoImg=ch.logo?`<img class="channel-logo" src="${ch.logo}" alt="logo" onerror="this.style.display='none'"/>`:"";var drmTag=ch.licenseKey?`<span class="drm-badge">DRM</span>`:"";card.innerHTML=`
+  `;document.body.appendChild(modal);document.getElementById("qbtn-vietanh").onclick=()=>{document.getElementById("playlist-url-input").value="https://tv.vietanhtv.top/tv/"};document.getElementById("qbtn-iptvorg").onclick=()=>{document.getElementById("playlist-url-input").value="https://raw.githubusercontent.com/iptv-org/iptv/master/streams/vn.m3u"};document.getElementById("btn-modal-cancel").onclick=()=>closeInputModal();document.getElementById("btn-modal-load").onclick=()=>{var val=document.getElementById("playlist-url-input").value.trim();if(val){localStorage.setItem(STORAGE_KEY,val);closeInputModal();fetchAndLoadPlaylist(val)}};var input=document.getElementById("playlist-url-input");input.focus();input.onkeydown=e=>{if(e.keyCode===13){document.getElementById("btn-modal-load").click()}}}function closeInputModal(){isModalOpen=false;var m=document.getElementById("input-modal");if(m)m.remove()}function fetchAndLoadPlaylist(url){showStatus("Đang tải danh sách kênh...");var cleanUrl=url.trim();if(cleanUrl.indexOf("tv.vietanhtv.top/tv")!==-1&&cleanUrl.slice(-1)!=="/"){cleanUrl+="/"}var targetFetchUrl=cleanUrl;if(window.location.hostname==="localhost"||window.location.hostname==="127.0.0.1"){targetFetchUrl=`/api/stream?url=${encodeURIComponent(cleanUrl)}`}xhrGet(targetFetchUrl,(err,text)=>{if(err){xhrGet(`https://corsproxy.io/?${encodeURIComponent(cleanUrl)}`,(pErr,pText)=>{if(pErr){showStatus(`L\u1ED7i t\u1EA3i playlist: ${err.message}`);return}processPlaylistText(pText)});return}processPlaylistText(text)})}function processPlaylistText(text){allChannels=parseM3U(text);if(allChannels.length===0){showStatus("Không tìm thấy kênh hợp lệ trong playlist");return}var groupSet=/* @__PURE__ */new Set(["Tất cả"]);allChannels.forEach(ch=>{if(ch.group)groupSet.add(ch.group)});categories=Array.from(groupSet);renderCategories();filterCategory("Tất cả");showStatus(`\u0110\xE3 n\u1EA1p ${allChannels.length} k\xEAnh.`);var firstRealIdx=0;for(var i=0;i<filteredChannels.length;i++){if(!filteredChannels[i].name.toLowerCase().includes("update")){firstRealIdx=i;break}}if(filteredChannels.length>0){selectChannel(firstRealIdx,true)}}function renderCategories(){var catEl=document.getElementById("categories");if(!catEl)return;catEl.innerHTML="";categories.forEach(cat=>{var badge=document.createElement("div");badge.className=`category-badge ${cat===activeCategory?"active":""}`;badge.innerText=cat;badge.onclick=()=>filterCategory(cat);catEl.appendChild(badge)})}function filterCategory(categoryName){activeCategory=categoryName;if(categoryName==="Tất cả"){filteredChannels=allChannels}else{filteredChannels=allChannels.filter(c=>c.group===categoryName)}selectedIndex=0;renderChannelList();renderCategories()}function renderChannelList(){var listEl=document.getElementById("channel-list");if(!listEl)return;listEl.innerHTML="";filteredChannels.forEach((ch,idx)=>{var card=document.createElement("div");card.className=`channel-card ${idx===selectedIndex?"focused":""} ${currentPlayingChannel===ch?"playing":""}`;var logoImg=ch.logo?`<img class="channel-logo" src="${ch.logo}" alt="logo" onerror="this.style.display='none'"/>`:"";var drmTag=ch.licenseKey?`<span class="drm-badge">DRM</span>`:"";card.innerHTML=`
       ${logoImg}
       <div class="channel-info">
         <div class="channel-name">${ch.name}</div>
