@@ -4,7 +4,7 @@
   "description": "IPTV player module for TizenBrew with Widevine DRM and MPEG-DASH support",
   "main": "dist/index.js",
   "scripts": {
-    "build": "esbuild src/index.js --bundle --minify --outfile=dist/index.js",
+    "build": "node build.js",
     "dev": "esbuild src/index.js --bundle --outfile=dist/index.js --watch"
   },
   "keywords": [
@@ -22,7 +22,12 @@
     "shaka-player": "^4.11.7"
   },
   "devDependencies": {
-    "esbuild": "^0.25.0"
+    "@babel/cli": "^8.0.4",
+    "@babel/core": "^8.0.1",
+    "@babel/preset-env": "^8.0.2",
+    "core-js": "^3.50.0",
+    "esbuild": "^0.25.0",
+    "regenerator-runtime": "^0.14.1"
   },
   "packageType": "app",
   "appName": "IPTV Player DRM",
