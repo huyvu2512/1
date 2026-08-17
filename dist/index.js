@@ -39,10 +39,10 @@ var globalStyles=`
       transition: all 0.25s cubic-bezier(0.2, 0.9, 0.3, 1);
     }
 
-    /* KHI M\u1EDE MENU: THU NH\u1ECE VIDEO SANG N\u1EECA PH\u1EA2I M\xC0N H\xCCNH */
+    /* KHI M\u1EDE MENU: THU NH\u1ECE VIDEO SANG N\u1EECA PH\u1EA2I M\xC0N H\xCCNH (R\u1ED8NG 420PX TR\xCAN TV) */
     #video-screen.pip-right {
-      left: 360px !important;
-      width: calc(100vw - 360px) !important;
+      left: 420px !important;
+      width: calc(100vw - 420px) !important;
       height: 100vh !important;
     }
 
@@ -67,8 +67,8 @@ var globalStyles=`
       transform: scale(1);
     }
     #center-state-layer.pip-right {
-      left: 360px !important;
-      width: calc(100vw - 360px) !important;
+      left: 420px !important;
+      width: calc(100vw - 420px) !important;
     }
     .center-state-circle {
       width: 90px;
@@ -106,13 +106,13 @@ var globalStyles=`
       display: flex !important;
     }
     #video-spinner-layer.pip-right {
-      left: 360px !important;
-      width: calc(100vw - 360px) !important;
+      left: 420px !important;
+      width: calc(100vw - 420px) !important;
     }
     .white-video-spinner {
-      width: 50px;
-      height: 50px;
-      border: 4px solid rgba(255, 255, 255, 0.2);
+      width: 54px;
+      height: 54px;
+      border: 4.5px solid rgba(255, 255, 255, 0.2);
       border-top-color: #ffffff;
       border-radius: 50%;
       animation: spinAnim 0.75s linear infinite;
@@ -138,8 +138,8 @@ var globalStyles=`
       display: flex !important;
     }
     #video-error-layer.pip-right {
-      left: 360px !important;
-      width: calc(100vw - 360px) !important;
+      left: 420px !important;
+      width: calc(100vw - 420px) !important;
     }
     .error-container-box {
       display: flex;
@@ -149,7 +149,7 @@ var globalStyles=`
       text-align: center;
     }
     .error-title-main {
-      font-size: 26px;
+      font-size: 28px;
       font-weight: 900;
       letter-spacing: -0.5px;
       font-style: italic;
@@ -157,20 +157,20 @@ var globalStyles=`
     .err-white { color: #ffffff; }
     .err-cyan { color: #00e5ff; }
     .error-channel-text {
-      font-size: 14px;
+      font-size: 15px;
       font-weight: 700;
       color: #ef4444;
       letter-spacing: 0.8px;
     }
 
     /* =========================================================================
-       B\u1EA2NG DANH S\xC1CH K\xCANH (TIVIMATE DRAWER \u0110EN X\xC1M T\u1ED0I GI\u1EA2N)
+       B\u1EA2NG DANH S\xC1CH K\xCANH (TIVIMATE DRAWER \u0110EN X\xC1M T\u1ED0I GI\u1EA2N - R\u1ED8NG 420PX CHO TV)
        ========================================================================= */
     #tivimate-drawer {
       position: absolute;
       top: 0;
       left: 0;
-      width: 360px;
+      width: 420px;
       height: 100vh;
       background-color: #0b0d14;
       border-right: 1px solid rgba(255, 255, 255, 0.08);
@@ -186,7 +186,7 @@ var globalStyles=`
     }
 
     .drawer-header {
-      padding: 16px 14px 10px 14px;
+      padding: 18px 16px 12px 16px;
       background: #0e111a;
       border-bottom: 1px solid rgba(255, 255, 255, 0.07);
     }
@@ -195,10 +195,10 @@ var globalStyles=`
       display: flex;
       align-items: center;
       justify-content: space-between;
-      margin-bottom: 12px;
+      margin-bottom: 14px;
     }
     .app-title-badge {
-      font-size: 18px;
+      font-size: 20px;
       font-weight: 900;
       font-style: italic;
       letter-spacing: -0.5px;
@@ -212,27 +212,27 @@ var globalStyles=`
       align-items: flex-end;
     }
     .win-time {
-      font-size: 14px;
+      font-size: 15px;
       font-weight: 800;
       color: #ffffff;
       font-variant-numeric: tabular-nums;
       letter-spacing: 0.5px;
     }
     .win-date {
-      font-size: 10.5px;
+      font-size: 11px;
       font-weight: 600;
       color: #94a3b8;
     }
 
     /* KHUNG T\xCCM KI\u1EBEM K\xCANH */
     .drawer-search-wrapper {
-      margin-bottom: 10px;
+      margin-bottom: 12px;
     }
     .search-input-box {
       display: flex;
       align-items: center;
-      gap: 8px;
-      padding: 6px 12px;
+      gap: 10px;
+      padding: 8px 14px;
       background: #151923;
       border: 1.5px solid rgba(255, 255, 255, 0.1);
       border-radius: 10px;
@@ -242,11 +242,11 @@ var globalStyles=`
     .search-input-box.focused {
       background: #1c2230;
       border-color: #ffffff;
-      box-shadow: 0 0 10px rgba(255, 255, 255, 0.2);
+      box-shadow: 0 0 12px rgba(255, 255, 255, 0.25);
     }
     .search-icon {
-      width: 16px;
-      height: 16px;
+      width: 18px;
+      height: 18px;
       color: #94a3b8;
       flex-shrink: 0;
     }
@@ -260,7 +260,7 @@ var globalStyles=`
       border: none;
       outline: none;
       color: #ffffff;
-      font-size: 13px;
+      font-size: 14px;
       font-weight: 600;
       font-family: inherit;
     }
@@ -278,8 +278,8 @@ var globalStyles=`
       align-items: center;
       justify-content: center;
       border-radius: 50%;
-      width: 18px;
-      height: 18px;
+      width: 20px;
+      height: 20px;
       transition: all 0.1s ease;
     }
     .search-clear-btn:hover {
@@ -287,15 +287,15 @@ var globalStyles=`
       color: #ffffff;
     }
     .search-clear-btn svg {
-      width: 13px;
-      height: 13px;
+      width: 14px;
+      height: 14px;
     }
 
     /* THANH CU\u1ED8N NGANG NH\xD3M DANH M\u1EE4C */
     .category-nav-bar {
       display: flex;
       align-items: center;
-      gap: 6px;
+      gap: 8px;
       overflow-x: auto;
       white-space: nowrap;
       padding: 2px 0 4px 0;
@@ -304,11 +304,11 @@ var globalStyles=`
     .category-nav-bar::-webkit-scrollbar { display: none; }
 
     .cat-chip {
-      padding: 5px 13px;
+      padding: 6px 14px;
       background: #171b26;
       border: 1px solid rgba(255, 255, 255, 0.09);
       border-radius: 16px;
-      font-size: 12.5px;
+      font-size: 13.5px;
       font-weight: 700;
       color: #94a3b8;
       white-space: nowrap;
@@ -323,56 +323,57 @@ var globalStyles=`
       background: #272e3f;
       border: 1.5px solid #ffffff;
       color: #ffffff;
-      box-shadow: 0 2px 8px rgba(255, 255, 255, 0.12);
+      box-shadow: 0 2px 8px rgba(255, 255, 255, 0.15);
     }
 
     /* DANH S\xC1CH H\xC0NG K\xCANH */
     .drawer-channel-list {
       flex: 1;
       overflow-y: auto;
-      padding: 10px 12px;
+      padding: 10px 14px;
     }
     .drawer-channel-list::-webkit-scrollbar { width: 4px; }
     .drawer-channel-list::-webkit-scrollbar-thumb { background: rgba(255, 255, 255, 0.15); border-radius: 3px; }
 
-    /* M\u1ED6I H\xC0NG K\xCANH: CHI\u1EC0U CAO \u0110\u1ED2NG NH\u1EA4T 60PX */
+    /* M\u1ED6I H\xC0NG K\xCANH: CHI\u1EC0U CAO 66PX CHO TV */
     .channel-row-item {
       display: flex;
       align-items: center;
-      gap: 12px;
-      padding: 6px 12px;
-      margin-bottom: 5px;
-      height: 60px;
-      min-height: 60px;
+      gap: 14px;
+      padding: 8px 14px;
+      margin-bottom: 6px;
+      height: 66px;
+      min-height: 66px;
       background: #13161f;
       border: 1.5px solid transparent;
-      border-radius: 9px;
+      border-radius: 10px;
       cursor: pointer;
       transition: all 0.1s ease;
     }
     .channel-row-item:hover {
-      background: #191d28;
+      background: #1c202d;
     }
-
-    /* KHI \u0110\u01AF\u1EE2C CH\u1ECCN (FOCUS): B\u1ECCC KHUNG VI\u1EC0N M\xC0U TR\u1EAENG */
     .channel-row-item.focused {
-      background: #1c212e;
+      background: #232938 !important;
       border-color: #ffffff !important;
-      box-shadow: 0 0 10px rgba(255, 255, 255, 0.18);
+      box-shadow: 0 0 14px rgba(255, 255, 255, 0.2) !important;
     }
 
-    /* LOGO NH\u1ECE G\u1ECCN */
     .ch-logo-container {
-      width: 58px;
+      width: 56px;
       height: 38px;
+      background: #000000;
+      border-radius: 6px;
       display: flex;
       align-items: center;
       justify-content: center;
       flex-shrink: 0;
+      overflow: hidden;
+      border: 1px solid rgba(255, 255, 255, 0.08);
     }
     .ch-logo-img {
-      max-width: 100%;
-      max-height: 100%;
+      max-width: 90%;
+      max-height: 90%;
       object-fit: contain;
     }
     .ch-logo-fallback {
@@ -381,40 +382,37 @@ var globalStyles=`
       display: flex;
       align-items: center;
       justify-content: center;
-      background: rgba(255, 255, 255, 0.04);
-      border-radius: 6px;
     }
 
     .ch-content-col {
       flex: 1;
-      min-width: 0;
       display: flex;
       flex-direction: column;
       justify-content: center;
-      gap: 2.5px;
+      min-width: 0;
+      gap: 2px;
     }
 
     .ch-name-orange {
-      font-size: 13.5px;
+      font-size: 16px;
       font-weight: 800;
       color: #f97316;
       white-space: nowrap;
       overflow: hidden;
       text-overflow: ellipsis;
     }
-
     .ch-name-plain {
-      font-size: 14px;
-      font-weight: 800;
-      color: #f97316;
+      font-size: 16px;
+      font-weight: 700;
+      color: #f1f5f9;
       white-space: nowrap;
       overflow: hidden;
       text-overflow: ellipsis;
     }
 
     .ch-program-gray {
-      font-size: 11.5px;
-      font-weight: 500;
+      font-size: 13.5px;
+      font-weight: 600;
       color: #94a3b8;
       white-space: nowrap;
       overflow: hidden;
@@ -424,19 +422,20 @@ var globalStyles=`
     .ch-timeline-row {
       display: flex;
       align-items: center;
-      gap: 6px;
-      margin-top: 1px;
+      gap: 8px;
+      margin-top: 3px;
     }
     .ch-time-text {
-      font-size: 10px;
+      font-size: 11.5px;
       font-weight: 700;
       color: #64748b;
       font-variant-numeric: tabular-nums;
+      flex-shrink: 0;
     }
     .ch-timeline-bar-bg {
       flex: 1;
-      height: 3px;
-      background: #202636;
+      height: 3.5px;
+      background: rgba(255, 255, 255, 0.12);
       border-radius: 2px;
       overflow: hidden;
     }
@@ -444,52 +443,53 @@ var globalStyles=`
       height: 100%;
       background: #f97316;
       border-radius: 2px;
-      transition: width 0.3s ease;
     }
 
-    /* SKELETON LOADING \u0110EN X\xC1M NH\u1EB8 */
+    /* SKELETON SHIMMER CH\u1EDC EPG */
     .skeleton-box {
-      background: linear-gradient(90deg, #181d2a 25%, #232a3d 50%, #181d2a 75%);
+      background: linear-gradient(90deg, rgba(255, 255, 255, 0.05) 25%, rgba(255, 255, 255, 0.12) 50%, rgba(255, 255, 255, 0.05) 75%);
       background-size: 200% 100%;
-      animation: skeletonShimmer 1.5s infinite;
-      border-radius: 4px;
+      animation: shimmerAnim 1.4s infinite;
+      border-radius: 3px;
     }
-    @keyframes skeletonShimmer {
+    @keyframes shimmerAnim {
       0% { background-position: 200% 0; }
       100% { background-position: -200% 0; }
     }
     .skeleton-title {
-      width: 70%;
-      height: 10px;
-      margin-bottom: 2px;
+      width: 65%;
+      height: 12px;
+      margin: 3px 0;
     }
     .skeleton-timeline {
-      width: 90%;
-      height: 4px;
+      width: 100%;
+      height: 3.5px;
+      margin-top: 3px;
     }
 
     /* =========================================================================
-       KHUNG OSD BANNER D\u01AF\u1EDAI (N\u1EC0N \u0110EN M\u1EDC \u0110\u1EACM R\xD5 N\xC9T TR\xC1NH CH\xD3I S\xC1NG KHI FULLSCREEN)
+       KHUNG OSD BANNER D\u01AF\u1EDAI (M\u1EB6C \u0110\u1ECANH M\u1EDE)
        ========================================================================= */
     #dl-osd-banner {
       position: absolute;
-      bottom: 0;
-      left: 0;
-      right: 0;
-      width: 100vw;
-      z-index: 30;
-      background: linear-gradient(to top, rgba(0, 0, 0, 0.97) 0%, rgba(0, 0, 0, 0.88) 55%, rgba(0, 0, 0, 0.45) 85%, transparent 100%);
-      border: none;
-      border-radius: 0;
-      padding: 70px 48px 24px 48px;
-      box-shadow: none;
+      bottom: 24px;
+      left: 32px;
+      right: 32px;
+      background: rgba(13, 17, 23, 0.94);
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
+      border: 1px solid rgba(255, 255, 255, 0.14);
+      border-radius: 16px;
+      padding: 16px 24px 14px 24px;
+      z-index: 25;
       display: flex;
       flex-direction: column;
       gap: 12px;
       opacity: 0;
       transform: translateY(20px);
+      transition: all 0.25s cubic-bezier(0.2, 0.9, 0.3, 1);
+      box-shadow: 0 15px 40px rgba(0, 0, 0, 0.85);
       pointer-events: none;
-      transition: opacity 0.25s ease, transform 0.25s cubic-bezier(0.2, 0.9, 0.3, 1);
     }
     #dl-osd-banner.active {
       opacity: 1 !important;
@@ -497,75 +497,67 @@ var globalStyles=`
       pointer-events: auto !important;
     }
 
-    /* KHI M\u1EDE MENU (CH\u1EBE \u0110\u1ED8 PIP THU NH\u1ECE PH\u1EA2I): HI\u1EC6N KHUNG CARD \u0110EN X\xC1M BO TR\xD2N D\u01AF\u1EDAI VIDEO */
+    /* KHI M\u1EDE MENU: OSD BANNER THU SANG PH\u1EA2I */
     #dl-osd-banner.pip-right {
-      left: 384px !important;
+      left: 444px !important;
       right: 24px !important;
       bottom: 20px !important;
-      width: auto !important;
-      background: rgba(11, 15, 23, 0.92) !important;
-      backdrop-filter: blur(20px) !important;
-      -webkit-backdrop-filter: blur(20px) !important;
-      border: 1px solid rgba(255, 255, 255, 0.12) !important;
-      border-radius: 16px !important;
       padding: 14px 20px !important;
-      box-shadow: 0 14px 40px rgba(0, 0, 0, 0.85) !important;
-    }
-    #dl-osd-banner.pip-right .osd-action-pills-row {
-      display: none !important;
     }
 
-    /* H\xC0NG 1: TH\xD4NG TIN K\xCANH + LIVE + SPECS */
     .osd-main-row {
       display: flex;
       align-items: center;
       justify-content: space-between;
-      gap: 16px;
     }
+
     .osd-left-info {
       display: flex;
       align-items: center;
-      gap: 14px;
+      gap: 16px;
       min-width: 0;
       flex: 1;
     }
     .osd-logo-box {
-      width: 58px;
-      height: 36px;
+      width: 64px;
+      height: 42px;
+      background: #000000;
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      border-radius: 8px;
       display: flex;
       align-items: center;
       justify-content: center;
+      overflow: hidden;
       flex-shrink: 0;
     }
     .osd-logo-box img {
-      max-width: 100%;
-      max-height: 100%;
+      max-width: 90%;
+      max-height: 90%;
       object-fit: contain;
     }
     .osd-text-col {
       display: flex;
       flex-direction: column;
-      gap: 3px;
+      gap: 2px;
       min-width: 0;
+      flex: 1;
     }
     .osd-ch-name {
-      font-size: 19px;
-      font-weight: 800;
+      font-size: 22px;
+      font-weight: 900;
       color: #ffffff;
-      letter-spacing: -0.2px;
       white-space: nowrap;
       overflow: hidden;
       text-overflow: ellipsis;
+      letter-spacing: -0.3px;
     }
     .osd-prog-name {
-      font-size: 13px;
-      font-weight: 500;
+      font-size: 15.5px;
+      font-weight: 700;
       color: #f97316;
-      text-transform: uppercase;
       white-space: nowrap;
       overflow: hidden;
       text-overflow: ellipsis;
-      letter-spacing: 0.2px;
     }
 
     .osd-right-info {
@@ -575,110 +567,91 @@ var globalStyles=`
       flex-shrink: 0;
     }
     .osd-live-tag {
-      padding: 3px 8px;
-      background: #dc2626;
-      border-radius: 5px;
-      font-size: 11px;
-      font-weight: 900;
+      padding: 4px 10px;
+      background: #ef4444;
       color: #ffffff;
-      letter-spacing: 0.6px;
+      font-size: 12px;
+      font-weight: 900;
+      border-radius: 5px;
+      letter-spacing: 0.5px;
     }
     .osd-specs-text {
-      font-size: 12.5px;
+      font-size: 13.5px;
       font-weight: 700;
-      color: #f97316;
-      font-family: 'Consolas', 'Courier New', monospace;
-      letter-spacing: 0.2px;
+      color: #94a3b8;
+      font-variant-numeric: tabular-nums;
     }
 
-    /* H\xC0NG 2: TIMELINE */
+    /* TIMELINE D\u01AF\u1EDAI OSD */
     .osd-timeline-row {
       display: flex;
       align-items: center;
       gap: 12px;
-      width: 100%;
     }
     .osd-time-bound {
-      font-size: 11.5px;
+      font-size: 12.5px;
       font-weight: 700;
-      color: #cbd5e1;
+      color: #94a3b8;
       font-variant-numeric: tabular-nums;
+      flex-shrink: 0;
     }
     .osd-timeline-track {
       flex: 1;
-      height: 4px;
-      background: rgba(255, 255, 255, 0.22);
-      border-radius: 2px;
+      height: 4.5px;
+      background: rgba(255, 255, 255, 0.15);
+      border-radius: 3px;
       overflow: hidden;
     }
     .osd-timeline-fill {
       height: 100%;
       background: #f97316;
-      border-radius: 2px;
-      transition: width 0.3s ease;
+      border-radius: 3px;
     }
 
-    /* H\xC0NG 3: C\xC1C N\xDAT VI\xCAN THU\u1ED0C \u0110I\u1EC0U KHI\u1EC2N C\u0102N GI\u1EEEA D\u01AF\u1EDAI \u0110\xC1Y */
+    /* C\xC1C N\xDAT VI\xCAN THU\u1ED0C \u0110I\u1EC0U KHI\u1EC2N */
     .osd-action-pills-row {
       display: flex;
       align-items: center;
-      justify-content: center;
       gap: 12px;
-      padding-top: 4px;
+      margin-top: 4px;
     }
-
     .bottom-pill-btn {
-      display: inline-flex;
+      display: flex;
       align-items: center;
       gap: 8px;
-      padding: 7px 16px;
-      border-radius: 20px;
-      background: rgba(255, 255, 255, 0.12);
-      border: 1px solid rgba(255, 255, 255, 0.16);
-      color: #ffffff;
-      cursor: pointer;
-      outline: none;
+      padding: 8px 18px;
+      background: rgba(255, 255, 255, 0.08);
+      border: 1.5px solid transparent;
+      border-radius: 24px;
+      color: #cbd5e1;
       font-size: 13.5px;
       font-weight: 700;
-      line-height: 1;
-      transition: background 0.1s ease, color 0.1s ease;
+      cursor: pointer;
+      transition: all 0.12s ease;
     }
     .bottom-pill-btn svg {
-      width: 17px;
-      height: 17px;
+      width: 16px;
+      height: 16px;
       stroke: currentColor;
       fill: none;
-      stroke-width: 2;
-      stroke-linecap: round;
-      stroke-linejoin: round;
-      display: inline-block;
-      vertical-align: middle;
-      flex-shrink: 0;
+      stroke-width: 2.2;
     }
-    .bottom-pill-btn span {
-      font-size: 13.5px;
-      font-weight: 700;
-      line-height: 1;
-      display: inline-block;
-      vertical-align: middle;
-    }
-
-    /* KHI VI\xCAN THU\u1ED0C \u0110\u01AF\u1EE2C CH\u1ECCN (FOCUS HO\u1EB6C HOVER): TR\u1EAENG TINH T\u1EBE \u0110\u01A0N GI\u1EA2N KH\xD4NG L\u1EA4P L\xC1NH / GLOW */
-    .bottom-pill-btn.focused,
     .bottom-pill-btn:hover {
+      background: rgba(255, 255, 255, 0.16);
+      color: #ffffff;
+    }
+    .bottom-pill-btn.focused {
       background: #ffffff !important;
       border-color: #ffffff !important;
       color: #0b0d14 !important;
-      box-shadow: none !important;
-      transform: none !important;
+      box-shadow: 0 0 16px rgba(255, 255, 255, 0.4) !important;
     }
-    .bottom-pill-btn.focused svg,
-    .bottom-pill-btn:hover svg {
+    .bottom-pill-btn.focused svg {
       stroke: #0b0d14 !important;
     }
 
     /* =========================================================================
-       POPUP DIALOG CH\u1ECCN L\u1ECACH PH\xC1T S\xD3NG, CH\u1EA4T L\u01AF\u1EE2NG & \xC2M THANH
+       POPUP L\u1ECACH PH\xC1T S\xD3NG 2 C\u1ED8T, CH\u1EA4T L\u01AF\u1EE2NG V\xC0 \xC2M THANH
        ========================================================================= */
     #quality-audio-dialog {
       position: absolute;
@@ -686,50 +659,80 @@ var globalStyles=`
       left: 0;
       width: 100vw;
       height: 100vh;
-      background: transparent !important;
-      backdrop-filter: none !important;
-      -webkit-backdrop-filter: none !important;
-      z-index: 100;
+      background: rgba(0, 0, 0, 0.7);
+      backdrop-filter: blur(8px);
+      -webkit-backdrop-filter: blur(8px);
+      z-index: 40;
       display: none;
-      justify-content: flex-end;
-      align-items: flex-end;
-      padding: 24px 36px 140px 36px;
-      pointer-events: none;
+      align-items: center;
+      justify-content: center;
     }
     #quality-audio-dialog.active {
       display: flex !important;
     }
 
     .dialog-card {
-      width: 360px;
-      max-width: 90vw;
-      min-height: 330px;
-      height: auto;
-      max-height: calc(100vh - 160px);
-      background: #232733;
-      border: 1px solid rgba(255, 255, 255, 0.12);
+      background: #0f141f;
+      border: 1.5px solid rgba(255, 255, 255, 0.15);
       border-radius: 18px;
-      padding: 22px 18px;
-      box-shadow: -10px 10px 40px rgba(0, 0, 0, 0.85);
+      padding: 24px 28px;
+      min-width: 380px;
+      max-width: 460px;
+      box-shadow: 0 20px 50px rgba(0, 0, 0, 0.9);
+      animation: dialogPop 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    }
+    @keyframes dialogPop {
+      0% { transform: scale(0.9); opacity: 0; }
+      100% { transform: scale(1); opacity: 1; }
+    }
+    .dialog-title {
+      font-size: 19px;
+      font-weight: 800;
+      color: #ffffff;
+      margin-bottom: 18px;
+      padding-bottom: 12px;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    }
+    .dialog-list {
       display: flex;
       flex-direction: column;
-      gap: 14px;
-      pointer-events: auto;
+      gap: 8px;
+      max-height: 380px;
+      overflow-y: auto;
     }
-
-    /* CARD D\xC0NH CHO L\u1ECACH PH\xC1T S\xD3NG 2 C\u1ED8T R\u1ED8NG R\xC3I, TO R\xD5 \u0110\u1EB8P */
-    .dialog-card.epg-schedule-card {
-      width: 720px;
-      max-width: 95vw;
-      height: 490px;
-      min-height: 440px;
-      max-height: calc(100vh - 130px);
-      padding: 20px 22px;
+    .dialog-item {
       display: flex;
-      flex-direction: column;
-      gap: 14px;
+      align-items: center;
+      justify-content: space-between;
+      padding: 12px 18px;
+      background: rgba(255, 255, 255, 0.05);
+      border: 1.5px solid transparent;
+      border-radius: 10px;
+      font-size: 15px;
+      font-weight: 700;
+      color: #cbd5e1;
+      cursor: pointer;
+      transition: all 0.12s ease;
+    }
+    .dialog-item.focused {
+      background: #272e3f !important;
+      border-color: #ffffff !important;
+      color: #ffffff !important;
+      box-shadow: 0 0 14px rgba(255, 255, 255, 0.25) !important;
+    }
+    .dialog-item.active {
+      color: #f97316;
     }
 
+    /* MODAL EPG 2 C\u1ED8T CHUY\xCAN D\u1EE4NG (900PX CHO TV) */
+    .epg-schedule-card {
+      min-width: 900px !important;
+      max-width: 960px !important;
+      height: 600px !important;
+      display: flex !important;
+      flex-direction: column !important;
+      padding: 20px 24px !important;
+    }
     .epg-dialog-body {
       display: flex;
       gap: 16px;
@@ -737,200 +740,111 @@ var globalStyles=`
       min-height: 0;
       overflow: hidden;
     }
-
-    /* C\u1ED8T K\xCANH B\xCAN TR\xC1I R\u1ED8NG R\xC3I, LOGO V\xC0 T\xCAN K\xCANH R\xD5 R\xC0NG */
     .epg-channel-sidebar {
-      width: 250px;
+      width: 280px;
+      flex-shrink: 0;
+      border-right: 1px solid rgba(255, 255, 255, 0.1);
+      overflow-y: auto;
+      padding-right: 10px;
       display: flex;
       flex-direction: column;
-      gap: 8px;
-      overflow-y: auto;
-      padding-right: 6px;
-      border-right: 1px solid rgba(255, 255, 255, 0.09);
+      gap: 6px;
     }
-    .epg-channel-sidebar::-webkit-scrollbar { width: 4px; }
-    .epg-channel-sidebar::-webkit-scrollbar-thumb { background: rgba(255, 255, 255, 0.15); border-radius: 2px; }
-
     .epg-ch-item {
       display: flex;
       align-items: center;
       gap: 12px;
       padding: 10px 14px;
-      min-height: 48px;
-      height: 48px;
-      border-radius: 11px;
-      background: #2b3140;
-      border: 1.5px solid transparent;
-      color: #e2e8f0;
-      font-size: 14px;
+      border-radius: 10px;
+      background: rgba(255, 255, 255, 0.04);
+      color: #cbd5e1;
+      font-size: 14.5px;
       font-weight: 700;
       cursor: pointer;
-      white-space: nowrap;
-      overflow: hidden;
-      text-overflow: ellipsis;
-      transition: background 0.1s ease, color 0.1s ease;
+      border: 1.5px solid transparent;
+      transition: all 0.12s ease;
+      min-height: 48px;
     }
     .epg-ch-item.selected {
-      border-color: #f97316;
+      background: rgba(249, 115, 22, 0.15);
+      color: #f97316;
+      border-color: rgba(249, 115, 22, 0.4);
     }
-    .epg-ch-item.focused,
-    .epg-ch-item:hover {
+    .epg-ch-item.focused {
       background: #ffffff !important;
+      border-color: #ffffff !important;
       color: #0b0d14 !important;
-      font-weight: 700 !important;
-      border-color: transparent !important;
+      box-shadow: 0 0 14px rgba(255, 255, 255, 0.4) !important;
     }
     .epg-ch-logo {
       width: 44px;
       height: 28px;
       object-fit: contain;
+      background: #000;
+      border-radius: 4px;
+      border: 1px solid rgba(255, 255, 255, 0.1);
       flex-shrink: 0;
     }
 
     .epg-schedule-panel {
       flex: 1;
+      overflow-y: auto;
       display: flex;
       flex-direction: column;
-      gap: 8px;
-      min-width: 0;
-      overflow-y: auto;
-      padding-right: 2px;
+      gap: 6px;
+      padding-right: 6px;
     }
-    .epg-schedule-panel::-webkit-scrollbar { width: 4px; }
-    .epg-schedule-panel::-webkit-scrollbar-thumb { background: rgba(255, 255, 255, 0.2); border-radius: 2px; }
-
-    .dialog-title {
-      font-size: 16px;
-      font-weight: 700;
-      color: #ffffff;
-      text-align: center;
-      letter-spacing: -0.1px;
-    }
-
-    .dialog-list {
-      display: flex;
-      flex-direction: column;
-      gap: 8px;
-      overflow-y: auto;
-      padding-right: 2px;
-      max-height: calc(100vh - 230px);
-    }
-    .dialog-list::-webkit-scrollbar { width: 4px; }
-    .dialog-list::-webkit-scrollbar-thumb { background: rgba(255, 255, 255, 0.2); border-radius: 2px; }
-
-    /* M\u1EE4C TRONG DIALOG: M\u1EB6C \u0110\u1ECANH L\xC0 KHUNG X\xC1M S\xC1NG N\xC9T CH\u1EEE THANH */
-    .dialog-item {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      padding: 12px 16px;
-      border-radius: 11px;
-      background: #313746;
-      border: 1.5px solid transparent;
-      color: #e2e8f0;
-      font-size: 14px;
-      font-weight: 600;
-      cursor: pointer;
-      transition: background 0.1s ease, color 0.1s ease;
-    }
-
-    /* KHI DI CHUY\u1EC2N CON TR\u1ECE (FOCUS HO\u1EB6C HOVER): CHUY\u1EC2N TH\xC0NH M\xC0U TR\u1EAENG S\xC1NG + CH\u1EEE \u0110EN N\xC9T V\u1EEAA */
-    .dialog-item.focused,
-    .dialog-item:hover {
-      background: #ffffff !important;
-      color: #0b0d14 !important;
-      font-weight: 600 !important;
-      box-shadow: none !important;
-      border-color: transparent !important;
-    }
-    .dialog-item.focused .dialog-check-icon,
-    .dialog-item:hover .dialog-check-icon {
-      stroke: #0b0d14 !important;
-    }
-    .dialog-item:not(.focused):not(:hover) .dialog-check-icon {
-      stroke: #ffffff !important;
-    }
-
-    /* M\u1EE4C L\u1ECACH PH\xC1T S\xD3NG TRONG POPUP */
     .epg-schedule-item {
       display: flex;
       align-items: center;
-      gap: 12px;
-      padding: 11px 14px;
-      border-radius: 11px;
-      background: #313746;
+      gap: 14px;
+      padding: 12px 18px;
+      background: rgba(255, 255, 255, 0.04);
       border: 1.5px solid transparent;
-      color: #e2e8f0;
-      font-size: 13.5px;
-      font-weight: 600;
-      transition: background 0.1s ease, color 0.1s ease;
+      border-radius: 10px;
       cursor: pointer;
+      transition: all 0.12s ease;
+      min-height: 50px;
     }
-
-    /* C\xC1C CH\u01AF\u01A0NG TR\xCCNH \u0110\xC3 CHI\u1EBEU QUA: L\xC0M M\u1EDC NH\u1EB8 NH\xC0NG */
     .epg-schedule-item.past {
       opacity: 0.35;
-      background: rgba(255, 255, 255, 0.04);
-      cursor: not-allowed;
+      filter: grayscale(0.5);
     }
-    .epg-schedule-item.past .epg-item-title {
-      color: #94a3b8 !important;
-    }
-    .epg-schedule-item.past .epg-time-range {
-      color: #64748b !important;
-    }
-
-    .epg-schedule-item.focused,
-    .epg-schedule-item:hover {
-      background: #ffffff !important;
-      color: #0b0d14 !important;
-      font-weight: 600 !important;
+    .epg-schedule-item.focused {
+      background: #272e3f !important;
+      border-color: #ffffff !important;
+      color: #ffffff !important;
+      box-shadow: 0 0 14px rgba(255, 255, 255, 0.3) !important;
       opacity: 1 !important;
-      box-shadow: none !important;
-      border-color: transparent !important;
-    }
-    .epg-schedule-item.focused .epg-item-title,
-    .epg-schedule-item.focused .epg-time-range,
-    .epg-schedule-item:hover .epg-item-title,
-    .epg-schedule-item:hover .epg-time-range {
-      color: #0b0d14 !important;
-    }
-    .epg-schedule-item:not(.focused):not(:hover):not(.past) .epg-item-title {
-      color: #e2e8f0 !important;
-      font-weight: 500 !important;
-    }
-    .epg-schedule-item:not(.focused):not(:hover):not(.past) .epg-time-range {
-      color: #94a3b8 !important;
-      font-weight: 600 !important;
     }
     .epg-time-range {
-      font-size: 12px;
-      font-weight: 600;
-      color: #94a3b8;
+      font-size: 13.5px;
+      font-weight: 800;
+      color: #f97316;
       font-variant-numeric: tabular-nums;
-      white-space: nowrap;
-      min-width: 80px;
+      flex-shrink: 0;
     }
     .epg-item-title {
-      font-size: 13.5px;
-      font-weight: 500;
-      color: #e2e8f0;
       flex: 1;
+      font-size: 14.5px;
+      font-weight: 700;
+      color: #ffffff;
       white-space: nowrap;
       overflow: hidden;
       text-overflow: ellipsis;
     }
     .epg-live-badge {
-      padding: 2px 6px;
-      background: #dc2626;
-      border-radius: 4px;
-      font-size: 10px;
-      font-weight: 800;
+      padding: 3px 8px;
+      background: #ef4444;
       color: #ffffff;
+      font-size: 11px;
+      font-weight: 900;
+      border-radius: 4px;
+      flex-shrink: 0;
     }
-`;function injectStyles(){var style=document.createElement("style");style.id="app-custom-styles";style.textContent=globalStyles;document.head.appendChild(style)}// src/player.js
-var playerInstance=null;var currentChannelData=null;var currentVideoElement=null;var onMediaStatsChangedCb=null;var onPlaybackErrorCb=null;var isAbrActive=true;var isSwitchingBackup=false;function getShakaSafe(){if(typeof window!=="undefined"&&window.shaka){return window.shaka}try{var sh=require_shaka_player_compiled();if(typeof window!=="undefined"){window.shaka=sh}return sh}catch(e){return null}}function setStatsCallback(cb){onMediaStatsChangedCb=cb}function setPlaybackErrorCallback(cb){onPlaybackErrorCb=cb}function getRealMediaStats(){if(!currentVideoElement)return null;try{var width=currentVideoElement.videoWidth||1920;var height=currentVideoElement.videoHeight||1080;var fps=25;if(playerInstance&&playerInstance.getVariantTracks){var activeTracks=playerInstance.getVariantTracks().filter(t=>t.active);if(activeTracks.length>0){var track=activeTracks[0];if(track.width)width=track.width;if(track.height)height=track.height;if(track.frameRate&&track.frameRate>10)fps=track.frameRate}}if(currentChannelData){var nameLow=currentChannelData.name.toLowerCase();if(nameLow.includes("50fps"))fps=50;else if(nameLow.includes("60fps"))fps=60}var bitrateMbps=width>=1920?"3.5":width>=1280?"2.5":"1.8";return{width,height,fps:typeof fps==="number"?fps.toFixed(1):fps,bandwidth:`${bitrateMbps} Mbps`}}catch(e){return null}}function getRealVideoQualities(){if(playerInstance&&playerInstance.getVariantTracks){try{var tracks=playerInstance.getVariantTracks();var heightMap={};tracks.forEach(t=>{if(t.height&&t.height>0){if(!heightMap[t.height]||t.bandwidth>(heightMap[t.height].bandwidth||0)){heightMap[t.height]=t}}});var heights=Object.keys(heightMap).map(h=>parseInt(h,10)).sort((a,b)=>b-a);if(heights.length>1){var list=[{label:"Auto",value:"auto",active:isAbrActive}];heights.forEach(h=>{list.push({label:`${h}p`,value:h,track:heightMap[h],active:!isAbrActive})});return list}}catch(e){}}return[{label:"Auto",value:"auto",active:true},{label:"1080p",value:1080,active:false},{label:"720p",value:720,active:false},{label:"576p",value:576,active:false}]}function setRealVideoQuality(val){if(!playerInstance)return;try{if(val==="auto"||val==="Auto"){isAbrActive=true;if(playerInstance.configure){playerInstance.configure({abr:{enabled:true}})}}else{isAbrActive=false;if(playerInstance.configure&&playerInstance.getVariantTracks){playerInstance.configure({abr:{enabled:false}});var tracks=playerInstance.getVariantTracks();var targetHeight=parseInt(val,10);var matchTrack=tracks.find(t=>t.height===targetHeight);if(matchTrack&&playerInstance.selectVariantTrack){playerInstance.selectVariantTrack(matchTrack,true)}}}}catch(e){}}function getRealAudioTracks(){if(playerInstance&&playerInstance.getVariantTracks){try{var tracks=playerInstance.getVariantTracks();var audioMap={};tracks.forEach(t=>{var lang=t.language||"und";var key=`${lang}_${t.audioId||0}`;if(!audioMap[key]){var label="Âm thanh chuẩn (Stereo)";if(lang==="vi"||lang==="vie")label="Tiếng Việt (Stereo)";else if(lang==="en"||lang==="eng")label="Tiếng Anh (English)";else if(t.audioId)label=`\u0110\u01B0\u1EDDng ti\u1EBFng ${t.audioId}`;audioMap[key]={label,value:key,language:lang,track:t,active:t.active}}});var list=Object.values(audioMap);if(list.length>0)return list}catch(e){}}return[{label:"Tiếng Việt (Gốc)",value:"vi",active:true},{label:"Âm thanh 2",value:"und",active:false}]}function setRealAudioTrack(audioObj){if(!playerInstance||!audioObj)return;try{if(audioObj.track&&playerInstance.selectVariantTrack){playerInstance.selectVariantTrack(audioObj.track,false)}else if(audioObj.language&&playerInstance.selectAudioLanguage){playerInstance.selectAudioLanguage(audioObj.language)}}catch(e){}}function parseClearKey(drmString){if(!drmString)return null;if(_typeof(drmString)==="object")return drmString;try{var keyString=drmString.trim();if(keyString.startsWith("http")){if(keyString.includes("?id=")){keyString=keyString.split("?id=")[1]||""}else if(keyString.includes("&id=")){keyString=keyString.split("&id=")[1]||""}}var parts=keyString.split(":");if(parts.length===2&&parts[0].length>=16&&parts[1].length>=16){return{[parts[0].trim().toLowerCase()]:parts[1].trim().toLowerCase()}}}catch(e){}return null}function initPlayer(videoElement){return new Promise(resolve=>{currentVideoElement=videoElement;if(videoElement){videoElement.addEventListener("playing",()=>{if(onMediaStatsChangedCb)onMediaStatsChangedCb(getRealMediaStats())});videoElement.addEventListener("loadedmetadata",()=>{if(onMediaStatsChangedCb)onMediaStatsChangedCb(getRealMediaStats())});videoElement.addEventListener("error",()=>{var err=videoElement.error;console.warn("[Video] Native error:",err?err.message:"unknown")})}var sh=getShakaSafe();if(sh&&sh.Player&&sh.Player.isBrowserSupported&&sh.Player.isBrowserSupported()){try{if(sh.polyfill&&sh.polyfill.installAll){sh.polyfill.installAll()}playerInstance=new sh.Player(videoElement);playerInstance.configure({streaming:{bufferingGoal:2,rebufferingGoal:0.1,jumpLargeGaps:true,retryParameters:{maxAttempts:2,timeout:3e3}}});playerInstance.addEventListener("error",event=>{var err=event.detail;if(err&&err.severity===2){handleStreamFailure(err)}});console.log("[Player] Đã khởi tạo Shaka Player thành công!")}catch(e){console.warn("[Player] Shaka khởi tạo thất bại, dùng Native Video:",e.message);playerInstance=null}}else{console.log("[Player] Dùng Native Video Engine của Samsung Tizen!")}resolve(playerInstance)})}function handleStreamFailure(err){if(isSwitchingBackup||!currentChannelData){if(onPlaybackErrorCb)onPlaybackErrorCb(err);return}var sources=currentChannelData.sources||[];var nextIndex=(currentChannelData.activeSourceIndex||0)+1;if(nextIndex<sources.length){isSwitchingBackup=true;currentChannelData.activeSourceIndex=nextIndex;var backupSource=sources[nextIndex];console.warn(`[Player] \u0110\u1ED5i sang ngu\u1ED3n d\u1EF1 ph\xF2ng [${nextIndex+1}/${sources.length}]:`,backupSource.url);currentChannelData.url=backupSource.url;currentChannelData.licenseKey=backupSource.licenseKey;if(backupSource.userAgent)currentChannelData.userAgent=backupSource.userAgent;playCurrentChannelInternal();isSwitchingBackup=false}else{if(onPlaybackErrorCb)onPlaybackErrorCb(err)}}function playCurrentChannelInternal(){if(!currentChannelData||!currentVideoElement)return;var url=currentChannelData.url;var isDrm=!!currentChannelData.licenseKey||url.includes(".mpd");var streamUrl=url;if(window.location.hostname==="localhost"||window.location.hostname==="127.0.0.1"){streamUrl=`/api/stream?url=${encodeURIComponent(url)}`}if(playerInstance&&isDrm){try{playerInstance.unload().catch(()=>{});var drmConfig={servers:{},clearKeys:{}};if(currentChannelData.licenseKey){var clearKeyObj=parseClearKey(currentChannelData.licenseKey);if(clearKeyObj){drmConfig.clearKeys=clearKeyObj}else{drmConfig.servers["com.widevine.alpha"]=currentChannelData.licenseKey}}playerInstance.configure({drm:drmConfig});playerInstance.load(streamUrl).then(()=>{currentVideoElement.play().catch(()=>{});if(onMediaStatsChangedCb){setTimeout(()=>onMediaStatsChangedCb(getRealMediaStats()),500)}}).catch(e=>{console.warn("[Player] Shaka load thất bại, thử Native Video:",e);playWithNativeVideo(streamUrl)});return}catch(e){console.warn("[Player] Shaka error, chuyển Native Video:",e)}}playWithNativeVideo(streamUrl)}function playWithNativeVideo(streamUrl){if(!currentVideoElement)return;try{if(playerInstance){try{playerInstance.unload().catch(()=>{})}catch(e){}}currentVideoElement.src=streamUrl;var playPromise=currentVideoElement.play();if(playPromise!==void 0){playPromise.catch(err=>{console.warn("[Native Video] Autoplay muted fallback:",err);currentVideoElement.muted=true;currentVideoElement.play().then(()=>{var unmute=()=>{if(currentVideoElement){currentVideoElement.muted=false}window.removeEventListener("click",unmute);window.removeEventListener("keydown",unmute)};window.addEventListener("click",unmute,{once:true});window.addEventListener("keydown",unmute,{once:true})}).catch(()=>{})})}if(onMediaStatsChangedCb){setTimeout(()=>onMediaStatsChangedCb(getRealMediaStats()),600)}}catch(err){console.error("[Native Video] Play error:",err)}}function playStream(channel,onStatusUpdate){currentChannelData=channel;if(!channel)return;currentChannelData.activeSourceIndex=0;isAbrActive=true;isSwitchingBackup=false;if(channel.sources&&channel.sources.length>0){var firstSrc=channel.sources[0];channel.url=firstSrc.url;channel.licenseKey=firstSrc.licenseKey;if(firstSrc.userAgent)channel.userAgent=firstSrc.userAgent}if(onStatusUpdate)onStatusUpdate(`\u0110ang n\u1EA1p: ${channel.name}...`);playCurrentChannelInternal()}function stopStream(){if(currentVideoElement){try{currentVideoElement.pause();currentVideoElement.removeAttribute("src");currentVideoElement.load()}catch(e){}}if(playerInstance){try{playerInstance.unload().catch(()=>{})}catch(e){}}}// src/epg.js
-var EPG_SOURCE_1="https://lichphatsong.io.vn/epg.xml";var EPG_SOURCE_2="https://epg.blaosolar.vn/schedule/epg.xml";var epgData={};var isLoaded=false;function padZero(num){return num<10?"0"+num:""+num}function parseXMLTVDate(str){if(!str)return null;try{var clean=str.trim();var y=parseInt(clean.substring(0,4),10);var m=parseInt(clean.substring(4,6),10)-1;var d=parseInt(clean.substring(6,8),10);var h=parseInt(clean.substring(8,10),10);var min=parseInt(clean.substring(10,12),10);var s=parseInt(clean.substring(12,14),10)||0;return new Date(y,m,d,h,min,s)}catch(e){return null}}function removeVietnameseTones(str){if(!str)return"";str=str.replace(/à|á|ạ|ả|ã|â|ầ|ấ|ậ|ẩ|ẫ|ă|ằ|ắ|ặ|ẳ|ẵ/g,"a");str=str.replace(/è|é|ẹ|ẻ|ẽ|ê|ề|ế|ệ|ể|ễ/g,"e");str=str.replace(/ì|í|ị|ỉ|ĩ/g,"i");str=str.replace(/ò|ó|ọ|ỏ|õ|ô|ồ|ố|ộ|ổ|ỗ|ơ|ờ|ớ|ợ|ở|ỡ/g,"o");str=str.replace(/ù|ú|ụ|ủ|ũ|ư|ừ|ứ|ự|ử|ữ/g,"u");str=str.replace(/ỳ|ý|Ỵ|Ỷ|Ỹ/g,"y");str=str.replace(/đ/g,"d");str=str.replace(/À|Á|Ạ|Ả|Ã|Â|Ầ|Ấ|Ậ|Ẩ|Ẫ|Ă|Ằ|Ắ|Ặ|Ẳ|Ẵ/g,"A");str=str.replace(/È|É|Ẹ|Ẻ|Ẽ|Ê|Ề|Ế|Ệ|Ể|Ễ/g,"E");str=str.replace(/Ì|Í|Ị|Ỉ|Ĩ/g,"I");str=str.replace(/Ò|Ó|Ọ|Ỏ|Õ|Ô|Ồ|Ố|Ộ|Ổ|Ỗ|Ơ|Ờ|Ớ|Ợ|Ở|Ỡ/g,"O");str=str.replace(/Ù|Ú|Ụ|Ủ|Ũ|Ư|Ừ|Ứ|Ự|Ử|Ữ/g,"U");str=str.replace(/Ỳ|Ý|Ỵ|Ỷ|Ỹ/g,"Y");str=str.replace(/Đ/g,"D");return str}function normalizeEpgName(name){if(!name)return"";var s=removeVietnameseTones(name.toLowerCase());s=s.replace(/[\s\-_.:/()\[\]]/g,"");s=s.replace(/(fhd|uhd|4k|2k|hd|sd|50fps|60fps|hevc|h265|raw|tv)$/g,"");if(s.startsWith("vinhlong")||/^thvl\d+$/.test(s)){var num=s.match(/\d+/);return num?`thvl${num[0]}`:"thvl1"}if(s.startsWith("hanoi")||/^h\d+$/.test(s)){var _num=s.match(/\d+/);return _num?`hanoi${_num[0]}`:"hanoi1"}if(s.startsWith("angiang")||/^atv\d+$/.test(s)){var _num2=s.match(/\d+/);return _num2?`angiang${_num2[0]}`:"angiang1"}if(s.startsWith("lamdong")||/^ltv\d+$/.test(s)){var _num3=s.match(/\d+/);return _num3?`lamdong${_num3[0]}`:"lamdong1"}if(s.startsWith("haiphong")||s.startsWith("thp")){var _num4=s.match(/\d+/);return _num4?`haiphong${_num4[0]}`:"haiphong1"}if(s.startsWith("vtv")){var _num5=s.match(/\d+/);if(_num5){if(s.includes("tnb")||s.includes("taynam"))return`vtv${_num5[0]}tnb`;if(s.includes("tn")||s.includes("taynguyen"))return`vtv${_num5[0]}tn`;return`vtv${_num5[0]}`}}if(s.startsWith("htv")){var _num6=s.match(/\d+/);if(_num6)return`htv${_num6[0]}`;if(s.includes("thethao"))return"htvthethao";if(s.includes("thuanviet"))return"htvcthuanviet";if(s.includes("giadinh"))return"htvcgiadinh";if(s.includes("phunu"))return"htvcphunu";if(s.includes("dulich"))return"htvcdulich";if(s.includes("canhac")||s.includes("music"))return"htvccanhac";if(s.includes("plus"))return"htvcplus";if(s.includes("phim")||s.includes("movies"))return"htvcmovies"}if(s.startsWith("sctv")){var _num7=s.match(/\d+/);if(_num7)return`sctv${_num7[0]}`;if(s.includes("phim"))return"sctvphim"}if(s.includes("viegiaitri")||s.includes("giaitritv"))return"onviegiaitri";if(s.includes("phimviet"))return"onphimviet";if(s.includes("onmovies")||s.includes("vanhoa"))return"onmovies";if(s.includes("echannel")||s.includes("onechannel"))return"onechannel";if(s.includes("o2tv")||s.includes("ono2tv"))return"ono2tv";if(s.includes("bibi"))return"onbibi";if(s.includes("infotv")||s.includes("oninfotv"))return"oninfotv";if(s.includes("oncine")||s.includes("filmtv"))return"oncine";if(s.includes("onstyle")||s.includes("styletv"))return"onstyle";if(s.includes("onmusic")||s.includes("mchannel"))return"onmusic";if(s.includes("ontrending")||s.includes("yeah1tv"))return"ontrending";if(s.includes("viedramas")||s.includes("ddramas"))return"onviedramas";if(s.includes("vfamily"))return"onvfamily";if(s.includes("onkids"))return"onkids";if(s.includes("onlife")||s.includes("lifetv"))return"onlife";if(s.includes("onsports")||s.includes("thethaotv")||s.includes("onsport"))return"onsports";if(s.includes("onfootball")||s.includes("football"))return"onfootball";return s}function isEpgReady(){return isLoaded}function parseEpgXml(xmlText){var result={};if(!xmlText||typeof xmlText!=="string")return result;try{var parser=new DOMParser;var xmlDoc=parser.parseFromString(xmlText,"text/xml");var channelMap={};var channelNodes=xmlDoc.getElementsByTagName("channel");for(var i=0;i<channelNodes.length;i++){var chId=channelNodes[i].getAttribute("id");var dName=channelNodes[i].getElementsByTagName("display-name")[0];var name=dName?dName.textContent:chId;var norm=normalizeEpgName(name)||normalizeEpgName(chId);if(chId&&norm){channelMap[chId.toLowerCase()]=norm}}var programmes=xmlDoc.getElementsByTagName("programme");for(var _i=0;_i<programmes.length;_i++){var p=programmes[_i];var _chId=(p.getAttribute("channel")||"").toLowerCase();var normKey=channelMap[_chId]||normalizeEpgName(_chId);if(!normKey)continue;var start=parseXMLTVDate(p.getAttribute("start"));var stop=parseXMLTVDate(p.getAttribute("stop"));var titleEl=p.getElementsByTagName("title")[0];var descEl=p.getElementsByTagName("desc")[0];var rawTitle=titleEl?titleEl.textContent.trim():"";var title=rawTitle.toUpperCase();var desc=descEl?descEl.textContent.trim():"";if(!result[normKey]){result[normKey]=[]}result[normKey].push({start,stop,title,desc})}}catch(err){console.error("[EPG] Lỗi phân tích XML:",err)}return result}function fetchXml(url,callback){var done=false;var xhr=new XMLHttpRequest;var bustUrl=`${url}?_t=${Date.now()}`;xhr.open("GET",bustUrl,true);xhr.timeout=15e3;xhr.onreadystatechange=function(){if(xhr.readyState===4&&!done){done=true;if(xhr.status>=200&&xhr.status<300){callback(null,xhr.responseText)}else{callback(new Error(`HTTP ${xhr.status}`),null)}}};xhr.onerror=function(){if(!done){done=true;callback(new Error("Network error"),null)}};xhr.ontimeout=function(){if(!done){done=true;callback(new Error("Timeout"),null)}};try{xhr.send()}catch(e){if(!done){done=true;callback(e,null)}}}function loadEPG(onLoaded){fetchXml(EPG_SOURCE_1,(err1,xml1)=>{if(!err1&&xml1){var src1Data=parseEpgXml(xml1);Object.assign(epgData,src1Data);isLoaded=true;console.log(`[EPG] \u0110\xE3 n\u1EA1p th\xE0nh c\xF4ng Ngu\u1ED3n 1: ${Object.keys(epgData).length} k\xEAnh.`);if(onLoaded)onLoaded()}fetchXml(EPG_SOURCE_2,(err2,xml2)=>{if(!err2&&xml2){var src2Data=parseEpgXml(xml2);var now=/* @__PURE__ */new Date;var added=0;var updated=0;Object.keys(src2Data).forEach(key=>{var s2List=src2Data[key]||[];if(s2List.length===0)return;var s1List=epgData[key]||[];var s1HasValid=s1List.some(p=>p.stop>=now);var s2HasValid=s2List.some(p=>p.stop>=now);if(s1List.length===0){epgData[key]=s2List;added++}else if(!s1HasValid&&s2HasValid){epgData[key]=s2List;updated++}});isLoaded=true;console.log(`[EPG] Ngu\u1ED3n 2: Th\xEAm m\u1EDBi ${added} k\xEAnh, C\u1EADp nh\u1EADt ${updated} k\xEAnh. T\u1ED5ng: ${Object.keys(epgData).length} k\xEAnh EPG!`);if(onLoaded)onLoaded()}else{isLoaded=true;if(onLoaded)onLoaded()}})})}var formatHM=d=>{if(!d)return"--:--";return`${padZero(d.getHours())}:${padZero(d.getMinutes())}`};function getChannelEPG(channelName){var norm=normalizeEpgName(channelName);var list=epgData[norm]||[];if(list.length===0)return null;var now=/* @__PURE__ */new Date;var currentProg=null;var nextProg=null;for(var i=0;i<list.length;i++){var p=list[i];if(p.start&&p.stop&&now>=p.start&&now<=p.stop){currentProg=p;nextProg=list[i+1]||null;break}}if(!currentProg)return null;var total=currentProg.stop.getTime()-currentProg.start.getTime();var elapsed=now.getTime()-currentProg.start.getTime();var progressPercent=Math.min(100,Math.max(0,Math.round(elapsed/Math.max(1,total)*100)));return{current:{title:currentProg.title,desc:currentProg.desc,startTimeStr:formatHM(currentProg.start),stopTimeStr:formatHM(currentProg.stop),progressPercent},next:nextProg?{title:nextProg.title,startTimeStr:formatHM(nextProg.start),stopTimeStr:formatHM(nextProg.stop)}:null}}function getChannelFullSchedule(channelName){var norm=normalizeEpgName(channelName);var list=epgData[norm]||[];if(list.length===0)return[];var now=/* @__PURE__ */new Date;return list.map(p=>{var isPast=p.stop<now;var isCurrent=p.start<=now&&p.stop>=now;var isFuture=p.start>now;return{title:p.title,startStr:formatHM(p.start),stopStr:formatHM(p.stop),isPast,isCurrent,isFuture}})}// src/osd.js
+`;function injectStyles(){var styleEl=document.createElement("style");styleEl.id="app-custom-styles";styleEl.innerHTML=globalStyles;document.head.appendChild(styleEl)}// src/player.js
+var playerInstance=null;var currentChannelData=null;var currentVideoElement=null;var onMediaStatsChangedCb=null;var onPlaybackErrorCb=null;var isAbrActive=true;var isSwitchingBackup=false;function getShakaSafe(){if(typeof window!=="undefined"){if(!window.URL)window.URL=window.webkitURL;if(window.URL&&!window.URL.createObjectURL&&window.webkitURL){window.URL.createObjectURL=window.webkitURL.createObjectURL}if(!window.MediaSource&&window.WebKitMediaSource){window.MediaSource=window.WebKitMediaSource}if(window.shaka)return window.shaka}try{var sh=require_shaka_player_compiled();if(typeof window!=="undefined"){window.shaka=sh}return sh}catch(e){return null}}function setStatsCallback(cb){onMediaStatsChangedCb=cb}function setPlaybackErrorCallback(cb){onPlaybackErrorCb=cb}function getRealMediaStats(){if(!currentVideoElement)return null;try{var width=currentVideoElement.videoWidth||1920;var height=currentVideoElement.videoHeight||1080;var fps=25;if(playerInstance&&playerInstance.getVariantTracks){var activeTracks=playerInstance.getVariantTracks().filter(t=>t.active);if(activeTracks.length>0){var track=activeTracks[0];if(track.width)width=track.width;if(track.height)height=track.height;if(track.frameRate&&track.frameRate>10)fps=track.frameRate}}if(currentChannelData){var nameLow=currentChannelData.name.toLowerCase();if(nameLow.includes("50fps"))fps=50;else if(nameLow.includes("60fps"))fps=60}var bitrateMbps=width>=1920?"3.5":width>=1280?"2.5":"1.8";return{width,height,fps:typeof fps==="number"?fps.toFixed(1):fps,bandwidth:`${bitrateMbps} Mbps`}}catch(e){return null}}function getRealVideoQualities(){if(playerInstance&&playerInstance.getVariantTracks){try{var tracks=playerInstance.getVariantTracks();var heightMap={};tracks.forEach(t=>{if(t.height&&t.height>0){if(!heightMap[t.height]||t.bandwidth>(heightMap[t.height].bandwidth||0)){heightMap[t.height]=t}}});var heights=Object.keys(heightMap).map(h=>parseInt(h,10)).sort((a,b)=>b-a);if(heights.length>1){var list=[{label:"Auto",value:"auto",active:isAbrActive}];heights.forEach(h=>{list.push({label:`${h}p`,value:h,track:heightMap[h],active:!isAbrActive})});return list}}catch(e){}}return[{label:"Auto",value:"auto",active:true},{label:"1080p",value:1080,active:false},{label:"720p",value:720,active:false},{label:"576p",value:576,active:false}]}function setRealVideoQuality(val){if(!playerInstance)return;try{if(val==="auto"||val==="Auto"){isAbrActive=true;if(playerInstance.configure){playerInstance.configure({abr:{enabled:true}})}}else{isAbrActive=false;if(playerInstance.configure&&playerInstance.getVariantTracks){playerInstance.configure({abr:{enabled:false}});var tracks=playerInstance.getVariantTracks();var targetHeight=parseInt(val,10);var matchTrack=tracks.find(t=>t.height===targetHeight);if(matchTrack&&playerInstance.selectVariantTrack){playerInstance.selectVariantTrack(matchTrack,true)}}}}catch(e){}}function getRealAudioTracks(){if(playerInstance&&playerInstance.getVariantTracks){try{var tracks=playerInstance.getVariantTracks();var audioMap={};tracks.forEach(t=>{var lang=t.language||"und";var key=`${lang}_${t.audioId||0}`;if(!audioMap[key]){var label="Âm thanh chuẩn (Stereo)";if(lang==="vi"||lang==="vie")label="Tiếng Việt (Stereo)";else if(lang==="en"||lang==="eng")label="Tiếng Anh (English)";else if(t.audioId)label=`\u0110\u01B0\u1EDDng ti\u1EBFng ${t.audioId}`;audioMap[key]={label,value:key,language:lang,track:t,active:t.active}}});var list=Object.values(audioMap);if(list.length>0)return list}catch(e){}}return[{label:"Tiếng Việt (Gốc)",value:"vi",active:true},{label:"Âm thanh 2",value:"und",active:false}]}function setRealAudioTrack(audioObj){if(!playerInstance||!audioObj)return;try{if(audioObj.track&&playerInstance.selectVariantTrack){playerInstance.selectVariantTrack(audioObj.track,false)}else if(audioObj.language&&playerInstance.selectAudioLanguage){playerInstance.selectAudioLanguage(audioObj.language)}}catch(e){}}function parseClearKey(drmString){if(!drmString)return null;if(_typeof(drmString)==="object")return drmString;try{var keyString=drmString.trim();if(keyString.startsWith("http")){if(keyString.includes("?id=")){keyString=keyString.split("?id=")[1]||""}else if(keyString.includes("&id=")){keyString=keyString.split("&id=")[1]||""}}var parts=keyString.split(":");if(parts.length===2&&parts[0].length>=16&&parts[1].length>=16){return{[parts[0].trim().toLowerCase()]:parts[1].trim().toLowerCase()}}}catch(e){}return null}function initPlayer(videoElement){return new Promise(resolve=>{currentVideoElement=videoElement;if(videoElement){videoElement.addEventListener("playing",()=>{if(onMediaStatsChangedCb)onMediaStatsChangedCb(getRealMediaStats())});videoElement.addEventListener("loadedmetadata",()=>{if(onMediaStatsChangedCb)onMediaStatsChangedCb(getRealMediaStats())});videoElement.addEventListener("error",()=>{var err=videoElement.error;console.warn("[Video] Native error:",err?err.message:"unknown")})}var sh=getShakaSafe();if(sh&&sh.Player&&sh.Player.isBrowserSupported&&sh.Player.isBrowserSupported()){try{if(sh.polyfill&&sh.polyfill.installAll){sh.polyfill.installAll()}playerInstance=new sh.Player(videoElement);playerInstance.configure({streaming:{bufferingGoal:2,rebufferingGoal:0.1,jumpLargeGaps:true,retryParameters:{maxAttempts:2,timeout:3e3}}});playerInstance.addEventListener("error",event=>{var err=event.detail;if(err&&err.severity===2){handleStreamFailure(err)}});console.log("[Player] Đã khởi tạo Shaka Player thành công!")}catch(e){console.warn("[Player] Shaka khởi tạo thất bại, dùng Native Video:",e.message);playerInstance=null}}else{console.log("[Player] Dùng Native Video Engine của Samsung Tizen!")}resolve(playerInstance)})}function handleStreamFailure(err){if(isSwitchingBackup||!currentChannelData){if(onPlaybackErrorCb)onPlaybackErrorCb(err);return}var sources=currentChannelData.sources||[];var nextIndex=(currentChannelData.activeSourceIndex||0)+1;if(nextIndex<sources.length){isSwitchingBackup=true;currentChannelData.activeSourceIndex=nextIndex;var backupSource=sources[nextIndex];console.warn(`[Player] \u0110\u1ED5i sang ngu\u1ED3n d\u1EF1 ph\xF2ng [${nextIndex+1}/${sources.length}]:`,backupSource.url);currentChannelData.url=backupSource.url;currentChannelData.licenseKey=backupSource.licenseKey;if(backupSource.userAgent)currentChannelData.userAgent=backupSource.userAgent;playCurrentChannelInternal();isSwitchingBackup=false}else{if(onPlaybackErrorCb)onPlaybackErrorCb(err)}}function playCurrentChannelInternal(){if(!currentChannelData||!currentVideoElement)return;var url=currentChannelData.url;var isDrm=!!currentChannelData.licenseKey||url.includes(".mpd");if(playerInstance&&isDrm){try{playerInstance.unload().catch(()=>{});var drmConfig={servers:{},clearKeys:{}};if(currentChannelData.licenseKey){var clearKeyObj=parseClearKey(currentChannelData.licenseKey);if(clearKeyObj){drmConfig.clearKeys=clearKeyObj}else{drmConfig.servers["com.widevine.alpha"]=currentChannelData.licenseKey}}playerInstance.configure({drm:drmConfig});playerInstance.load(url).then(()=>{currentVideoElement.play().catch(()=>{});if(onMediaStatsChangedCb){setTimeout(()=>onMediaStatsChangedCb(getRealMediaStats()),500)}}).catch(e=>{console.warn("[Player] Shaka load thất bại, thử Native Video:",e);playWithNativeVideo(url)});return}catch(e){console.warn("[Player] Shaka error, chuyển Native Video:",e)}}playWithNativeVideo(url)}function playWithNativeVideo(streamUrl){if(!currentVideoElement)return;try{if(playerInstance){try{playerInstance.unload().catch(()=>{})}catch(e){}}currentVideoElement.src=streamUrl;var playPromise=currentVideoElement.play();if(playPromise!==void 0){playPromise.catch(err=>{console.warn("[Native Video] Autoplay muted fallback:",err);currentVideoElement.muted=true;currentVideoElement.play().then(()=>{var unmute=()=>{if(currentVideoElement){currentVideoElement.muted=false}window.removeEventListener("click",unmute);window.removeEventListener("keydown",unmute)};window.addEventListener("click",unmute,{once:true});window.addEventListener("keydown",unmute,{once:true})}).catch(()=>{})})}if(onMediaStatsChangedCb){setTimeout(()=>onMediaStatsChangedCb(getRealMediaStats()),600)}}catch(err){console.error("[Native Video] Play error:",err)}}function playStream(channel,onStatusUpdate){currentChannelData=channel;if(!channel)return;currentChannelData.activeSourceIndex=0;isAbrActive=true;isSwitchingBackup=false;if(channel.sources&&channel.sources.length>0){var firstSrc=channel.sources[0];channel.url=firstSrc.url;channel.licenseKey=firstSrc.licenseKey;if(firstSrc.userAgent)channel.userAgent=firstSrc.userAgent}if(onStatusUpdate)onStatusUpdate(`\u0110ang n\u1EA1p: ${channel.name}...`);playCurrentChannelInternal()}function stopStream(){if(currentVideoElement){try{currentVideoElement.pause();currentVideoElement.removeAttribute("src");currentVideoElement.load()}catch(e){}}if(playerInstance){try{playerInstance.unload().catch(()=>{})}catch(e){}}}// src/epg.js
+var EPG_SOURCE_1="https://lichphatsong.io.vn/epg.xml";var EPG_SOURCE_2="https://epg.blaosolar.vn/schedule/epg.xml";var epgData={};var isLoaded=false;function padZero(num){return num<10?"0"+num:""+num}function parseXMLTVDate(str){if(!str)return null;try{var clean=str.trim();var y=parseInt(clean.substring(0,4),10);var m=parseInt(clean.substring(4,6),10)-1;var d=parseInt(clean.substring(6,8),10);var h=parseInt(clean.substring(8,10),10);var min=parseInt(clean.substring(10,12),10);var s=parseInt(clean.substring(12,14),10)||0;return new Date(y,m,d,h,min,s)}catch(e){return null}}function removeVietnameseTones(str){if(!str)return"";str=str.replace(/à|á|ạ|ả|ã|â|ầ|ấ|ậ|ẩ|ẫ|ă|ằ|ắ|ặ|ẳ|ẵ/g,"a");str=str.replace(/è|é|ẹ|ẻ|ẽ|ê|ề|ế|ệ|ể|ễ/g,"e");str=str.replace(/ì|í|ị|ỉ|ĩ/g,"i");str=str.replace(/ò|ó|ọ|ỏ|õ|ô|ồ|ố|ộ|ổ|ỗ|ơ|ờ|ớ|ợ|ở|ỡ/g,"o");str=str.replace(/ù|ú|ụ|ủ|ũ|ư|ừ|ứ|ự|ử|ữ/g,"u");str=str.replace(/ỳ|ý|Ỵ|Ỷ|Ỹ/g,"y");str=str.replace(/đ/g,"d");str=str.replace(/À|Á|Ạ|Ả|Ã|Â|Ầ|Ấ|Ậ|Ẩ|Ẫ|Ă|Ằ|Ắ|Ặ|Ẳ|Ẵ/g,"A");str=str.replace(/È|É|Ẹ|Ẻ|Ẽ|Ê|Ề|Ế|Ệ|Ể|Ễ/g,"E");str=str.replace(/Ì|Í|Ị|Ỉ|Ĩ/g,"I");str=str.replace(/Ò|Ó|Ọ|Ỏ|Õ|Ô|Ồ|Ố|Ộ|Ổ|Ỗ|Ơ|Ờ|Ớ|Ợ|Ở|Ỡ/g,"O");str=str.replace(/Ù|Ú|Ụ|Ủ|Ũ|Ư|Ừ|Ứ|Ự|Ử|Ữ/g,"U");str=str.replace(/Ỳ|Ý|Ỵ|Ỷ|Ỹ/g,"Y");str=str.replace(/Đ/g,"D");return str}function normalizeEpgName(name){if(!name)return"";var s=removeVietnameseTones(name.toLowerCase());s=s.replace(/[\s\-_.:/()\[\]]/g,"");s=s.replace(/(fhd|uhd|4k|2k|hd|sd|50fps|60fps|hevc|h265|raw|tv)$/g,"");if(s.startsWith("vinhlong")||/^thvl\d+$/.test(s)){var num=s.match(/\d+/);return num?`thvl${num[0]}`:"thvl1"}if(s.startsWith("hanoi")||/^h\d+$/.test(s)){var _num=s.match(/\d+/);return _num?`hanoi${_num[0]}`:"hanoi1"}if(s.startsWith("angiang")||/^atv\d+$/.test(s)){var _num2=s.match(/\d+/);return _num2?`angiang${_num2[0]}`:"angiang1"}if(s.startsWith("lamdong")||/^ltv\d+$/.test(s)){var _num3=s.match(/\d+/);return _num3?`lamdong${_num3[0]}`:"lamdong1"}if(s.startsWith("haiphong")||s.startsWith("thp")){var _num4=s.match(/\d+/);return _num4?`haiphong${_num4[0]}`:"haiphong1"}if(s.startsWith("vtv")){var _num5=s.match(/\d+/);if(_num5){if(s.includes("tnb")||s.includes("taynam"))return`vtv${_num5[0]}tnb`;if(s.includes("tn")||s.includes("taynguyen"))return`vtv${_num5[0]}tn`;return`vtv${_num5[0]}`}}if(s.startsWith("htv")){var _num6=s.match(/\d+/);if(_num6)return`htv${_num6[0]}`;if(s.includes("thethao"))return"htvthethao";if(s.includes("thuanviet"))return"htvcthuanviet";if(s.includes("giadinh"))return"htvcgiadinh";if(s.includes("phunu"))return"htvcphunu";if(s.includes("dulich"))return"htvcdulich";if(s.includes("canhac")||s.includes("music"))return"htvccanhac";if(s.includes("plus"))return"htvcplus";if(s.includes("phim")||s.includes("movies"))return"htvcmovies"}if(s.startsWith("sctv")){var _num7=s.match(/\d+/);if(_num7)return`sctv${_num7[0]}`;if(s.includes("phim"))return"sctvphim"}if(s.includes("viegiaitri")||s.includes("giaitritv"))return"onviegiaitri";if(s.includes("phimviet"))return"onphimviet";if(s.includes("onmovies")||s.includes("vanhoa"))return"onmovies";if(s.includes("echannel")||s.includes("onechannel"))return"onechannel";if(s.includes("o2tv")||s.includes("ono2tv"))return"ono2tv";if(s.includes("bibi"))return"onbibi";if(s.includes("infotv")||s.includes("oninfotv"))return"oninfotv";if(s.includes("oncine")||s.includes("filmtv"))return"oncine";if(s.includes("onstyle")||s.includes("styletv"))return"onstyle";if(s.includes("onmusic")||s.includes("mchannel"))return"onmusic";if(s.includes("ontrending")||s.includes("yeah1tv"))return"ontrending";if(s.includes("viedramas")||s.includes("ddramas"))return"onviedramas";if(s.includes("vfamily"))return"onvfamily";if(s.includes("onkids"))return"onkids";if(s.includes("onlife")||s.includes("lifetv"))return"onlife";if(s.includes("onsports")||s.includes("thethaotv")||s.includes("onsport"))return"onsports";if(s.includes("onfootball")||s.includes("football"))return"onfootball";return s}function isEpgReady(){return isLoaded}function parseEpgXmlFast(xmlText){var result={};if(!xmlText||typeof xmlText!=="string")return result;try{var channelMap={};var chRegex=/<channel\s+id="([^"]+)"[^>]*>[\s\S]*?<display-name[^>]*>([^<]+)<\/display-name>/gi;var m;while((m=chRegex.exec(xmlText))!==null){var chId=m[1].toLowerCase();var norm=normalizeEpgName(m[2])||normalizeEpgName(chId);if(chId&&norm){channelMap[chId]=norm}}var progRegex=/<programme[^>]*channel="([^"]+)"[^>]*start="([^"]+)"[^>]*stop="([^"]+)"[^>]*>[\s\S]*?<title[^>]*>([^<]+)<\/title>(?:[\s\S]*?<desc[^>]*>([^<]*)<\/desc>)?/gi;var p;while((p=progRegex.exec(xmlText))!==null){var _chId=p[1].toLowerCase();var normKey=channelMap[_chId]||normalizeEpgName(_chId);if(!normKey)continue;var start=parseXMLTVDate(p[2]);var stop=parseXMLTVDate(p[3]);var title=(p[4]||"").trim().toUpperCase();var desc=(p[5]||"").trim();if(!result[normKey]){result[normKey]=[]}result[normKey].push({start,stop,title,desc})}}catch(err){console.error("[EPG] Lỗi phân tích XML:",err)}return result}function fetchXml(url,callback){var done=false;var xhr=new XMLHttpRequest;var bustUrl=`${url}?_t=${Date.now()}`;xhr.open("GET",bustUrl,true);xhr.timeout=2e4;xhr.onreadystatechange=function(){if(xhr.readyState===4&&!done){done=true;if(xhr.status>=200&&xhr.status<300){callback(null,xhr.responseText)}else{callback(new Error(`HTTP ${xhr.status}`),null)}}};xhr.onerror=function(){if(!done){done=true;callback(new Error("Network error"),null)}};xhr.ontimeout=function(){if(!done){done=true;callback(new Error("Timeout"),null)}};try{xhr.send()}catch(e){if(!done){done=true;callback(e,null)}}}function loadEPG(onLoaded){fetchXml(EPG_SOURCE_1,(err1,xml1)=>{if(!err1&&xml1){var src1Data=parseEpgXmlFast(xml1);Object.assign(epgData,src1Data);isLoaded=true;console.log(`[EPG] \u0110\xE3 n\u1EA1p si\xEAu t\u1ED1c Ngu\u1ED3n 1: ${Object.keys(epgData).length} k\xEAnh.`);if(onLoaded)onLoaded()}fetchXml(EPG_SOURCE_2,(err2,xml2)=>{if(!err2&&xml2){var src2Data=parseEpgXmlFast(xml2);var now=/* @__PURE__ */new Date;var added=0;var updated=0;Object.keys(src2Data).forEach(key=>{var s2List=src2Data[key]||[];if(s2List.length===0)return;var s1List=epgData[key]||[];var s1HasValid=s1List.some(p=>p.stop>=now);var s2HasValid=s2List.some(p=>p.stop>=now);if(s1List.length===0){epgData[key]=s2List;added++}else if(!s1HasValid&&s2HasValid){epgData[key]=s2List;updated++}});isLoaded=true;console.log(`[EPG] Ngu\u1ED3n 2: Th\xEAm m\u1EDBi ${added} k\xEAnh, C\u1EADp nh\u1EADt ${updated} k\xEAnh. T\u1ED5ng: ${Object.keys(epgData).length} k\xEAnh EPG!`);if(onLoaded)onLoaded()}else{isLoaded=true;if(onLoaded)onLoaded()}})})}var formatHM=d=>{if(!d)return"--:--";return`${padZero(d.getHours())}:${padZero(d.getMinutes())}`};function getChannelEPG(channelName){var norm=normalizeEpgName(channelName);var list=epgData[norm]||[];if(list.length===0)return null;var now=/* @__PURE__ */new Date;var currentProg=null;var nextProg=null;for(var i=0;i<list.length;i++){var p=list[i];if(p.start&&p.stop&&now>=p.start&&now<=p.stop){currentProg=p;nextProg=list[i+1]||null;break}}if(!currentProg)return null;var total=currentProg.stop.getTime()-currentProg.start.getTime();var elapsed=now.getTime()-currentProg.start.getTime();var progressPercent=Math.min(100,Math.max(0,Math.round(elapsed/Math.max(1,total)*100)));return{current:{title:currentProg.title,desc:currentProg.desc,startTimeStr:formatHM(currentProg.start),stopTimeStr:formatHM(currentProg.stop),progressPercent},next:nextProg?{title:nextProg.title,startTimeStr:formatHM(nextProg.start),stopTimeStr:formatHM(nextProg.stop)}:null}}function getChannelFullSchedule(channelName){var norm=normalizeEpgName(channelName);var list=epgData[norm]||[];if(list.length===0)return[];var now=/* @__PURE__ */new Date;return list.map(p=>{var isPast=p.stop<now;var isCurrent=p.start<=now&&p.stop>=now;var isFuture=p.start>now;return{title:p.title,startStr:formatHM(p.start),stopStr:formatHM(p.stop),isPast,isCurrent,isFuture}})}// src/osd.js
 var osdHideTimeout=null;var currentActionIndex=0;var onOpenDrawerCallback=null;var onPlayChannelCallback=null;var isDialogOpen=false;var dialogType=null;var dialogOptions=[];var dialogFocusedIndex=0;var epgChannelsList=[];var epgSelectedChannelIndex=0;var epgActiveColumn="schedule";var ACTION_BUTTONS=["btn-action-drawer","btn-action-epg","btn-action-quality","btn-action-audio"];function safeScroll(el,blockPos){if(!el)return;try{if(typeof el.scrollIntoView==="function"){if(blockPos==="center"||blockPos==="nearest"){el.scrollIntoView({block:blockPos,behavior:"auto"})}else{el.scrollIntoView(false)}}}catch(e){try{el.scrollIntoView(false)}catch(err){}}}function setOpenDrawerCallback(cb){onOpenDrawerCallback=cb}function setPlayChannelCallback(cb){onPlayChannelCallback=cb}function showCenterPlayPause(type){var layer=document.getElementById("center-state-layer");var icon=document.getElementById("center-state-icon");if(!layer)return;if(type==="pause"){if(icon){icon.innerHTML=`<rect x="6" y="4" width="4" height="16"></rect><rect x="14" y="4" width="4" height="16"></rect>`}layer.classList.add("active")}else if(type==="play"){if(icon){icon.innerHTML=`<polygon points="5 3 19 12 5 21 5 3"></polygon>`}layer.classList.add("active");setTimeout(()=>{layer.classList.remove("active")},800)}else{layer.classList.remove("active")}}function updateOsdInfo(ch,isDrawerOpen2){var banner=document.getElementById("dl-osd-banner");if(!banner||!ch)return;var chNameEl=document.getElementById("osd-channel-name");var progNameEl=document.getElementById("osd-program-name");var logoEl=document.getElementById("osd-logo");var timelineRowEl=document.getElementById("osd-timeline-row");var actionRowEl=document.querySelector(".osd-action-pills-row");if(chNameEl)chNameEl.innerText=ch.name;if(logoEl){logoEl.innerHTML=ch.logo&&ch.logo.trim().length>0?`<img src="${ch.logo}" alt="logo" onerror="this.style.display='none';" />`:""}var epgReady=isEpgReady();var epg=getChannelEPG(ch.name);if(!epgReady){if(progNameEl){progNameEl.style.display="block";progNameEl.innerHTML=`<div class="skeleton-box skeleton-title" style="width: 140px; height: 12px; margin: 2px 0;"></div>`}if(timelineRowEl){timelineRowEl.style.display="flex";timelineRowEl.innerHTML=`
         <div class="skeleton-box" style="width: 34px; height: 12px; border-radius: 3px;"></div>
         <div class="osd-timeline-track"><div class="skeleton-box skeleton-timeline" style="width: 100%; height: 100%;"></div></div>
@@ -1013,8 +927,8 @@ var categoryList=[];var groupedChannels={};var allChannelsList=[];var currentCat
       </div>
     `;row.onclick=e=>{e.stopPropagation();blurSearchInput();currentChannelIndex=idx;updateFocus();if(onSelectChannelCallback)onSelectChannelCallback(ch)};list.appendChild(row)});updateFocus()}function updateFocus(){var items=document.querySelectorAll(".channel-row-item");items.forEach((it,idx)=>{var isFoc=idx===currentChannelIndex&&!isSearchInputActive;it.classList.toggle("focused",isFoc);if(isFoc){safeScrollIntoView(it)}})}function updateWindowsClock(){try{var now=/* @__PURE__ */new Date;var timeEl=document.getElementById("drawer-time");var dateEl=document.getElementById("drawer-date");if(timeEl&&dateEl){var hh=padZero2(now.getHours());var mm=padZero2(now.getMinutes());var ss=padZero2(now.getSeconds());timeEl.innerText=`${hh}:${mm}:${ss}`;var dd=padZero2(now.getDate());var month=padZero2(now.getMonth()+1);var yyyy=now.getFullYear();dateEl.innerText=`${dd}-${month}-${yyyy}`}}catch(e){}}// src/parser.js
 function parseM3U(content){if(!content||typeof content!=="string")return[];var lines=content.split(/\r?\n/);var channels=[];var current={};var _iterator=_createForOfIteratorHelper(lines),_step;try{for(_iterator.s();!(_step=_iterator.n()).done;){var rawLine=_step.value;var line=rawLine.trim();if(!line)continue;if(line.startsWith("#EXTINF:")){var commaIndex=line.lastIndexOf(",");var name=commaIndex!==-1?line.substring(commaIndex+1).trim():"Kênh truyền hình";var logoMatch=line.match(/tvg-logo="([^"]+)"/i);var groupMatch=line.match(/group-title="([^"]+)"/i);var idMatch=line.match(/tvg-id="([^"]+)"/i);current={name:name||"Kênh không tên",logo:logoMatch?logoMatch[1]:"",group:groupMatch?groupMatch[1]:"Mặc định",id:idMatch?idMatch[1]:""}}else if(line.startsWith("#KODIPROP:inputstream.adaptive.license_key=")){current.licenseKey=line.split("=")[1].trim()}else if(line.startsWith("#KODIPROP:inputstream.adaptive.manifest_type=")){current.manifestType=line.split("=")[1].trim()}else if(line.startsWith("#KODIPROP:inputstream.adaptive.license_type=")){current.licenseType=line.split("=")[1].trim()}else if(line.startsWith("#EXTVLCOPT:http-user-agent=")){current.userAgent=line.split("=")[1].trim()}else if(line.startsWith("http://")||line.startsWith("https://")){current.url=line;if(current.name){channels.push(_objectSpread({},current))}current={}}}}catch(err){_iterator.e(err)}finally{_iterator.f()}return channels}// src/sources.js
-var SOURCE_1_URL="https://raw.githubusercontent.com/hieu-TQS/error/refs/heads/main/error.m3u";var SOURCE_2_URL="https://raw.githubusercontent.com/vuminhthanh12/vuminhthanh12/refs/heads/main/vmttv";var SOURCE_3_URL="https://tv.vietanhtv.top/tv/";function xhrGet(url,callback){var done=false;var xhr=new XMLHttpRequest;xhr.open("GET",url,true);xhr.timeout=1e4;xhr.onreadystatechange=function(){if(xhr.readyState===4&&!done){done=true;if(xhr.status>=200&&xhr.status<300){callback(null,xhr.responseText)}else{callback(new Error(`HTTP ${xhr.status}`),null)}}};xhr.onerror=function(){if(!done){done=true;callback(new Error("Network error"),null)}};xhr.ontimeout=function(){if(!done){done=true;callback(new Error("Timeout"),null)}};try{xhr.send()}catch(e){if(!done){done=true;callback(e,null)}}}function getFetchUrl(url){var cleanUrl=url.trim();if(cleanUrl.indexOf("tv.vietanhtv.top/tv")!==-1&&cleanUrl.slice(-1)!=="/"){cleanUrl+="/"}var separator=cleanUrl.includes("?")?"&":"?";return`${cleanUrl}${separator}_t=${Date.now()}`}function cleanTitle(str){if(!str||typeof str!=="string")return"";return str.replace(/[\uD800-\uDBFF][\uDC00-\uDFFF]/g,"").replace(/[\u2600-\u27BF\u2300-\u23FF\u2B50\u200D\uFE0F]/g,"").replace(/^[\s\|\-\_\:\/\•\●\★\—\–\.\,]+|[\s\|\-\_\:\/\•\●\★\—\–\.\,]+$/g,"").trim()}function removeVietnameseTones3(str){str=str.replace(/à|á|ạ|ả|ã|â|ầ|ấ|ậ|ẩ|ẫ|ă|ằ|ắ|ặ|ẳ|ẵ/g,"a");str=str.replace(/è|é|ẹ|ẻ|ẽ|ê|ề|ế|ệ|ể|ễ/g,"e");str=str.replace(/ì|í|ị|ỉ|ĩ/g,"i");str=str.replace(/ò|ó|ọ|ỏ|õ|ô|ồ|ố|ộ|ổ|ỗ|ơ|ờ|ớ|ợ|ở|ỡ/g,"o");str=str.replace(/ù|ú|ụ|ủ|ũ|ư|ừ|ứ|ự|ử|ữ/g,"u");str=str.replace(/ỳ|ý|Ỵ|Ỷ|Ỹ/g,"y");str=str.replace(/đ/g,"d");str=str.replace(/À|Á|Ạ|Ả|Ã|Â|Ầ|Ấ|Ậ|Ẩ|Ẫ|Ă|Ằ|Ắ|Ặ|Ẳ|Ẵ/g,"A");str=str.replace(/È|É|Ẹ|Ẻ|Ẽ|Ê|Ề|Ế|Ệ|Ể|Ễ/g,"E");str=str.replace(/Ì|Í|Ị|Ỉ|Ĩ/g,"I");str=str.replace(/Ò|Ó|Ọ|Ỏ|Õ|Ô|Ồ|Ố|Ộ|Ổ|Ỗ|Ơ|Ờ|Ớ|Ợ|Ở|Ỡ/g,"O");str=str.replace(/Ù|Ú|Ụ|Ủ|Ũ|Ư|Ừ|Ứ|Ự|Ử|Ữ/g,"U");str=str.replace(/Ỳ|Ý|Ỵ|Ỷ|Ỹ/g,"Y");str=str.replace(/Đ/g,"D");return str}function isBlockedChannelOrGroup(name,group){var n=removeVietnameseTones3((name||"").toLowerCase());var g=removeVietnameseTones3((group||"").toLowerCase());var blockedWords=["update","du phong","backup","thong bao","huong dan","quang cao","nap tien","gia han"];return blockedWords.some(w=>n.includes(w)||g.includes(w))}function standardizeCategory(cat){var cleaned=cleanTitle(cat);var norm=removeVietnameseTones3(cleaned.toLowerCase()).replace(/[\s\-_]/g,"");if(norm.includes("vtv")||norm.includes("daiquocgia"))return"VTV";if(norm.includes("vtvcab")||norm.includes("onlive")||norm.includes("oncine"))return"VTVcab";if(norm.includes("htv")||norm.includes("htvc")||norm.includes("tphcm"))return"HTV & HTVC";if(norm.includes("sctv")||norm.includes("saigontourist"))return"SCTV";if(norm.includes("thethao")||norm.includes("sport")||norm.includes("kplus")||norm.includes("k+"))return"Thể Thao & K+";if(norm.includes("thvl")||norm.includes("vinhlong"))return"Truyền hình Vĩnh Long";if(norm.includes("phim")||norm.includes("movie")||norm.includes("cinema")||norm.includes("hbo"))return"Phim Truyện";if(norm.includes("thieunhi")||norm.includes("kids")||norm.includes("cartoon")||norm.includes("hoathinh"))return"Thiếu Nhi";if(norm.includes("tintuc")||norm.includes("news")||norm.includes("thoisu"))return"Tin Tức & Thời Sự";if(norm.includes("giaitri")||norm.includes("amnhac")||norm.includes("music")||norm.includes("show"))return"Giải Trí & Âm Nhạc";if(norm.includes("khoahoc")||norm.includes("khampha")||norm.includes("discovery")||norm.includes("natgeo"))return"Khám Phá";if(norm.includes("quocte")||norm.includes("international")||norm.includes("world"))return"Kênh Quốc Tế";if(norm.includes("diaphuong")||norm.includes("tinh")||norm.includes("local"))return"Kênh Địa Phương";return"Kênh Tổng Hợp"}function normalizeName(name,tvgId){var str=(name||"")+" "+(tvgId||"");str=cleanTitle(str);var s=removeVietnameseTones3(str.toLowerCase());s=s.replace(/(fhd|uhd|4k|2k|hd|sd|50fps|60fps|hevc|h265|raw|tv|backup|du phong|vip|server\s*\d+|nguon\s*\d+)/g,"");s=s.replace(/[^a-z0-9]/g,"").trim();if(s.startsWith("vinhlong")||s.startsWith("thvl")){var num=s.match(/\d+/);return num?`thvl${num[0]}`:"thvl1"}if(s.startsWith("hanoi")||s.startsWith("hn")||/^h\d+$/.test(s)){var _num8=s.match(/\d+/);return _num8?`hanoi${_num8[0]}`:"hanoi1"}if(s.startsWith("danang")||s.startsWith("dnrt")||s.startsWith("dnang")||s.startsWith("dnrt1")||s.startsWith("dnrt2")){var _num9=s.match(/\d+/);return _num9?`danang${_num9[0]}`:"danang1"}if(s.startsWith("dongnai")||s.startsWith("dnnrtv")||s.startsWith("dnrtv")||/^dn\d+$/.test(s)||s.startsWith("dn")){var _num0=s.match(/\d+/);return _num0?`dongnai${_num0[0]}`:"dongnai1"}if(s.startsWith("dongthap")||s.startsWith("thdt")||s.startsWith("dthap")){var _num1=s.match(/\d+/);return _num1?`dongthap${_num1[0]}`:"dongthap1"}if(s.startsWith("quangninh")||s.startsWith("qtv")||s.startsWith("qni")){var _num10=s.match(/\d+/);return _num10?`quangninh${_num10[0]}`:"quangninh1"}if(s.startsWith("cantho")||s.startsWith("ctho")){var _num11=s.match(/\d+/);return _num11?`cantho${_num11[0]}`:"cantho1"}if(s.startsWith("quangngai")||s.startsWith("qngtv")||s.startsWith("qng")||/^qn\d+$/.test(s)){var _num12=s.match(/\d+/);return _num12?`quangngai${_num12[0]}`:"quangngai1"}if(s.startsWith("angiang")||/^atv\d+$/.test(s)||s.startsWith("atv")){var _num13=s.match(/\d+/);return _num13?`angiang${_num13[0]}`:"angiang1"}if(s.startsWith("lamdong")||/^ltv\d+$/.test(s)||s.startsWith("ltv")){var _num14=s.match(/\d+/);return _num14?`lamdong${_num14[0]}`:"lamdong1"}if(s.startsWith("haiphong")||s.startsWith("thp")){var _num15=s.match(/\d+/);return _num15?`haiphong${_num15[0]}`:"haiphong1"}if(s.startsWith("tayninh")||s.startsWith("tayni")||s.startsWith("tn"))return"tayninh";if(s.startsWith("camau")||s.startsWith("ctv"))return"camau";if(s.startsWith("daklak")||s.startsWith("drt"))return"daklak";if(s.startsWith("gialai")||s.startsWith("gtv"))return"gialai";if(s.startsWith("hatinh")||s.startsWith("bht")||s.startsWith("bhttv"))return"hatinh";if(s.startsWith("hungyen")||s.startsWith("hy")||s.startsWith("hytv"))return"hungyen";if(s.startsWith("bacninh")||s.startsWith("bacn")||s.startsWith("btv"))return"bacninh";if(s.startsWith("langson")||s.startsWith("lstv"))return"langson";if(s.startsWith("laocai")||s.startsWith("thlc"))return"laocai";if(s.startsWith("nghean"))return"nghean";if(s.startsWith("phutho")||s.startsWith("ptv"))return"phutho";if(s.startsWith("quangtri")||s.startsWith("qttv"))return"quangtri";if(s.startsWith("thainguyen"))return"thainguyen";if(s.startsWith("tuyenquang")||s.startsWith("tuyenq")||s.startsWith("ttv"))return"tuyenquang";if(s.startsWith("dienbien")||s.startsWith("dtv"))return"dienbien";if(s.startsWith("thanhhoa"))return"thanhhoa";if(s.startsWith("ninhbinh"))return"ninhbinh";if(s.startsWith("caobang")||s.startsWith("crtv")||s.startsWith("rtv"))return"caobang";if(s.startsWith("sonla")||s.startsWith("stv"))return"sonla";if(s.startsWith("hue"))return"hue";if(s.startsWith("khanhhoa")||s.startsWith("ktv")){var _num16=s.match(/\d+/);return _num16?`khanhhoa${_num16[0]}`:"khanhhoa"}if(s.startsWith("vtv")){var _num17=s.match(/\d+/);if(_num17){if(s.includes("tnb")||s.includes("taynam"))return`vtv${_num17[0]}tnb`;if(s.includes("tn")||s.includes("taynguyen"))return`vtv${_num17[0]}tn`;return`vtv${_num17[0]}`}}if(s.startsWith("htv")){var _num18=s.match(/\d+/);if(_num18)return`htv${_num18[0]}`;if(s.includes("thethao"))return"htvthethao";if(s.includes("thuanviet"))return"htvcthuanviet";if(s.includes("giadinh"))return"htvcgiadinh";if(s.includes("phunu"))return"htvcphunu";if(s.includes("dulich"))return"htvcdulich";if(s.includes("canhac")||s.includes("music"))return"htvccanhac";if(s.includes("plus"))return"htvcplus";if(s.includes("phim")||s.includes("movies"))return"htvcmovies"}if(s.startsWith("sctv")){var _num19=s.match(/\d+/);if(_num19)return`sctv${_num19[0]}`;if(s.includes("phim"))return"sctvphim"}return s||"channel"}function formatPrettyChannelName(rawName){var name=cleanTitle(rawName);name=name.replace(/\s+(FHD|UHD|4K|2K|HD|SD|50fps|60fps|HEVC|H265|RAW)(\s+|$)/gi," ");name=name.replace(/^(Kênh|Kenh|Channel)\s+/i,"");return name.trim()}function fixChannelStream(ch){var norm=normalizeName(ch.name,ch.id);if(norm==="vtv3"){ch.url="https://live.fptplay53.net/live/media/vtv3hd/live-hls-avc/vtv3hd.m3u8"}else if(norm==="vtv1"){ch.url="https://live.fptplay53.net/live/media/vtv1hd/live-hls-avc/vtv1hd.m3u8"}else if(norm==="vtv6"||norm==="vtvcantho"){ch.url="https://live.fptplay53.net/live/media/vtv6hd/live-hls-avc/vtv6hd.m3u8"}else if(norm.includes("quocphong")){ch.url="https://live.fptplay53.net/live/media/quocphongvn/live-hls-avc/quocphongvn.m3u8"}else if(norm.includes("antv")||norm.includes("anninh")){ch.url="https://live.fptplay53.net/fnxhd2/anninhtv_vhls.smil/chunklist.m3u8"}}function loadAndMergePlaylists(callback){var sources=[{url:SOURCE_1_URL,name:"SuperOK"},{url:SOURCE_2_URL,name:"VMT"},{url:SOURCE_3_URL,name:"VietAnhTV"}];var completed=0;var parsedLists=[];sources.forEach((srcObj,index)=>{xhrGet(getFetchUrl(srcObj.url),(err,text)=>{if(err){console.warn(`[Sources] Kh\xF4ng th\u1EC3 t\u1EA3i ${srcObj.name}:`,err.message)}parsedLists[index]={name:srcObj.name,channels:!err&&text?parseM3U(text):[]};completed++;if(completed===sources.length){var mergedObj={};var mergedList=[];for(var i=0;i<parsedLists.length;i++){var srcData=parsedLists[i];if(!srcData||!srcData.channels)continue;var _loop=function _loop(){var ch=srcData.channels[j];if(isBlockedChannelOrGroup(ch.name,ch.group)){return 0;// continue
-}var cleanGroup=standardizeCategory(ch.group);var prettyName=formatPrettyChannelName(ch.name);ch.name=prettyName;ch.group=cleanGroup;fixChannelStream(ch);var norm=normalizeName(ch.name,ch.id);if(!norm)return 0;// continue
+var SOURCE_1_URL="https://raw.githubusercontent.com/hieu-TQS/error/refs/heads/main/error.m3u";var SOURCE_2_URL="https://raw.githubusercontent.com/vuminhthanh12/vuminhthanh12/refs/heads/main/vmttv";var SOURCE_3_URL="https://tv.vietanhtv.top/tv/";function xhrGet(url,callback){var done=false;var xhr=new XMLHttpRequest;xhr.open("GET",url,true);xhr.timeout=1e4;xhr.onreadystatechange=function(){if(xhr.readyState===4&&!done){done=true;if(xhr.status>=200&&xhr.status<300){callback(null,xhr.responseText)}else{callback(new Error(`HTTP ${xhr.status}`),null)}}};xhr.onerror=function(){if(!done){done=true;callback(new Error("Network error"),null)}};xhr.ontimeout=function(){if(!done){done=true;callback(new Error("Timeout"),null)}};try{xhr.send()}catch(e){if(!done){done=true;callback(e,null)}}}function getFetchUrl(url){var cleanUrl=url.trim();if(cleanUrl.indexOf("tv.vietanhtv.top/tv")!==-1&&cleanUrl.slice(-1)!=="/"){cleanUrl+="/"}var separator=cleanUrl.includes("?")?"&":"?";return`${cleanUrl}${separator}_t=${Date.now()}`}function cleanTitle(str){if(!str||typeof str!=="string")return"";return str.replace(/[\uD800-\uDBFF][\uDC00-\uDFFF]/g,"").replace(/[\u2600-\u27BF\u2300-\u23FF\u2B50\u200D\uFE0F]/g,"").replace(/^[\s\|\-\_\:\/\•\●\★\—\–\.\,]+|[\s\|\-\_\:\/\•\●\★\—\–\.\,]+$/g,"").trim()}function removeVietnameseTones3(str){str=str.replace(/à|á|ạ|ả|ã|â|ầ|ấ|ậ|ẩ|ẫ|ă|ằ|ắ|ặ|ẳ|ẵ/g,"a");str=str.replace(/è|é|ẹ|ẻ|ẽ|ê|ề|ế|ệ|ể|ễ/g,"e");str=str.replace(/ì|í|ị|ỉ|ĩ/g,"i");str=str.replace(/ò|ó|ọ|ỏ|õ|ô|ồ|ố|ộ|ổ|ỗ|ơ|ờ|ớ|ợ|ở|ỡ/g,"o");str=str.replace(/ù|ú|ụ|ủ|ũ|ư|ừ|ứ|ự|ử|ữ/g,"u");str=str.replace(/ỳ|ý|Ỵ|Ỷ|Ỹ/g,"y");str=str.replace(/đ/g,"d");str=str.replace(/À|Á|Ạ|Ả|Ã|Â|Ầ|Ấ|Ậ|Ẩ|Ẫ|Ă|Ằ|Ắ|Ặ|Ẳ|Ẵ/g,"A");str=str.replace(/È|É|Ẹ|Ẻ|Ẽ|Ê|Ề|Ế|Ệ|Ể|Ễ/g,"E");str=str.replace(/Ì|Í|Ị|Ỉ|Ĩ/g,"I");str=str.replace(/Ò|Ó|Ọ|Ỏ|Õ|Ô|Ồ|Ố|Ộ|Ổ|Ỗ|Ơ|Ờ|Ớ|Ợ|Ở|Ỡ/g,"O");str=str.replace(/Ù|Ú|Ụ|Ủ|Ũ|Ư|Ừ|Ứ|Ự|Ử|Ữ/g,"U");str=str.replace(/Ỳ|Ý|Ỵ|Ỷ|Ỹ/g,"Y");str=str.replace(/Đ/g,"D");return str}function isBlockedChannelOrGroup(name,group){var n=removeVietnameseTones3((name||"").toLowerCase());var g=removeVietnameseTones3((group||"").toLowerCase());var blockedWords=["update","du phong","backup","thong bao","huong dan","quang cao","nap tien","gia han"];return blockedWords.some(w=>n.includes(w)||g.includes(w))}function standardizeCategory(cat){var cleaned=cleanTitle(cat);var norm=removeVietnameseTones3(cleaned.toLowerCase()).replace(/[\s\-_]/g,"");if(norm.includes("vtv")||norm.includes("daiquocgia"))return"VTV";if(norm.includes("vtvcab")||norm.includes("onlive")||norm.includes("oncine"))return"VTVcab";if(norm.includes("htv")||norm.includes("htvc")||norm.includes("tphcm"))return"HTV & HTVC";if(norm.includes("sctv")||norm.includes("saigontourist"))return"SCTV";if(norm.includes("thethao")||norm.includes("sport")||norm.includes("kplus")||norm.includes("k+"))return"Thể Thao & K+";if(norm.includes("thvl")||norm.includes("vinhlong"))return"Truyền hình Vĩnh Long";if(norm.includes("phim")||norm.includes("movie")||norm.includes("cinema")||norm.includes("hbo"))return"Phim Truyện";if(norm.includes("thieunhi")||norm.includes("kids")||norm.includes("cartoon")||norm.includes("hoathinh"))return"Thiếu Nhi";if(norm.includes("tintuc")||norm.includes("news")||norm.includes("thoisu"))return"Tin Tức & Thời Sự";if(norm.includes("giaitri")||norm.includes("amnhac")||norm.includes("music")||norm.includes("show"))return"Giải Trí & Âm Nhạc";if(norm.includes("khoahoc")||norm.includes("khampha")||norm.includes("discovery")||norm.includes("natgeo"))return"Khám Phá";if(norm.includes("quocte")||norm.includes("international")||norm.includes("world"))return"Kênh Quốc Tế";if(norm.includes("diaphuong")||norm.includes("tinh")||norm.includes("local"))return"Kênh Địa Phương";return"Kênh Tổng Hợp"}function normalizeName(name,tvgId){var str=(name||"")+" "+(tvgId||"");str=cleanTitle(str);var s=removeVietnameseTones3(str.toLowerCase());s=s.replace(/(fhd|uhd|4k|2k|hd|sd|50fps|60fps|hevc|h265|raw|tv|backup|du phong|vip|server\s*\d+|nguon\s*\d+)/g,"");s=s.replace(/[^a-z0-9]/g,"").trim();if(s.startsWith("vinhlong")||s.startsWith("thvl")){var num=s.match(/\d+/);return num?`thvl${num[0]}`:"thvl1"}if(s.startsWith("hanoi")||s.startsWith("hn")||/^h\d+$/.test(s)){var _num8=s.match(/\d+/);return _num8?`hanoi${_num8[0]}`:"hanoi1"}if(s.startsWith("danang")||s.startsWith("dnrt")||s.startsWith("dnang")||s.startsWith("dnrt1")||s.startsWith("dnrt2")){var _num9=s.match(/\d+/);return _num9?`danang${_num9[0]}`:"danang1"}if(s.startsWith("dongnai")||s.startsWith("dnnrtv")||s.startsWith("dnrtv")||/^dn\d+$/.test(s)||s.startsWith("dn")){var _num0=s.match(/\d+/);return _num0?`dongnai${_num0[0]}`:"dongnai1"}if(s.startsWith("dongthap")||s.startsWith("thdt")||s.startsWith("dthap")){var _num1=s.match(/\d+/);return _num1?`dongthap${_num1[0]}`:"dongthap1"}if(s.startsWith("quangninh")||s.startsWith("qtv")||s.startsWith("qni")){var _num10=s.match(/\d+/);return _num10?`quangninh${_num10[0]}`:"quangninh1"}if(s.startsWith("cantho")||s.startsWith("ctho")){var _num11=s.match(/\d+/);return _num11?`cantho${_num11[0]}`:"cantho1"}if(s.startsWith("quangngai")||s.startsWith("qngtv")||s.startsWith("qng")||/^qn\d+$/.test(s)){var _num12=s.match(/\d+/);return _num12?`quangngai${_num12[0]}`:"quangngai1"}if(s.startsWith("angiang")||/^atv\d+$/.test(s)||s.startsWith("atv")){var _num13=s.match(/\d+/);return _num13?`angiang${_num13[0]}`:"angiang1"}if(s.startsWith("lamdong")||/^ltv\d+$/.test(s)||s.startsWith("ltv")){var _num14=s.match(/\d+/);return _num14?`lamdong${_num14[0]}`:"lamdong1"}if(s.startsWith("haiphong")||s.startsWith("thp")){var _num15=s.match(/\d+/);return _num15?`haiphong${_num15[0]}`:"haiphong1"}if(s.startsWith("tayninh")||s.startsWith("tayni")||s.startsWith("tn"))return"tayninh";if(s.startsWith("camau")||s.startsWith("ctv"))return"camau";if(s.startsWith("daklak")||s.startsWith("drt"))return"daklak";if(s.startsWith("gialai")||s.startsWith("gtv"))return"gialai";if(s.startsWith("hatinh")||s.startsWith("bht")||s.startsWith("bhttv"))return"hatinh";if(s.startsWith("hungyen")||s.startsWith("hy")||s.startsWith("hytv"))return"hungyen";if(s.startsWith("bacninh")||s.startsWith("bacn")||s.startsWith("btv"))return"bacninh";if(s.startsWith("langson")||s.startsWith("lstv"))return"langson";if(s.startsWith("laocai")||s.startsWith("thlc"))return"laocai";if(s.startsWith("nghean"))return"nghean";if(s.startsWith("phutho")||s.startsWith("ptv"))return"phutho";if(s.startsWith("quangtri")||s.startsWith("qttv"))return"quangtri";if(s.startsWith("thainguyen"))return"thainguyen";if(s.startsWith("tuyenquang")||s.startsWith("tuyenq")||s.startsWith("ttv"))return"tuyenquang";if(s.startsWith("dienbien")||s.startsWith("dtv"))return"dienbien";if(s.startsWith("thanhhoa"))return"thanhhoa";if(s.startsWith("ninhbinh"))return"ninhbinh";if(s.startsWith("caobang")||s.startsWith("crtv")||s.startsWith("rtv"))return"caobang";if(s.startsWith("sonla")||s.startsWith("stv"))return"sonla";if(s.startsWith("hue"))return"hue";if(s.startsWith("khanhhoa")||s.startsWith("ktv")){var _num16=s.match(/\d+/);return _num16?`khanhhoa${_num16[0]}`:"khanhhoa"}if(s.startsWith("vtv")){var _num17=s.match(/\d+/);if(_num17){if(s.includes("tnb")||s.includes("taynam"))return`vtv${_num17[0]}tnb`;if(s.includes("tn")||s.includes("taynguyen"))return`vtv${_num17[0]}tn`;return`vtv${_num17[0]}`}}if(s.startsWith("htv")){var _num18=s.match(/\d+/);if(_num18)return`htv${_num18[0]}`;if(s.includes("thethao"))return"htvthethao";if(s.includes("thuanviet"))return"htvcthuanviet";if(s.includes("giadinh"))return"htvcgiadinh";if(s.includes("phunu"))return"htvcphunu";if(s.includes("dulich"))return"htvcdulich";if(s.includes("canhac")||s.includes("music"))return"htvccanhac";if(s.includes("plus"))return"htvcplus";if(s.includes("phim")||s.includes("movies"))return"htvcmovies"}if(s.startsWith("sctv")){var _num19=s.match(/\d+/);if(_num19)return`sctv${_num19[0]}`;if(s.includes("phim"))return"sctvphim"}return s||"channel"}function formatPrettyChannelName(rawName){var name=cleanTitle(rawName);name=name.replace(/\s+(FHD|UHD|4K|2K|HD|SD|50fps|60fps|HEVC|H265|RAW)(\s+|$)/gi," ");name=name.replace(/^(Kênh|Kenh|Channel)\s+/i,"");return name.trim()}function loadAndMergePlaylists(callback){var sources=[{url:SOURCE_1_URL,name:"SuperOK"},{url:SOURCE_2_URL,name:"VMT"},{url:SOURCE_3_URL,name:"VietAnhTV"}];var completed=0;var parsedLists=[];sources.forEach((srcObj,index)=>{xhrGet(getFetchUrl(srcObj.url),(err,text)=>{if(err){console.warn(`[Sources] Kh\xF4ng th\u1EC3 t\u1EA3i ${srcObj.name}:`,err.message)}parsedLists[index]={name:srcObj.name,channels:!err&&text?parseM3U(text):[]};completed++;if(completed===sources.length){var mergedObj={};var mergedList=[];for(var i=0;i<parsedLists.length;i++){var srcData=parsedLists[i];if(!srcData||!srcData.channels)continue;var _loop=function _loop(){var ch=srcData.channels[j];if(isBlockedChannelOrGroup(ch.name,ch.group)){return 0;// continue
+}var cleanGroup=standardizeCategory(ch.group);var prettyName=formatPrettyChannelName(ch.name);ch.name=prettyName;ch.group=cleanGroup;var norm=normalizeName(ch.name,ch.id);if(!norm)return 0;// continue
 var streamSource={sourceName:srcData.name,url:ch.url,licenseKey:ch.licenseKey,userAgent:ch.userAgent};if(!mergedObj[norm]){ch.sources=[streamSource];ch.activeSourceIndex=0;mergedObj[norm]=ch;mergedList.push(ch)}else{var existing=mergedObj[norm];if(!existing.sources){existing.sources=[{sourceName:"Gốc",url:existing.url,licenseKey:existing.licenseKey,userAgent:existing.userAgent}]}var isDuplicateUrl=existing.sources.some(s=>s.url===ch.url);if(!isDuplicateUrl){existing.sources.push(streamSource)}if(!existing.logo&&ch.logo){existing.logo=ch.logo}}},_ret;for(var j=0;j<srcData.channels.length;j++){_ret=_loop();if(_ret===0)continue}}var groupedChannels2={};var categoryList2=[];for(var k=0;k<mergedList.length;k++){var ch=mergedList[k];var grp=ch.group||"Khác";if(!groupedChannels2[grp]){groupedChannels2[grp]=[];categoryList2.push(grp)}groupedChannels2[grp].push(ch)}console.log(`[Sources] \u0110\xE3 g\u1ED9p v\xE0 l\u1ECDc tr\xF9ng ho\xE0n to\xE0n: ${mergedList.length} k\xEAnh duy nh\u1EA5t, ${categoryList2.length} nh\xF3m danh m\u1EE5c!`);callback({allChannels:mergedList,groupedChannels:groupedChannels2,categoryList:categoryList2})}})})}// src/remote.js
 var TV_KEYS={UP:38,DOWN:40,LEFT:37,RIGHT:39,ENTER:13,RETURN:10009,BACK_PC:27,RED:403,GREEN:404,YELLOW:405,BLUE:406,PLAY:415,PAUSE:19,STOP:413,PLAY_PAUSE:10252,INFO:457};function registerTizenKeys(){try{if(window.tizen&&window.tizen.tvinputdevice){var keysToRegister=["ColorF0Red","ColorF1Green","ColorF2Yellow","ColorF3Blue","MediaPlay","MediaPause","MediaStop","MediaPlayPause"];keysToRegister.forEach(keyName=>{try{window.tizen.tvinputdevice.registerKey(keyName)}catch(e){}})}}catch(err){}}// src/index.js
 var APP_VERSION="v1.2.2 (OK)";var allChannels=[];var currentPlayingChannel=null;var isDrawerOpen=true;var playbackTimeout=null;var isPlayerInitialized=false;function setupDOM(){injectStyles();document.body.innerHTML=`

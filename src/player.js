@@ -9,8 +9,15 @@ let isSwitchingBackup = false;
 
 // Khởi tạo an toàn Shaka Player khi cần thiết mà không làm sập ứng dụng lúc khởi động
 function getShakaSafe() {
-  if (typeof window !== 'undefined' && window.shaka) {
-    return window.shaka;
+  if (typeof window !== 'undefined') {
+    if (!window.URL) window.URL = window.webkitURL;
+    if (window.URL && !window.URL.createObjectURL && window.webkitURL) {
+      window.URL.createObjectURL = window.webkitURL.createObjectURL;
+    }
+    if (!window.MediaSource && window.WebKitMediaSource) {
+      window.MediaSource = window.WebKitMediaSource;
+    }
+    if (window.shaka) return window.shaka;
   }
   try {
     const sh = require('shaka-player/dist/shaka-player.compiled.js');
@@ -283,11 +290,6 @@ function playCurrentChannelInternal() {
   const url = currentChannelData.url;
   const isDrm = !!currentChannelData.licenseKey || url.includes('.mpd');
 
-  let streamUrl = url;
-  if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') {
-    streamUrl = `/api/stream?url=${encodeURIComponent(url)}`;
-  }
-
   // 1. Nếu có Shaka Player và là luồng DRM / MPD: Dùng Shaka
   if (playerInstance && isDrm) {
     try {
@@ -304,14 +306,14 @@ function playCurrentChannelInternal() {
       }
       playerInstance.configure({ drm: drmConfig });
 
-      playerInstance.load(streamUrl).then(() => {
+      playerInstance.load(url).then(() => {
         currentVideoElement.play().catch(() => {});
         if (onMediaStatsChangedCb) {
           setTimeout(() => onMediaStatsChangedCb(getRealMediaStats()), 500);
         }
       }).catch((e) => {
         console.warn('[Player] Shaka load thất bại, thử Native Video:', e);
-        playWithNativeVideo(streamUrl);
+        playWithNativeVideo(url);
       });
       return;
     } catch (e) {
@@ -320,7 +322,7 @@ function playCurrentChannelInternal() {
   }
 
   // 2. Mặc định cho luồng HLS / M3U8 trên Samsung Tizen: Dùng Trình phát Native phần cứng
-  playWithNativeVideo(streamUrl);
+  playWithNativeVideo(url);
 }
 
 function playWithNativeVideo(streamUrl) {

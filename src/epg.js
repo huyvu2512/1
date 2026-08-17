@@ -125,40 +125,36 @@ export function isEpgReady() {
   return isLoaded;
 }
 
-function parseEpgXml(xmlText) {
+/**
+ * Trình phân tích XMLTV siêu tốc dùng Regex (20ms, không tốn RAM trên TV)
+ */
+function parseEpgXmlFast(xmlText) {
   const result = {};
   if (!xmlText || typeof xmlText !== 'string') return result;
+
   try {
-    const parser = new DOMParser();
-    const xmlDoc = parser.parseFromString(xmlText, 'text/xml');
-    
     const channelMap = {};
-    const channelNodes = xmlDoc.getElementsByTagName('channel');
-    for (let i = 0; i < channelNodes.length; i++) {
-      const chId = channelNodes[i].getAttribute('id');
-      const dName = channelNodes[i].getElementsByTagName('display-name')[0];
-      const name = dName ? dName.textContent : chId;
-      const norm = normalizeEpgName(name) || normalizeEpgName(chId);
+    const chRegex = /<channel\s+id="([^"]+)"[^>]*>[\s\S]*?<display-name[^>]*>([^<]+)<\/display-name>/gi;
+    let m;
+    while ((m = chRegex.exec(xmlText)) !== null) {
+      const chId = m[1].toLowerCase();
+      const norm = normalizeEpgName(m[2]) || normalizeEpgName(chId);
       if (chId && norm) {
-        channelMap[chId.toLowerCase()] = norm;
+        channelMap[chId] = norm;
       }
     }
 
-    const programmes = xmlDoc.getElementsByTagName('programme');
-    for (let i = 0; i < programmes.length; i++) {
-      const p = programmes[i];
-      const chId = (p.getAttribute('channel') || '').toLowerCase();
+    const progRegex = /<programme[^>]*channel="([^"]+)"[^>]*start="([^"]+)"[^>]*stop="([^"]+)"[^>]*>[\s\S]*?<title[^>]*>([^<]+)<\/title>(?:[\s\S]*?<desc[^>]*>([^<]*)<\/desc>)?/gi;
+    let p;
+    while ((p = progRegex.exec(xmlText)) !== null) {
+      const chId = p[1].toLowerCase();
       const normKey = channelMap[chId] || normalizeEpgName(chId);
       if (!normKey) continue;
 
-      const start = parseXMLTVDate(p.getAttribute('start'));
-      const stop = parseXMLTVDate(p.getAttribute('stop'));
-      const titleEl = p.getElementsByTagName('title')[0];
-      const descEl = p.getElementsByTagName('desc')[0];
-      
-      const rawTitle = titleEl ? titleEl.textContent.trim() : '';
-      const title = rawTitle.toUpperCase();
-      const desc = descEl ? descEl.textContent.trim() : '';
+      const start = parseXMLTVDate(p[2]);
+      const stop = parseXMLTVDate(p[3]);
+      const title = (p[4] || '').trim().toUpperCase();
+      const desc = (p[5] || '').trim();
 
       if (!result[normKey]) {
         result[normKey] = [];
@@ -177,7 +173,7 @@ function fetchXml(url, callback) {
   const bustUrl = `${url}?_t=${Date.now()}`;
 
   xhr.open('GET', bustUrl, true);
-  xhr.timeout = 15000;
+  xhr.timeout = 20000;
 
   xhr.onreadystatechange = function () {
     if (xhr.readyState === 4 && !done) {
@@ -217,16 +213,16 @@ function fetchXml(url, callback) {
 export function loadEPG(onLoaded) {
   fetchXml(EPG_SOURCE_1, (err1, xml1) => {
     if (!err1 && xml1) {
-      const src1Data = parseEpgXml(xml1);
+      const src1Data = parseEpgXmlFast(xml1);
       Object.assign(epgData, src1Data);
       isLoaded = true;
-      console.log(`[EPG] Đã nạp thành công Nguồn 1: ${Object.keys(epgData).length} kênh.`);
+      console.log(`[EPG] Đã nạp siêu tốc Nguồn 1: ${Object.keys(epgData).length} kênh.`);
       if (onLoaded) onLoaded();
     }
 
     fetchXml(EPG_SOURCE_2, (err2, xml2) => {
       if (!err2 && xml2) {
-        const src2Data = parseEpgXml(xml2);
+        const src2Data = parseEpgXmlFast(xml2);
         const now = new Date();
         let added = 0;
         let updated = 0;

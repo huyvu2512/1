@@ -239,21 +239,6 @@ export function formatPrettyChannelName(rawName) {
   return name.trim();
 }
 
-export function fixChannelStream(ch) {
-  const norm = normalizeName(ch.name, ch.id);
-  if (norm === 'vtv3') {
-    ch.url = 'https://live.fptplay53.net/live/media/vtv3hd/live-hls-avc/vtv3hd.m3u8';
-  } else if (norm === 'vtv1') {
-    ch.url = 'https://live.fptplay53.net/live/media/vtv1hd/live-hls-avc/vtv1hd.m3u8';
-  } else if (norm === 'vtv6' || norm === 'vtvcantho') {
-    ch.url = 'https://live.fptplay53.net/live/media/vtv6hd/live-hls-avc/vtv6hd.m3u8';
-  } else if (norm.includes('quocphong')) {
-    ch.url = 'https://live.fptplay53.net/live/media/quocphongvn/live-hls-avc/quocphongvn.m3u8';
-  } else if (norm.includes('antv') || norm.includes('anninh')) {
-    ch.url = 'https://live.fptplay53.net/fnxhd2/anninhtv_vhls.smil/chunklist.m3u8';
-  }
-}
-
 export function loadAndMergePlaylists(callback) {
   // NGUYÊN TẮC: Nguồn 1 ưu tiên hàng đầu -> Nguồn 2 -> Nguồn 3 bổ sung kênh thiếu
   const sources = [
@@ -295,7 +280,6 @@ export function loadAndMergePlaylists(callback) {
             const prettyName = formatPrettyChannelName(ch.name);
             ch.name = prettyName;
             ch.group = cleanGroup;
-            fixChannelStream(ch);
 
             const norm = normalizeName(ch.name, ch.id);
             if (!norm) continue;

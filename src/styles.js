@@ -37,10 +37,10 @@ export const globalStyles = `
       transition: all 0.25s cubic-bezier(0.2, 0.9, 0.3, 1);
     }
 
-    /* KHI MỞ MENU: THU NHỎ VIDEO SANG NỬA PHẢI MÀN HÌNH */
+    /* KHI MỞ MENU: THU NHỎ VIDEO SANG NỬA PHẢI MÀN HÌNH (RỘNG 420PX TRÊN TV) */
     #video-screen.pip-right {
-      left: 360px !important;
-      width: calc(100vw - 360px) !important;
+      left: 420px !important;
+      width: calc(100vw - 420px) !important;
       height: 100vh !important;
     }
 
@@ -65,8 +65,8 @@ export const globalStyles = `
       transform: scale(1);
     }
     #center-state-layer.pip-right {
-      left: 360px !important;
-      width: calc(100vw - 360px) !important;
+      left: 420px !important;
+      width: calc(100vw - 420px) !important;
     }
     .center-state-circle {
       width: 90px;
@@ -104,13 +104,13 @@ export const globalStyles = `
       display: flex !important;
     }
     #video-spinner-layer.pip-right {
-      left: 360px !important;
-      width: calc(100vw - 360px) !important;
+      left: 420px !important;
+      width: calc(100vw - 420px) !important;
     }
     .white-video-spinner {
-      width: 50px;
-      height: 50px;
-      border: 4px solid rgba(255, 255, 255, 0.2);
+      width: 54px;
+      height: 54px;
+      border: 4.5px solid rgba(255, 255, 255, 0.2);
       border-top-color: #ffffff;
       border-radius: 50%;
       animation: spinAnim 0.75s linear infinite;
@@ -136,8 +136,8 @@ export const globalStyles = `
       display: flex !important;
     }
     #video-error-layer.pip-right {
-      left: 360px !important;
-      width: calc(100vw - 360px) !important;
+      left: 420px !important;
+      width: calc(100vw - 420px) !important;
     }
     .error-container-box {
       display: flex;
@@ -147,7 +147,7 @@ export const globalStyles = `
       text-align: center;
     }
     .error-title-main {
-      font-size: 26px;
+      font-size: 28px;
       font-weight: 900;
       letter-spacing: -0.5px;
       font-style: italic;
@@ -155,20 +155,20 @@ export const globalStyles = `
     .err-white { color: #ffffff; }
     .err-cyan { color: #00e5ff; }
     .error-channel-text {
-      font-size: 14px;
+      font-size: 15px;
       font-weight: 700;
       color: #ef4444;
       letter-spacing: 0.8px;
     }
 
     /* =========================================================================
-       BẢNG DANH SÁCH KÊNH (TIVIMATE DRAWER ĐEN XÁM TỐI GIẢN)
+       BẢNG DANH SÁCH KÊNH (TIVIMATE DRAWER ĐEN XÁM TỐI GIẢN - RỘNG 420PX CHO TV)
        ========================================================================= */
     #tivimate-drawer {
       position: absolute;
       top: 0;
       left: 0;
-      width: 360px;
+      width: 420px;
       height: 100vh;
       background-color: #0b0d14;
       border-right: 1px solid rgba(255, 255, 255, 0.08);
@@ -184,7 +184,7 @@ export const globalStyles = `
     }
 
     .drawer-header {
-      padding: 16px 14px 10px 14px;
+      padding: 18px 16px 12px 16px;
       background: #0e111a;
       border-bottom: 1px solid rgba(255, 255, 255, 0.07);
     }
@@ -193,10 +193,10 @@ export const globalStyles = `
       display: flex;
       align-items: center;
       justify-content: space-between;
-      margin-bottom: 12px;
+      margin-bottom: 14px;
     }
     .app-title-badge {
-      font-size: 18px;
+      font-size: 20px;
       font-weight: 900;
       font-style: italic;
       letter-spacing: -0.5px;
@@ -210,27 +210,27 @@ export const globalStyles = `
       align-items: flex-end;
     }
     .win-time {
-      font-size: 14px;
+      font-size: 15px;
       font-weight: 800;
       color: #ffffff;
       font-variant-numeric: tabular-nums;
       letter-spacing: 0.5px;
     }
     .win-date {
-      font-size: 10.5px;
+      font-size: 11px;
       font-weight: 600;
       color: #94a3b8;
     }
 
     /* KHUNG TÌM KIẾM KÊNH */
     .drawer-search-wrapper {
-      margin-bottom: 10px;
+      margin-bottom: 12px;
     }
     .search-input-box {
       display: flex;
       align-items: center;
-      gap: 8px;
-      padding: 6px 12px;
+      gap: 10px;
+      padding: 8px 14px;
       background: #151923;
       border: 1.5px solid rgba(255, 255, 255, 0.1);
       border-radius: 10px;
@@ -240,11 +240,11 @@ export const globalStyles = `
     .search-input-box.focused {
       background: #1c2230;
       border-color: #ffffff;
-      box-shadow: 0 0 10px rgba(255, 255, 255, 0.2);
+      box-shadow: 0 0 12px rgba(255, 255, 255, 0.25);
     }
     .search-icon {
-      width: 16px;
-      height: 16px;
+      width: 18px;
+      height: 18px;
       color: #94a3b8;
       flex-shrink: 0;
     }
@@ -258,7 +258,7 @@ export const globalStyles = `
       border: none;
       outline: none;
       color: #ffffff;
-      font-size: 13px;
+      font-size: 14px;
       font-weight: 600;
       font-family: inherit;
     }
@@ -276,8 +276,8 @@ export const globalStyles = `
       align-items: center;
       justify-content: center;
       border-radius: 50%;
-      width: 18px;
-      height: 18px;
+      width: 20px;
+      height: 20px;
       transition: all 0.1s ease;
     }
     .search-clear-btn:hover {
@@ -285,15 +285,15 @@ export const globalStyles = `
       color: #ffffff;
     }
     .search-clear-btn svg {
-      width: 13px;
-      height: 13px;
+      width: 14px;
+      height: 14px;
     }
 
     /* THANH CUỘN NGANG NHÓM DANH MỤC */
     .category-nav-bar {
       display: flex;
       align-items: center;
-      gap: 6px;
+      gap: 8px;
       overflow-x: auto;
       white-space: nowrap;
       padding: 2px 0 4px 0;
@@ -302,11 +302,11 @@ export const globalStyles = `
     .category-nav-bar::-webkit-scrollbar { display: none; }
 
     .cat-chip {
-      padding: 5px 13px;
+      padding: 6px 14px;
       background: #171b26;
       border: 1px solid rgba(255, 255, 255, 0.09);
       border-radius: 16px;
-      font-size: 12.5px;
+      font-size: 13.5px;
       font-weight: 700;
       color: #94a3b8;
       white-space: nowrap;
@@ -321,56 +321,57 @@ export const globalStyles = `
       background: #272e3f;
       border: 1.5px solid #ffffff;
       color: #ffffff;
-      box-shadow: 0 2px 8px rgba(255, 255, 255, 0.12);
+      box-shadow: 0 2px 8px rgba(255, 255, 255, 0.15);
     }
 
     /* DANH SÁCH HÀNG KÊNH */
     .drawer-channel-list {
       flex: 1;
       overflow-y: auto;
-      padding: 10px 12px;
+      padding: 10px 14px;
     }
     .drawer-channel-list::-webkit-scrollbar { width: 4px; }
     .drawer-channel-list::-webkit-scrollbar-thumb { background: rgba(255, 255, 255, 0.15); border-radius: 3px; }
 
-    /* MỖI HÀNG KÊNH: CHIỀU CAO ĐỒNG NHẤT 60PX */
+    /* MỖI HÀNG KÊNH: CHIỀU CAO 66PX CHO TV */
     .channel-row-item {
       display: flex;
       align-items: center;
-      gap: 12px;
-      padding: 6px 12px;
-      margin-bottom: 5px;
-      height: 60px;
-      min-height: 60px;
+      gap: 14px;
+      padding: 8px 14px;
+      margin-bottom: 6px;
+      height: 66px;
+      min-height: 66px;
       background: #13161f;
       border: 1.5px solid transparent;
-      border-radius: 9px;
+      border-radius: 10px;
       cursor: pointer;
       transition: all 0.1s ease;
     }
     .channel-row-item:hover {
-      background: #191d28;
+      background: #1c202d;
     }
-
-    /* KHI ĐƯỢC CHỌN (FOCUS): BỌC KHUNG VIỀN MÀU TRẮNG */
     .channel-row-item.focused {
-      background: #1c212e;
+      background: #232938 !important;
       border-color: #ffffff !important;
-      box-shadow: 0 0 10px rgba(255, 255, 255, 0.18);
+      box-shadow: 0 0 14px rgba(255, 255, 255, 0.2) !important;
     }
 
-    /* LOGO NHỎ GỌN */
     .ch-logo-container {
-      width: 58px;
+      width: 56px;
       height: 38px;
+      background: #000000;
+      border-radius: 6px;
       display: flex;
       align-items: center;
       justify-content: center;
       flex-shrink: 0;
+      overflow: hidden;
+      border: 1px solid rgba(255, 255, 255, 0.08);
     }
     .ch-logo-img {
-      max-width: 100%;
-      max-height: 100%;
+      max-width: 90%;
+      max-height: 90%;
       object-fit: contain;
     }
     .ch-logo-fallback {
@@ -379,40 +380,37 @@ export const globalStyles = `
       display: flex;
       align-items: center;
       justify-content: center;
-      background: rgba(255, 255, 255, 0.04);
-      border-radius: 6px;
     }
 
     .ch-content-col {
       flex: 1;
-      min-width: 0;
       display: flex;
       flex-direction: column;
       justify-content: center;
-      gap: 2.5px;
+      min-width: 0;
+      gap: 2px;
     }
 
     .ch-name-orange {
-      font-size: 13.5px;
+      font-size: 16px;
       font-weight: 800;
       color: #f97316;
       white-space: nowrap;
       overflow: hidden;
       text-overflow: ellipsis;
     }
-
     .ch-name-plain {
-      font-size: 14px;
-      font-weight: 800;
-      color: #f97316;
+      font-size: 16px;
+      font-weight: 700;
+      color: #f1f5f9;
       white-space: nowrap;
       overflow: hidden;
       text-overflow: ellipsis;
     }
 
     .ch-program-gray {
-      font-size: 11.5px;
-      font-weight: 500;
+      font-size: 13.5px;
+      font-weight: 600;
       color: #94a3b8;
       white-space: nowrap;
       overflow: hidden;
@@ -422,19 +420,20 @@ export const globalStyles = `
     .ch-timeline-row {
       display: flex;
       align-items: center;
-      gap: 6px;
-      margin-top: 1px;
+      gap: 8px;
+      margin-top: 3px;
     }
     .ch-time-text {
-      font-size: 10px;
+      font-size: 11.5px;
       font-weight: 700;
       color: #64748b;
       font-variant-numeric: tabular-nums;
+      flex-shrink: 0;
     }
     .ch-timeline-bar-bg {
       flex: 1;
-      height: 3px;
-      background: #202636;
+      height: 3.5px;
+      background: rgba(255, 255, 255, 0.12);
       border-radius: 2px;
       overflow: hidden;
     }
@@ -442,52 +441,53 @@ export const globalStyles = `
       height: 100%;
       background: #f97316;
       border-radius: 2px;
-      transition: width 0.3s ease;
     }
 
-    /* SKELETON LOADING ĐEN XÁM NHẸ */
+    /* SKELETON SHIMMER CHỜ EPG */
     .skeleton-box {
-      background: linear-gradient(90deg, #181d2a 25%, #232a3d 50%, #181d2a 75%);
+      background: linear-gradient(90deg, rgba(255, 255, 255, 0.05) 25%, rgba(255, 255, 255, 0.12) 50%, rgba(255, 255, 255, 0.05) 75%);
       background-size: 200% 100%;
-      animation: skeletonShimmer 1.5s infinite;
-      border-radius: 4px;
+      animation: shimmerAnim 1.4s infinite;
+      border-radius: 3px;
     }
-    @keyframes skeletonShimmer {
+    @keyframes shimmerAnim {
       0% { background-position: 200% 0; }
       100% { background-position: -200% 0; }
     }
     .skeleton-title {
-      width: 70%;
-      height: 10px;
-      margin-bottom: 2px;
+      width: 65%;
+      height: 12px;
+      margin: 3px 0;
     }
     .skeleton-timeline {
-      width: 90%;
-      height: 4px;
+      width: 100%;
+      height: 3.5px;
+      margin-top: 3px;
     }
 
     /* =========================================================================
-       KHUNG OSD BANNER DƯỚI (NỀN ĐEN MỜ ĐẬM RÕ NÉT TRÁNH CHÓI SÁNG KHI FULLSCREEN)
+       KHUNG OSD BANNER DƯỚI (MẶC ĐỊNH MỞ)
        ========================================================================= */
     #dl-osd-banner {
       position: absolute;
-      bottom: 0;
-      left: 0;
-      right: 0;
-      width: 100vw;
-      z-index: 30;
-      background: linear-gradient(to top, rgba(0, 0, 0, 0.97) 0%, rgba(0, 0, 0, 0.88) 55%, rgba(0, 0, 0, 0.45) 85%, transparent 100%);
-      border: none;
-      border-radius: 0;
-      padding: 70px 48px 24px 48px;
-      box-shadow: none;
+      bottom: 24px;
+      left: 32px;
+      right: 32px;
+      background: rgba(13, 17, 23, 0.94);
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
+      border: 1px solid rgba(255, 255, 255, 0.14);
+      border-radius: 16px;
+      padding: 16px 24px 14px 24px;
+      z-index: 25;
       display: flex;
       flex-direction: column;
       gap: 12px;
       opacity: 0;
       transform: translateY(20px);
+      transition: all 0.25s cubic-bezier(0.2, 0.9, 0.3, 1);
+      box-shadow: 0 15px 40px rgba(0, 0, 0, 0.85);
       pointer-events: none;
-      transition: opacity 0.25s ease, transform 0.25s cubic-bezier(0.2, 0.9, 0.3, 1);
     }
     #dl-osd-banner.active {
       opacity: 1 !important;
@@ -495,75 +495,67 @@ export const globalStyles = `
       pointer-events: auto !important;
     }
 
-    /* KHI MỞ MENU (CHẾ ĐỘ PIP THU NHỎ PHẢI): HIỆN KHUNG CARD ĐEN XÁM BO TRÒN DƯỚI VIDEO */
+    /* KHI MỞ MENU: OSD BANNER THU SANG PHẢI */
     #dl-osd-banner.pip-right {
-      left: 384px !important;
+      left: 444px !important;
       right: 24px !important;
       bottom: 20px !important;
-      width: auto !important;
-      background: rgba(11, 15, 23, 0.92) !important;
-      backdrop-filter: blur(20px) !important;
-      -webkit-backdrop-filter: blur(20px) !important;
-      border: 1px solid rgba(255, 255, 255, 0.12) !important;
-      border-radius: 16px !important;
       padding: 14px 20px !important;
-      box-shadow: 0 14px 40px rgba(0, 0, 0, 0.85) !important;
-    }
-    #dl-osd-banner.pip-right .osd-action-pills-row {
-      display: none !important;
     }
 
-    /* HÀNG 1: THÔNG TIN KÊNH + LIVE + SPECS */
     .osd-main-row {
       display: flex;
       align-items: center;
       justify-content: space-between;
-      gap: 16px;
     }
+
     .osd-left-info {
       display: flex;
       align-items: center;
-      gap: 14px;
+      gap: 16px;
       min-width: 0;
       flex: 1;
     }
     .osd-logo-box {
-      width: 58px;
-      height: 36px;
+      width: 64px;
+      height: 42px;
+      background: #000000;
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      border-radius: 8px;
       display: flex;
       align-items: center;
       justify-content: center;
+      overflow: hidden;
       flex-shrink: 0;
     }
     .osd-logo-box img {
-      max-width: 100%;
-      max-height: 100%;
+      max-width: 90%;
+      max-height: 90%;
       object-fit: contain;
     }
     .osd-text-col {
       display: flex;
       flex-direction: column;
-      gap: 3px;
+      gap: 2px;
       min-width: 0;
+      flex: 1;
     }
     .osd-ch-name {
-      font-size: 19px;
-      font-weight: 800;
+      font-size: 22px;
+      font-weight: 900;
       color: #ffffff;
-      letter-spacing: -0.2px;
       white-space: nowrap;
       overflow: hidden;
       text-overflow: ellipsis;
+      letter-spacing: -0.3px;
     }
     .osd-prog-name {
-      font-size: 13px;
-      font-weight: 500;
+      font-size: 15.5px;
+      font-weight: 700;
       color: #f97316;
-      text-transform: uppercase;
       white-space: nowrap;
       overflow: hidden;
       text-overflow: ellipsis;
-      letter-spacing: 0.2px;
     }
 
     .osd-right-info {
@@ -573,110 +565,91 @@ export const globalStyles = `
       flex-shrink: 0;
     }
     .osd-live-tag {
-      padding: 3px 8px;
-      background: #dc2626;
-      border-radius: 5px;
-      font-size: 11px;
-      font-weight: 900;
+      padding: 4px 10px;
+      background: #ef4444;
       color: #ffffff;
-      letter-spacing: 0.6px;
+      font-size: 12px;
+      font-weight: 900;
+      border-radius: 5px;
+      letter-spacing: 0.5px;
     }
     .osd-specs-text {
-      font-size: 12.5px;
+      font-size: 13.5px;
       font-weight: 700;
-      color: #f97316;
-      font-family: 'Consolas', 'Courier New', monospace;
-      letter-spacing: 0.2px;
+      color: #94a3b8;
+      font-variant-numeric: tabular-nums;
     }
 
-    /* HÀNG 2: TIMELINE */
+    /* TIMELINE DƯỚI OSD */
     .osd-timeline-row {
       display: flex;
       align-items: center;
       gap: 12px;
-      width: 100%;
     }
     .osd-time-bound {
-      font-size: 11.5px;
+      font-size: 12.5px;
       font-weight: 700;
-      color: #cbd5e1;
+      color: #94a3b8;
       font-variant-numeric: tabular-nums;
+      flex-shrink: 0;
     }
     .osd-timeline-track {
       flex: 1;
-      height: 4px;
-      background: rgba(255, 255, 255, 0.22);
-      border-radius: 2px;
+      height: 4.5px;
+      background: rgba(255, 255, 255, 0.15);
+      border-radius: 3px;
       overflow: hidden;
     }
     .osd-timeline-fill {
       height: 100%;
       background: #f97316;
-      border-radius: 2px;
-      transition: width 0.3s ease;
+      border-radius: 3px;
     }
 
-    /* HÀNG 3: CÁC NÚT VIÊN THUỐC ĐIỀU KHIỂN CĂN GIỮA DƯỚI ĐÁY */
+    /* CÁC NÚT VIÊN THUỐC ĐIỀU KHIỂN */
     .osd-action-pills-row {
       display: flex;
       align-items: center;
-      justify-content: center;
       gap: 12px;
-      padding-top: 4px;
+      margin-top: 4px;
     }
-
     .bottom-pill-btn {
-      display: inline-flex;
+      display: flex;
       align-items: center;
       gap: 8px;
-      padding: 7px 16px;
-      border-radius: 20px;
-      background: rgba(255, 255, 255, 0.12);
-      border: 1px solid rgba(255, 255, 255, 0.16);
-      color: #ffffff;
-      cursor: pointer;
-      outline: none;
+      padding: 8px 18px;
+      background: rgba(255, 255, 255, 0.08);
+      border: 1.5px solid transparent;
+      border-radius: 24px;
+      color: #cbd5e1;
       font-size: 13.5px;
       font-weight: 700;
-      line-height: 1;
-      transition: background 0.1s ease, color 0.1s ease;
+      cursor: pointer;
+      transition: all 0.12s ease;
     }
     .bottom-pill-btn svg {
-      width: 17px;
-      height: 17px;
+      width: 16px;
+      height: 16px;
       stroke: currentColor;
       fill: none;
-      stroke-width: 2;
-      stroke-linecap: round;
-      stroke-linejoin: round;
-      display: inline-block;
-      vertical-align: middle;
-      flex-shrink: 0;
+      stroke-width: 2.2;
     }
-    .bottom-pill-btn span {
-      font-size: 13.5px;
-      font-weight: 700;
-      line-height: 1;
-      display: inline-block;
-      vertical-align: middle;
-    }
-
-    /* KHI VIÊN THUỐC ĐƯỢC CHỌN (FOCUS HOẶC HOVER): TRẮNG TINH TẾ ĐƠN GIẢN KHÔNG LẤP LÁNH / GLOW */
-    .bottom-pill-btn.focused,
     .bottom-pill-btn:hover {
+      background: rgba(255, 255, 255, 0.16);
+      color: #ffffff;
+    }
+    .bottom-pill-btn.focused {
       background: #ffffff !important;
       border-color: #ffffff !important;
       color: #0b0d14 !important;
-      box-shadow: none !important;
-      transform: none !important;
+      box-shadow: 0 0 16px rgba(255, 255, 255, 0.4) !important;
     }
-    .bottom-pill-btn.focused svg,
-    .bottom-pill-btn:hover svg {
+    .bottom-pill-btn.focused svg {
       stroke: #0b0d14 !important;
     }
 
     /* =========================================================================
-       POPUP DIALOG CHỌN LỊCH PHÁT SÓNG, CHẤT LƯỢNG & ÂM THANH
+       POPUP LỊCH PHÁT SÓNG 2 CỘT, CHẤT LƯỢNG VÀ ÂM THANH
        ========================================================================= */
     #quality-audio-dialog {
       position: absolute;
@@ -684,50 +657,80 @@ export const globalStyles = `
       left: 0;
       width: 100vw;
       height: 100vh;
-      background: transparent !important;
-      backdrop-filter: none !important;
-      -webkit-backdrop-filter: none !important;
-      z-index: 100;
+      background: rgba(0, 0, 0, 0.7);
+      backdrop-filter: blur(8px);
+      -webkit-backdrop-filter: blur(8px);
+      z-index: 40;
       display: none;
-      justify-content: flex-end;
-      align-items: flex-end;
-      padding: 24px 36px 140px 36px;
-      pointer-events: none;
+      align-items: center;
+      justify-content: center;
     }
     #quality-audio-dialog.active {
       display: flex !important;
     }
 
     .dialog-card {
-      width: 360px;
-      max-width: 90vw;
-      min-height: 330px;
-      height: auto;
-      max-height: calc(100vh - 160px);
-      background: #232733;
-      border: 1px solid rgba(255, 255, 255, 0.12);
+      background: #0f141f;
+      border: 1.5px solid rgba(255, 255, 255, 0.15);
       border-radius: 18px;
-      padding: 22px 18px;
-      box-shadow: -10px 10px 40px rgba(0, 0, 0, 0.85);
+      padding: 24px 28px;
+      min-width: 380px;
+      max-width: 460px;
+      box-shadow: 0 20px 50px rgba(0, 0, 0, 0.9);
+      animation: dialogPop 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    }
+    @keyframes dialogPop {
+      0% { transform: scale(0.9); opacity: 0; }
+      100% { transform: scale(1); opacity: 1; }
+    }
+    .dialog-title {
+      font-size: 19px;
+      font-weight: 800;
+      color: #ffffff;
+      margin-bottom: 18px;
+      padding-bottom: 12px;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    }
+    .dialog-list {
       display: flex;
       flex-direction: column;
-      gap: 14px;
-      pointer-events: auto;
+      gap: 8px;
+      max-height: 380px;
+      overflow-y: auto;
     }
-
-    /* CARD DÀNH CHO LỊCH PHÁT SÓNG 2 CỘT RỘNG RÃI, TO RÕ ĐẸP */
-    .dialog-card.epg-schedule-card {
-      width: 720px;
-      max-width: 95vw;
-      height: 490px;
-      min-height: 440px;
-      max-height: calc(100vh - 130px);
-      padding: 20px 22px;
+    .dialog-item {
       display: flex;
-      flex-direction: column;
-      gap: 14px;
+      align-items: center;
+      justify-content: space-between;
+      padding: 12px 18px;
+      background: rgba(255, 255, 255, 0.05);
+      border: 1.5px solid transparent;
+      border-radius: 10px;
+      font-size: 15px;
+      font-weight: 700;
+      color: #cbd5e1;
+      cursor: pointer;
+      transition: all 0.12s ease;
+    }
+    .dialog-item.focused {
+      background: #272e3f !important;
+      border-color: #ffffff !important;
+      color: #ffffff !important;
+      box-shadow: 0 0 14px rgba(255, 255, 255, 0.25) !important;
+    }
+    .dialog-item.active {
+      color: #f97316;
     }
 
+    /* MODAL EPG 2 CỘT CHUYÊN DỤNG (900PX CHO TV) */
+    .epg-schedule-card {
+      min-width: 900px !important;
+      max-width: 960px !important;
+      height: 600px !important;
+      display: flex !important;
+      flex-direction: column !important;
+      padding: 20px 24px !important;
+    }
     .epg-dialog-body {
       display: flex;
       gap: 16px;
@@ -735,202 +738,113 @@ export const globalStyles = `
       min-height: 0;
       overflow: hidden;
     }
-
-    /* CỘT KÊNH BÊN TRÁI RỘNG RÃI, LOGO VÀ TÊN KÊNH RÕ RÀNG */
     .epg-channel-sidebar {
-      width: 250px;
+      width: 280px;
+      flex-shrink: 0;
+      border-right: 1px solid rgba(255, 255, 255, 0.1);
+      overflow-y: auto;
+      padding-right: 10px;
       display: flex;
       flex-direction: column;
-      gap: 8px;
-      overflow-y: auto;
-      padding-right: 6px;
-      border-right: 1px solid rgba(255, 255, 255, 0.09);
+      gap: 6px;
     }
-    .epg-channel-sidebar::-webkit-scrollbar { width: 4px; }
-    .epg-channel-sidebar::-webkit-scrollbar-thumb { background: rgba(255, 255, 255, 0.15); border-radius: 2px; }
-
     .epg-ch-item {
       display: flex;
       align-items: center;
       gap: 12px;
       padding: 10px 14px;
-      min-height: 48px;
-      height: 48px;
-      border-radius: 11px;
-      background: #2b3140;
-      border: 1.5px solid transparent;
-      color: #e2e8f0;
-      font-size: 14px;
+      border-radius: 10px;
+      background: rgba(255, 255, 255, 0.04);
+      color: #cbd5e1;
+      font-size: 14.5px;
       font-weight: 700;
       cursor: pointer;
-      white-space: nowrap;
-      overflow: hidden;
-      text-overflow: ellipsis;
-      transition: background 0.1s ease, color 0.1s ease;
+      border: 1.5px solid transparent;
+      transition: all 0.12s ease;
+      min-height: 48px;
     }
     .epg-ch-item.selected {
-      border-color: #f97316;
+      background: rgba(249, 115, 22, 0.15);
+      color: #f97316;
+      border-color: rgba(249, 115, 22, 0.4);
     }
-    .epg-ch-item.focused,
-    .epg-ch-item:hover {
+    .epg-ch-item.focused {
       background: #ffffff !important;
+      border-color: #ffffff !important;
       color: #0b0d14 !important;
-      font-weight: 700 !important;
-      border-color: transparent !important;
+      box-shadow: 0 0 14px rgba(255, 255, 255, 0.4) !important;
     }
     .epg-ch-logo {
       width: 44px;
       height: 28px;
       object-fit: contain;
+      background: #000;
+      border-radius: 4px;
+      border: 1px solid rgba(255, 255, 255, 0.1);
       flex-shrink: 0;
     }
 
     .epg-schedule-panel {
       flex: 1;
+      overflow-y: auto;
       display: flex;
       flex-direction: column;
-      gap: 8px;
-      min-width: 0;
-      overflow-y: auto;
-      padding-right: 2px;
+      gap: 6px;
+      padding-right: 6px;
     }
-    .epg-schedule-panel::-webkit-scrollbar { width: 4px; }
-    .epg-schedule-panel::-webkit-scrollbar-thumb { background: rgba(255, 255, 255, 0.2); border-radius: 2px; }
-
-    .dialog-title {
-      font-size: 16px;
-      font-weight: 700;
-      color: #ffffff;
-      text-align: center;
-      letter-spacing: -0.1px;
-    }
-
-    .dialog-list {
-      display: flex;
-      flex-direction: column;
-      gap: 8px;
-      overflow-y: auto;
-      padding-right: 2px;
-      max-height: calc(100vh - 230px);
-    }
-    .dialog-list::-webkit-scrollbar { width: 4px; }
-    .dialog-list::-webkit-scrollbar-thumb { background: rgba(255, 255, 255, 0.2); border-radius: 2px; }
-
-    /* MỤC TRONG DIALOG: MẶC ĐỊNH LÀ KHUNG XÁM SÁNG NÉT CHỮ THANH */
-    .dialog-item {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      padding: 12px 16px;
-      border-radius: 11px;
-      background: #313746;
-      border: 1.5px solid transparent;
-      color: #e2e8f0;
-      font-size: 14px;
-      font-weight: 600;
-      cursor: pointer;
-      transition: background 0.1s ease, color 0.1s ease;
-    }
-
-    /* KHI DI CHUYỂN CON TRỎ (FOCUS HOẶC HOVER): CHUYỂN THÀNH MÀU TRẮNG SÁNG + CHỮ ĐEN NÉT VỪA */
-    .dialog-item.focused,
-    .dialog-item:hover {
-      background: #ffffff !important;
-      color: #0b0d14 !important;
-      font-weight: 600 !important;
-      box-shadow: none !important;
-      border-color: transparent !important;
-    }
-    .dialog-item.focused .dialog-check-icon,
-    .dialog-item:hover .dialog-check-icon {
-      stroke: #0b0d14 !important;
-    }
-    .dialog-item:not(.focused):not(:hover) .dialog-check-icon {
-      stroke: #ffffff !important;
-    }
-
-    /* MỤC LỊCH PHÁT SÓNG TRONG POPUP */
     .epg-schedule-item {
       display: flex;
       align-items: center;
-      gap: 12px;
-      padding: 11px 14px;
-      border-radius: 11px;
-      background: #313746;
+      gap: 14px;
+      padding: 12px 18px;
+      background: rgba(255, 255, 255, 0.04);
       border: 1.5px solid transparent;
-      color: #e2e8f0;
-      font-size: 13.5px;
-      font-weight: 600;
-      transition: background 0.1s ease, color 0.1s ease;
+      border-radius: 10px;
       cursor: pointer;
+      transition: all 0.12s ease;
+      min-height: 50px;
     }
-
-    /* CÁC CHƯƠNG TRÌNH ĐÃ CHIẾU QUA: LÀM MỜ NHẸ NHÀNG */
     .epg-schedule-item.past {
       opacity: 0.35;
-      background: rgba(255, 255, 255, 0.04);
-      cursor: not-allowed;
+      filter: grayscale(0.5);
     }
-    .epg-schedule-item.past .epg-item-title {
-      color: #94a3b8 !important;
-    }
-    .epg-schedule-item.past .epg-time-range {
-      color: #64748b !important;
-    }
-
-    .epg-schedule-item.focused,
-    .epg-schedule-item:hover {
-      background: #ffffff !important;
-      color: #0b0d14 !important;
-      font-weight: 600 !important;
+    .epg-schedule-item.focused {
+      background: #272e3f !important;
+      border-color: #ffffff !important;
+      color: #ffffff !important;
+      box-shadow: 0 0 14px rgba(255, 255, 255, 0.3) !important;
       opacity: 1 !important;
-      box-shadow: none !important;
-      border-color: transparent !important;
-    }
-    .epg-schedule-item.focused .epg-item-title,
-    .epg-schedule-item.focused .epg-time-range,
-    .epg-schedule-item:hover .epg-item-title,
-    .epg-schedule-item:hover .epg-time-range {
-      color: #0b0d14 !important;
-    }
-    .epg-schedule-item:not(.focused):not(:hover):not(.past) .epg-item-title {
-      color: #e2e8f0 !important;
-      font-weight: 500 !important;
-    }
-    .epg-schedule-item:not(.focused):not(:hover):not(.past) .epg-time-range {
-      color: #94a3b8 !important;
-      font-weight: 600 !important;
     }
     .epg-time-range {
-      font-size: 12px;
-      font-weight: 600;
-      color: #94a3b8;
+      font-size: 13.5px;
+      font-weight: 800;
+      color: #f97316;
       font-variant-numeric: tabular-nums;
-      white-space: nowrap;
-      min-width: 80px;
+      flex-shrink: 0;
     }
     .epg-item-title {
-      font-size: 13.5px;
-      font-weight: 500;
-      color: #e2e8f0;
       flex: 1;
+      font-size: 14.5px;
+      font-weight: 700;
+      color: #ffffff;
       white-space: nowrap;
       overflow: hidden;
       text-overflow: ellipsis;
     }
     .epg-live-badge {
-      padding: 2px 6px;
-      background: #dc2626;
-      border-radius: 4px;
-      font-size: 10px;
-      font-weight: 800;
+      padding: 3px 8px;
+      background: #ef4444;
       color: #ffffff;
+      font-size: 11px;
+      font-weight: 900;
+      border-radius: 4px;
+      flex-shrink: 0;
     }
 `;
 
 export function injectStyles() {
-  const style = document.createElement('style');
-  style.id = 'app-custom-styles';
-  style.textContent = globalStyles;
-  document.head.appendChild(style);
+  const styleEl = document.createElement('style');
+  styleEl.id = 'app-custom-styles';
+  styleEl.innerHTML = globalStyles;
+  document.head.appendChild(styleEl);
 }
