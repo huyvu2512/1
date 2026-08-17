@@ -82,6 +82,50 @@ export function showCenterPlayPause(type) {
   }
 }
 
+export function updateActivePillLabels() {
+  try {
+    var pillQ = document.getElementById('btn-action-quality');
+    if (pillQ) {
+      var spanQ = pillQ.querySelector('span');
+      if (spanQ) {
+        var qualities = getRealVideoQualities();
+        var activeQ = null;
+        for (var i = 0; i < qualities.length; i++) {
+          if (qualities[i].active) {
+            activeQ = qualities[i];
+            break;
+          }
+        }
+        if (activeQ) {
+          spanQ.innerText = activeQ.label;
+        } else if (qualities.length > 0) {
+          spanQ.innerText = qualities[0].label;
+        }
+      }
+    }
+
+    var pillA = document.getElementById('btn-action-audio');
+    if (pillA) {
+      var spanA = pillA.querySelector('span');
+      if (spanA) {
+        var audios = getRealAudioTracks();
+        var activeA = null;
+        for (var j = 0; j < audios.length; j++) {
+          if (audios[j].active) {
+            activeA = audios[j];
+            break;
+          }
+        }
+        if (activeA) {
+          spanA.innerText = activeA.label;
+        } else if (audios.length > 0) {
+          spanA.innerText = audios[0].label;
+        }
+      }
+    }
+  } catch (e) {}
+}
+
 export function updateOsdInfo(ch, isDrawerOpen, forceShow) {
   var banner = document.getElementById('dl-osd-banner');
   if (!banner || !ch) return;
@@ -152,6 +196,8 @@ export function updateOsdInfo(ch, isDrawerOpen, forceShow) {
     }
   }
 
+  updateActivePillLabels();
+
   if (isDrawerOpen) {
     banner.classList.add('pip-right');
     banner.classList.add('active');
@@ -181,18 +227,19 @@ export function updateLiveVideoSpecs(incomingStats) {
   if (stats) {
     if (stats.isAudioOnly || stats.fps === 'Radio' || stats.width === 0) {
       specsEl.innerText = 'Radio Live Stream | Stereo 128 kbps';
-      return;
+    } else {
+      var fpsVal = stats.fps;
+      var fpsStr = '25.0';
+      if (typeof fpsVal === 'number') {
+        fpsStr = fpsVal.toFixed(1);
+      } else if (typeof fpsVal === 'string' && fpsVal.length > 0) {
+        fpsStr = fpsVal;
+      }
+      var bitrateStr = stats.bitrate || stats.bandwidth || '3.5 Mbps';
+      specsEl.innerText = stats.width + 'x' + stats.height + ' @ ' + fpsStr + 'fps | ' + bitrateStr;
     }
-    var fpsVal = stats.fps;
-    var fpsStr = '25.0';
-    if (typeof fpsVal === 'number') {
-      fpsStr = fpsVal.toFixed(1);
-    } else if (typeof fpsVal === 'string' && fpsVal.length > 0) {
-      fpsStr = fpsVal;
-    }
-    var bitrateStr = stats.bitrate || stats.bandwidth || '3.5 Mbps';
-    specsEl.innerText = stats.width + 'x' + stats.height + ' @ ' + fpsStr + 'fps | ' + bitrateStr;
   }
+  updateActivePillLabels();
 }
 
 export function isOsdVisible() {
@@ -648,18 +695,9 @@ export function selectDialogCurrent() {
 
   if (dialogType === 'quality') {
     setRealVideoQuality(selectedOpt.value);
-    var pillQ = document.getElementById('btn-action-quality');
-    if (pillQ) {
-      var spanQ = pillQ.querySelector('span');
-      if (spanQ) spanQ.innerText = selectedOpt.label;
-    }
   } else if (dialogType === 'audio') {
     setRealAudioTrack(selectedOpt.value);
-    var pillA = document.getElementById('btn-action-audio');
-    if (pillA) {
-      var spanA = pillA.querySelector('span');
-      if (spanA) spanA.innerText = selectedOpt.label;
-    }
   }
+  updateActivePillLabels();
   closeQualityAudioDialog();
 }

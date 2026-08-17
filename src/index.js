@@ -2,6 +2,7 @@ import { injectStyles } from './styles.js';
 import { 
   updateOsdInfo, 
   updateLiveVideoSpecs, 
+  updateActivePillLabels,
   showCenterPlayPause, 
   setOpenDrawerCallback, 
   setPlayChannelCallback,
@@ -161,11 +162,11 @@ function setupDOM() {
         '</button>' +
         '<button id="btn-action-quality" class="bottom-pill-btn">' +
           '<svg viewBox="0 0 24 24"><path d="M10 12H6"/><path d="M10 15V9"/><path d="M14 14.5a.5.5 0 0 0 .5.5h1a2.5 2.5 0 0 0 2.5-2.5v-1A2.5 2.5 0 0 0 15.5 9h-1a.5.5 0 0 0-.5.5z"/><path d="M6 15V9"/><rect x="2" y="5" width="20" height="14" rx="2"/></svg>' +
-          '<span>Auto</span>' +
+          '<span>Auto (Khuyên dùng)</span>' +
         '</button>' +
         '<button id="btn-action-audio" class="bottom-pill-btn">' +
           '<svg viewBox="0 0 24 24"><path d="M3 14h3a2 2 0 0 1 2 2v3a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-7a9 9 0 0 1 18 0v7a2 2 0 0 1-2 2h-1a2 2 0 0 1-2-2v-3a2 2 0 0 1 2-2h3"/></svg>' +
-          '<span>Âm thanh</span>' +
+          '<span>Âm thanh gốc</span>' +
         '</button>' +
       '</div>' +
     '</div>' +
@@ -208,6 +209,7 @@ function playSelectedChannel(ch) {
   hidePlaybackError();
   showVideoSpinner();
   updateOsdInfo(ch, isDrawerOpen, true);
+  updateActivePillLabels();
 
   var isRadio = ch.group && (ch.group.toLowerCase().indexOf('radio') !== -1 || ch.name.toLowerCase().indexOf('vov') !== -1);
   var radioLayer = document.getElementById('radio-visualizer-layer');
@@ -552,21 +554,28 @@ function startApplication() {
       if (playbackTimeout) clearTimeout(playbackTimeout);
       hidePlaybackError();
       hideVideoSpinner();
+      updateActivePillLabels();
     });
     video.addEventListener('playing', function() {
       if (playbackTimeout) clearTimeout(playbackTimeout);
       hidePlaybackError();
       hideVideoSpinner();
+      updateActivePillLabels();
     });
     video.addEventListener('canplay', function() {
       if (playbackTimeout) clearTimeout(playbackTimeout);
       hidePlaybackError();
       hideVideoSpinner();
+      updateActivePillLabels();
+    });
+    video.addEventListener('loadedmetadata', function() {
+      updateActivePillLabels();
     });
     video.addEventListener('loadeddata', function() {
       if (playbackTimeout) clearTimeout(playbackTimeout);
       hidePlaybackError();
       hideVideoSpinner();
+      updateActivePillLabels();
     });
     video.addEventListener('timeupdate', function() {
       if (video.currentTime > 0.05) {
