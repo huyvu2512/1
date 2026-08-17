@@ -1,6 +1,6 @@
 {
-  "name": "@huyvu2512/tv",
-  "version": "1.0.1",
+  "name": "iptv-vn",
+  "version": "1.0.0",
   "description": "IPTV player module for TizenBrew",
   "license": "MIT",
   "private": false,
