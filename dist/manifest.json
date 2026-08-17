@@ -1,0 +1,28 @@
+{
+  "schemaVersion": 1,
+  "name": "tizenbrew-iptv-drm",
+  "displayName": "IPTV Player DRM",
+  "version": "1.2.1",
+  "description": "IPTV Player DRM for TizenBrew with ClearKey DRM & EPG Support",
+  "targetUrl": "https://localhost",
+  "assets": {
+    "scripts": [
+      "index.js"
+    ],
+    "styles": []
+  },
+  "capabilities": {
+    "tvKeys": {
+      "arrows": true,
+      "enter": true,
+      "back": true,
+      "playPause": true
+    },
+    "performance": {
+      "removeAnimations": false,
+      "lazyMedia": false,
+      "hideComments": false,
+      "memorySaver": false
+    }
+  }
+}
