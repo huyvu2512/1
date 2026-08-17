@@ -1,11 +1,12 @@
 {
-  "name": "iptv-vn3",
-  "version": "1.0.1",
-  "description": "IPTV Player DRM for TizenBrew Samsung TV",
+  "name": "tizenbrew-iptv-drm",
+  "version": "1.0.0",
+  "description": "TizenBrew IPTV DRM for Samsung Smart TV & Web",
   "license": "MIT",
   "private": false,
   "packageType": "app",
-  "appName": "IPTV Player DRM",
+  "appName": "TizenBrew IPTV DRM",
+  "displayName": "TizenBrew IPTV DRM",
   "appPath": "index.html",
   "main": "dist/index.js",
   "keys": [

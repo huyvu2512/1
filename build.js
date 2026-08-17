@@ -41,10 +41,10 @@ async function build() {
 
   var manifest = {
     schemaVersion: 1,
-    name: pkg.name || "iptv-vn",
-    displayName: pkg.appName || "IPTV Player DRM",
-    version: pkg.version || "1.0.3",
-    description: pkg.description || "IPTV Player DRM for TizenBrew with ClearKey DRM & EPG Support",
+    name: pkg.name || "tizenbrew-iptv-drm",
+    displayName: pkg.displayName || "TizenBrew IPTV DRM",
+    version: pkg.version || "1.0.0",
+    description: pkg.description || "TizenBrew IPTV DRM for Samsung Smart TV with ClearKey DRM & EPG Support",
     targetUrl: "https://localhost",
     assets: {
       scripts: [
