@@ -1,7 +1,7 @@
 {
   "name": "iptv-vn",
-  "version": "1.0.0",
-  "description": "IPTV player module for TizenBrew",
+  "version": "1.0.1",
+  "description": "IPTV player for TizenBrew Samsung TV",
   "license": "MIT",
   "private": false,
   "packageType": "app",
@@ -29,14 +29,6 @@
     "build": "node build.js",
     "dev": "node server.js",
     "start": "node server.js"
-  },
-  "keywords": [
-    "iptv",
-    "tizen",
-    "tizenbrew"
-  ],
-  "dependencies": {
-    "shaka-player": "^4.11.7"
   },
   "devDependencies": {
     "@babel/cli": "^8.0.4",

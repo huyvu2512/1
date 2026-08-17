@@ -1,21 +1,22 @@
-const esbuild = require('esbuild');
-const babel = require('@babel/core');
-const fs = require('fs');
-const path = require('path');
+var esbuild = require('esbuild');
+var babel = require('@babel/core');
+var fs = require('fs');
+var path = require('path');
 
 async function build() {
-  console.log('1. Bundling with esbuild...');
-  const bundleResult = await esbuild.build({
+  console.log('1. Bundling with esbuild (NO Shaka Player)...');
+  var bundleResult = await esbuild.build({
     entryPoints: ['src/index.js'],
     bundle: true,
     write: false,
-    format: 'iife'
+    format: 'iife',
+    external: ['shaka-player', 'shaka-player/*']
   });
 
-  const bundledCode = bundleResult.outputFiles[0].text;
+  var bundledCode = bundleResult.outputFiles[0].text;
 
   console.log('2. Transpiling with Babel to Chrome 47 / Tizen 3 (ES5)...');
-  const babelResult = await babel.transformAsync(bundledCode, {
+  var babelResult = await babel.transformAsync(bundledCode, {
     presets: [
       [
         '@babel/preset-env',
@@ -29,24 +30,22 @@ async function build() {
     compact: true
   });
 
-  const distDir = path.join(__dirname, 'dist');
+  var distDir = path.join(__dirname, 'dist');
   if (!fs.existsSync(distDir)) {
     fs.mkdirSync(distDir, { recursive: true });
   }
 
-  const outPath = path.join(distDir, 'index.js');
+  var outPath = path.join(distDir, 'index.js');
   fs.writeFileSync(outPath, babelResult.code, 'utf8');
 
-  // Đọc thông tin từ package.json
-  const pkg = JSON.parse(fs.readFileSync(path.join(__dirname, 'package.json'), 'utf8'));
+  var pkg = JSON.parse(fs.readFileSync(path.join(__dirname, 'package.json'), 'utf8'));
 
-  // Tạo manifest.json chuẩn cho TizenBrew Module Manager
-  const manifest = {
+  var manifest = {
     schemaVersion: 1,
-    name: pkg.name || "huyvu-tv",
+    name: pkg.name || "iptv-vn",
     displayName: pkg.appName || "IPTV Player DRM",
-    version: pkg.version || "1.0.1",
-    description: pkg.description || "IPTV Player DRM for TizenBrew with ClearKey DRM & EPG Support",
+    version: pkg.version || "1.0.0",
+    description: pkg.description || "IPTV Player for TizenBrew",
     targetUrl: "https://localhost",
     assets: {
       scripts: [
@@ -76,7 +75,7 @@ async function build() {
   console.log('   Generated dist/index.js and dist/manifest.json (name: ' + manifest.name + ')');
 }
 
-build().catch(err => {
+build().catch(function(err) {
   console.error('Build failed:', err);
   process.exit(1);
 });

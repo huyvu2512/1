@@ -2,8 +2,8 @@
   "schemaVersion": 1,
   "name": "iptv-vn",
   "displayName": "IPTV Player DRM",
-  "version": "1.0.0",
-  "description": "IPTV player module for TizenBrew",
+  "version": "1.0.1",
+  "description": "IPTV player for TizenBrew Samsung TV",
   "targetUrl": "https://localhost",
   "assets": {
     "scripts": [
