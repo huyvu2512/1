@@ -319,6 +319,8 @@ export function openEpgScheduleDialog(channel, allChannelsList) {
   epgActiveColumn = 'channel';
 
   isDialogOpen = true;
+  var dlg = document.getElementById('quality-audio-dialog');
+  if (dlg) dlg.classList.add('epg-mode');
   renderTwoColumnEpgModal();
 }
 
@@ -463,6 +465,8 @@ export function openQualityDialog(channel) {
     }
   }
   isDialogOpen = true;
+  var dlg = document.getElementById('quality-audio-dialog');
+  if (dlg) dlg.classList.remove('epg-mode');
   renderDialogContent('Chất lượng hình ảnh');
 }
 
@@ -478,6 +482,8 @@ export function openAudioDialog(channel) {
     }
   }
   isDialogOpen = true;
+  var dlg = document.getElementById('quality-audio-dialog');
+  if (dlg) dlg.classList.remove('epg-mode');
   renderDialogContent('Kênh âm thanh');
 }
 
@@ -487,6 +493,7 @@ export function closeQualityAudioDialog(currentChannel) {
   var dlg = document.getElementById('quality-audio-dialog');
   if (dlg) {
     dlg.classList.remove('active');
+    dlg.classList.remove('epg-mode');
     dlg.innerHTML = '';
   }
   if (currentChannel) {

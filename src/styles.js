@@ -318,23 +318,82 @@ export var globalStyles = '\
     .bottom-pill-btn:hover { background: rgba(255, 255, 255, 0.2); color: #ffffff; }\
     .bottom-pill-btn.focused { background: #ffffff !important; border-color: #ffffff !important; color: #0b0d14 !important; box-shadow: none !important; }\
     .bottom-pill-btn.focused svg { stroke: #0b0d14 !important; }\
-    #quality-audio-dialog { position: absolute; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(15, 17, 21, 0.85); z-index: 40; display: none; align-items: center; justify-content: center; }\
+    #quality-audio-dialog {\
+      position: absolute;\
+      top: 0; left: 0;\
+      width: 100vw; height: 100vh;\
+      background: transparent;\
+      z-index: 40;\
+      display: none;\
+      align-items: flex-end;\
+      justify-content: flex-end;\
+      padding: 0 60px 130px 0;\
+      pointer-events: auto;\
+    }\
     #quality-audio-dialog.active { display: flex !important; }\
-    .dialog-card { background: #20242b; border: 2px solid rgba(255, 255, 255, 0.24); border-radius: 22px; padding: 30px 36px; min-width: 480px; max-width: 560px; box-shadow: 0 22px 55px rgba(0, 0, 0, 0.9); }\
-    .dialog-title { font-size: 24px; font-weight: 800; color: #ffffff; margin-bottom: 22px; padding-bottom: 16px; border-bottom: 1.5px solid rgba(255, 255, 255, 0.16); }\
-    .dialog-list { display: flex; flex-direction: column; gap: 12px; max-height: 440px; overflow-y: auto; }\
-    .dialog-item { display: flex; align-items: center; justify-content: space-between; padding: 16px 22px; background: #2b303a; border: 2px solid rgba(255, 255, 255, 0.14); border-radius: 14px; font-size: 18px; font-weight: 700; color: #f1f5f9; cursor: pointer; transition: background 0.1s ease, color 0.1s ease; }\
+    #quality-audio-dialog.epg-mode {\
+      align-items: center !important;\
+      justify-content: flex-end !important;\
+      padding: 0 40px 0 0 !important;\
+    }\
+    .dialog-card {\
+      background: rgba(24, 28, 35, 0.96);\
+      border: none;\
+      border-radius: 20px;\
+      padding: 24px 28px;\
+      min-width: 380px;\
+      max-width: 440px;\
+      box-shadow: 0 18px 45px rgba(0, 0, 0, 0.85);\
+      pointer-events: auto;\
+    }\
+    .dialog-title {\
+      font-size: 22px;\
+      font-weight: 800;\
+      color: #ffffff;\
+      margin-bottom: 18px;\
+      padding-bottom: 14px;\
+      border-bottom: 1.5px solid rgba(255, 255, 255, 0.12);\
+    }\
+    .dialog-list {\
+      display: flex;\
+      flex-direction: column;\
+      gap: 10px;\
+      max-height: 400px;\
+      overflow-y: auto;\
+    }\
+    .dialog-item {\
+      display: flex;\
+      align-items: center;\
+      justify-content: space-between;\
+      padding: 14px 20px;\
+      background: #2b303a;\
+      border: none;\
+      border-radius: 14px;\
+      font-size: 18px;\
+      font-weight: 700;\
+      color: #f1f5f9;\
+      cursor: pointer;\
+      transition: background 0.1s ease, color 0.1s ease;\
+    }\
     .dialog-item:hover { background: #363d4a; }\
     .dialog-item.focused {\
       background: #ffffff !important;\
-      border-color: #ffffff !important;\
+      border: none !important;\
       color: #0b0d14 !important;\
       box-shadow: none !important;\
     }\
     .dialog-item.focused span { color: #0b0d14 !important; font-weight: 800 !important; }\
     .dialog-item.focused .dialog-check-icon { stroke: #0b0d14 !important; }\
     .dialog-item.active { color: #fb923c; }\
-    .epg-schedule-card { min-width: 55vw !important; max-width: 65vw !important; height: 75vh !important; display: flex !important; flex-direction: column !important; padding: 26px 32px !important; }\
+    .epg-schedule-card {\
+      min-width: 58vw !important;\
+      max-width: 68vw !important;\
+      height: 75vh !important;\
+      display: flex !important;\
+      flex-direction: column !important;\
+      padding: 24px 30px !important;\
+      border: none !important;\
+    }\
     .epg-dialog-body { display: flex; gap: 20px; flex: 1; min-height: 0; overflow: hidden; }\
     .epg-channel-sidebar { width: 320px; flex-shrink: 0; border-right: 1.5px solid rgba(255, 255, 255, 0.16); overflow-y: auto; padding-right: 14px; display: flex; flex-direction: column; gap: 10px; }\
     .epg-ch-item { display: flex; align-items: center; gap: 16px; padding: 12px 16px; border-radius: 14px; background: #2b303a; color: #e2e8f0; font-size: 18px; font-weight: 700; cursor: pointer; border: 2px solid rgba(255, 255, 255, 0.12); transition: background 0.12s ease; min-height: 64px; }\
