@@ -42,6 +42,7 @@ let allChannels = [];
 let currentPlayingChannel = null;
 let isDrawerOpen = true;
 let playbackTimeout = null;
+let isPlayerReady = false;
 
 function setupDOM() {
   injectStyles();
@@ -81,8 +82,8 @@ function setupDOM() {
             <span class="title-cyan">DRM</span>
           </div>
           <div class="win-clock-badge">
-            <div id="drawer-time" class="win-time">23:37:11</div>
-            <div id="drawer-date" class="win-date">16-08-2026</div>
+            <div id="drawer-time" class="win-time">--:--:--</div>
+            <div id="drawer-date" class="win-date">--/--/----</div>
           </div>
         </div>
 
@@ -116,8 +117,8 @@ function setupDOM() {
         <div class="osd-left-info">
           <div id="osd-logo" class="osd-logo-box"></div>
           <div class="osd-text-col">
-            <div id="osd-channel-name" class="osd-ch-name">Đang tải...</div>
-            <div id="osd-program-name" class="osd-prog-name">ĐANG CẬP NHẬT...</div>
+            <div id="osd-channel-name" class="osd-ch-name">Đang tải danh sách...</div>
+            <div id="osd-program-name" class="osd-prog-name" style="display:none;"></div>
           </div>
         </div>
         <div class="osd-right-info">
@@ -127,7 +128,7 @@ function setupDOM() {
       </div>
 
       <!-- HÀNG 2: TIMELINE -->
-      <div id="osd-timeline-row" class="osd-timeline-row">
+      <div id="osd-timeline-row" class="osd-timeline-row" style="display:none;">
         <span id="osd-start-time" class="osd-time-bound">00:00</span>
         <div class="osd-timeline-track">
           <div id="osd-progress-bar" class="osd-timeline-fill" style="width: 0%;"></div>
@@ -190,7 +191,7 @@ function hidePlaybackError() {
   if (errorLayer) errorLayer.classList.remove('active');
 }
 
-async function playSelectedChannel(ch) {
+function playSelectedChannel(ch) {
   if (!ch) return;
   currentPlayingChannel = ch;
   showCenterPlayPause(null);
@@ -211,7 +212,7 @@ async function playSelectedChannel(ch) {
     }
   }, 7000);
 
-  await playStream(ch);
+  playStream(ch);
 }
 
 function openDrawer() {
@@ -288,15 +289,6 @@ function autoPlayFirstChannel() {
   playSelectedChannel(targetChannel);
 }
 
-function exitApp() {
-  stopStream();
-  if (window.tizen && window.tizen.application) {
-    try {
-      window.tizen.application.getCurrentApplication().exit();
-    } catch (e) {}
-  }
-}
-
 function handleKeyDown(e) {
   const key = e.keyCode;
 
@@ -339,7 +331,6 @@ function handleKeyDown(e) {
 
   // 2. KHI ĐANG Ở CHẾ ĐỘ TOÀN MÀN HÌNH (FULLSCREEN)
   if (!isDrawerOpen) {
-    // A. Phím TRÁI / PHẢI: Chuyển các nút Action Bar
     if (key === TV_KEYS.LEFT) {
       if (isOsdVisible()) {
         navigateActionBar('left', currentPlayingChannel);
@@ -357,7 +348,6 @@ function handleKeyDown(e) {
       return;
     }
 
-    // B. Phím ENTER (OK):
     if (key === TV_KEYS.ENTER) {
       if (isOsdVisible()) {
         executeActionPill(currentPlayingChannel, allChannels);
@@ -372,7 +362,6 @@ function handleKeyDown(e) {
       return;
     }
 
-    // C. Phím LÊN / XUỐNG: Chuyển kênh
     if (key === TV_KEYS.UP) {
       let curIdx = getCurrentChannelIndex();
       if (curIdx > 0) {
@@ -390,13 +379,11 @@ function handleKeyDown(e) {
       return;
     }
 
-    // D. Phím INFO: Gọi OSD lên
     if (key === TV_KEYS.INFO) {
       if (currentPlayingChannel) updateOsdInfo(currentPlayingChannel, false);
       return;
     }
 
-    // E. Phím BACK: Mở Menu
     if (key === TV_KEYS.BACK_PC || key === TV_KEYS.RETURN || key === 27 || key === 8) {
       openDrawer();
       return;
@@ -405,7 +392,7 @@ function handleKeyDown(e) {
     return;
   }
 
-  // 3. KHI MENU ĐANG MỞ (CHẾ ĐỘ PIP THU NHỎ SANG PHẢI)
+  // 3. KHI MENU ĐANG MỞ
   if (isSearchFocused()) {
     if (key === TV_KEYS.DOWN) {
       blurSearchInput();
@@ -459,37 +446,50 @@ function handleKeyDown(e) {
   }
 }
 
-async function initApp() {
-  setupDOM();
-  registerTizenKeys();
+function initApp() {
+  try {
+    setupDOM();
+    updateWindowsClock();
+    setInterval(updateWindowsClock, 1000);
+    registerTizenKeys();
+  } catch (e) {
+    console.error('[App] Init DOM error:', e);
+  }
 
   const video = document.getElementById('video-screen');
 
-  video.addEventListener('waiting', () => showVideoSpinner());
-  video.addEventListener('seeking', () => showVideoSpinner());
-  video.addEventListener('loadstart', () => showVideoSpinner());
-  video.addEventListener('playing', () => {
-    if (playbackTimeout) clearTimeout(playbackTimeout);
-    hidePlaybackError();
-    hideVideoSpinner();
-  });
-  video.addEventListener('canplay', () => {
-    if (playbackTimeout) clearTimeout(playbackTimeout);
-    hidePlaybackError();
-    hideVideoSpinner();
-  });
-  video.addEventListener('timeupdate', () => {
-    if (video.currentTime > 0.1) {
+  if (video) {
+    video.addEventListener('waiting', () => showVideoSpinner());
+    video.addEventListener('seeking', () => showVideoSpinner());
+    video.addEventListener('loadstart', () => showVideoSpinner());
+    video.addEventListener('playing', () => {
       if (playbackTimeout) clearTimeout(playbackTimeout);
       hidePlaybackError();
       hideVideoSpinner();
-    }
-  });
+    });
+    video.addEventListener('canplay', () => {
+      if (playbackTimeout) clearTimeout(playbackTimeout);
+      hidePlaybackError();
+      hideVideoSpinner();
+    });
+    video.addEventListener('timeupdate', () => {
+      if (video.currentTime > 0.1) {
+        if (playbackTimeout) clearTimeout(playbackTimeout);
+        hidePlaybackError();
+        hideVideoSpinner();
+      }
+    });
+  }
 
   try {
-    await initPlayer(video);
+    initPlayer(video).then(() => {
+      isPlayerReady = true;
+    }).catch(err => {
+      console.warn('[App] Init player non-fatal error:', err);
+      isPlayerReady = true;
+    });
   } catch (e) {
-    console.error('[App] Init player error:', e);
+    console.warn('[App] Player init failed:', e);
   }
 
   setStatsCallback((stats) => {
@@ -504,11 +504,9 @@ async function initApp() {
   window.addEventListener('beforeunload', () => stopStream());
   window.addEventListener('pagehide', () => stopStream());
 
-  updateWindowsClock();
-  setInterval(updateWindowsClock, 1000);
-
+  // Bắt đầu nạp danh sách kênh ngay lập tức
   loadAndMergePlaylists((data) => {
-    allChannels = data.allChannels;
+    allChannels = data.allChannels || [];
     initDrawerState(data, (ch) => {
       playSelectedChannel(ch);
     });
@@ -525,4 +523,8 @@ async function initApp() {
   });
 }
 
-initApp();
+if (document.readyState === 'loading') {
+  document.addEventListener('DOMContentLoaded', initApp);
+} else {
+  initApp();
+}
