@@ -38,11 +38,13 @@ import { initPlayer, playStream, stopStream, setStatsCallback, setPlaybackErrorC
 import { loadEPG } from './epg.js';
 import { TV_KEYS, registerTizenKeys } from './remote.js';
 
+const APP_VERSION = 'v1.2.1 (Tizen 3+)';
+
 let allChannels = [];
 let currentPlayingChannel = null;
 let isDrawerOpen = true;
 let playbackTimeout = null;
-let isPlayerReady = false;
+let isPlayerInitialized = false;
 
 function setupDOM() {
   injectStyles();
@@ -80,6 +82,7 @@ function setupDOM() {
           <div class="app-title-badge">
             <span class="title-white">IPTV Player</span>
             <span class="title-cyan">DRM</span>
+            <span style="font-size: 10px; color: #f97316; margin-left: 4px; font-weight: 700;">${APP_VERSION}</span>
           </div>
           <div class="win-clock-badge">
             <div id="drawer-time" class="win-time">--:--:--</div>
@@ -446,14 +449,14 @@ function handleKeyDown(e) {
   }
 }
 
-function initApp() {
+function startApplication() {
   try {
     setupDOM();
     updateWindowsClock();
     setInterval(updateWindowsClock, 1000);
     registerTizenKeys();
-  } catch (e) {
-    console.error('[App] Init DOM error:', e);
+  } catch (err) {
+    console.error('[App] DOM setup error:', err);
   }
 
   const video = document.getElementById('video-screen');
@@ -481,15 +484,18 @@ function initApp() {
     });
   }
 
-  try {
-    initPlayer(video).then(() => {
-      isPlayerReady = true;
-    }).catch(err => {
-      console.warn('[App] Init player non-fatal error:', err);
-      isPlayerReady = true;
-    });
-  } catch (e) {
-    console.warn('[App] Player init failed:', e);
+  // Khởi tạo Shaka Player ngầm
+  if (video) {
+    try {
+      initPlayer(video).then(() => {
+        isPlayerInitialized = true;
+      }).catch(err => {
+        console.warn('[App] Shaka Player warning:', err);
+        isPlayerInitialized = true;
+      });
+    } catch (e) {
+      console.warn('[App] Player init failed:', e);
+    }
   }
 
   setStatsCallback((stats) => {
@@ -504,7 +510,7 @@ function initApp() {
   window.addEventListener('beforeunload', () => stopStream());
   window.addEventListener('pagehide', () => stopStream());
 
-  // Bắt đầu nạp danh sách kênh ngay lập tức
+  // Tải danh sách kênh trực tiếp
   loadAndMergePlaylists((data) => {
     allChannels = data.allChannels || [];
     initDrawerState(data, (ch) => {
@@ -523,8 +529,10 @@ function initApp() {
   });
 }
 
-if (document.readyState === 'loading') {
-  document.addEventListener('DOMContentLoaded', initApp);
+// Khởi chạy ngay lập tức
+if (document.readyState === 'complete' || document.readyState === 'interactive') {
+  startApplication();
 } else {
-  initApp();
+  window.addEventListener('DOMContentLoaded', startApplication);
+  window.addEventListener('load', startApplication);
 }
