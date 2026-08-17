@@ -1,91 +1,127 @@
 import { getChannelEPG, isEpgReady } from './epg.js';
 
-let categoryList = [];
-let groupedChannels = {};
 let allChannelsList = [];
+let groupedChannelsMap = {};
+let categoryKeys = [];
+
 let currentCategoryIndex = 0;
 let currentChannelIndex = 0;
-let onSelectChannelCallback = null;
-let searchQuery = '';
 let isSearchInputActive = false;
+let searchQuery = '';
 
-const DEFAULT_TV_ICON_SVG = `<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#f97316" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="20" height="15" x="2" y="7" rx="2" ry="2"/><polyline points="17 2 12 7 7 2"/></svg>`;
+export const DEFAULT_TV_ICON_SVG = `
+  <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="#64748b" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+    <rect x="2" y="7" width="20" height="15" rx="2" ry="2"></rect>
+    <polyline points="17 2 12 7 7 2"></polyline>
+  </svg>
+`;
 
 function padZero(num) {
   return num < 10 ? '0' + num : '' + num;
 }
 
-function removeVietnameseTones(str) {
-  if (!str) return '';
-  str = str.replace(/à|á|ạ|ả|ã|â|ầ|ấ|ậ|ẩ|ẫ|ă|ằ|ắ|ặ|ẳ|ẵ/g, 'a');
-  str = str.replace(/è|é|ẹ|ẻ|ẽ|ê|ề|ế|ệ|ể|ễ/g, 'e');
-  str = str.replace(/ì|í|ị|ỉ|ĩ/g, 'i');
-  str = str.replace(/ò|ó|ọ|ỏ|õ|ô|ồ|ố|ộ|ổ|ỗ|ơ|ờ|ớ|ợ|ở|ỡ/g, 'o');
-  str = str.replace(/ù|ú|ụ|ủ|ũ|ư|ừ|ứ|ự|ử|ữ/g, 'u');
-  str = str.replace(/ỳ|ý|Ỵ|Ỷ|Ỹ/g, 'y');
-  str = str.replace(/đ/g, 'd');
-  str = str.replace(/À|Á|Ạ|Ả|Ã|Â|Ầ|Ấ|Ậ|Ẩ|Ẫ|Ă|Ằ|Ắ|Ặ|Ẳ|Ẵ/g, 'A');
-  str = str.replace(/È|É|Ẹ|Ẻ|Ẽ|Ê|Ề|Ế|Ệ|Ể|Ễ/g, 'E');
-  str = str.replace(/Ì|Í|Ị|Ỉ|Ĩ/g, 'I');
-  str = str.replace(/Ò|Ó|Ọ|Ỏ|Õ|Ô|Ồ|Ố|Ộ|Ổ|Ỗ|Ơ|Ờ|Ớ|Ợ|Ở|Ỡ/g, 'O');
-  str = str.replace(/Ù|Ú|Ụ|Ủ|Ũ|Ư|Ừ|Ứ|Ự|Ử|Ữ/g, 'U');
-  str = str.replace(/Ỳ|Ý|Ỵ|Ỷ|Ỹ/g, 'Y');
-  str = str.replace(/Đ/g, 'D');
-  return str;
-}
-
-function safeScrollIntoView(el, alignBottom) {
-  if (!el) return;
-  try {
-    if (typeof el.scrollIntoView === 'function') {
-      el.scrollIntoView(alignBottom !== undefined ? alignBottom : false);
-    }
-  } catch (e) {}
-}
-
-export function initDrawerState(data, onSelect) {
-  categoryList = data.categoryList || [];
-  groupedChannels = data.groupedChannels || {};
+export function initDrawerState(data) {
   allChannelsList = data.allChannels || [];
-  onSelectChannelCallback = onSelect;
-
-  setupSearchBoxListeners();
+  groupedChannelsMap = data.groupedChannels || {};
+  categoryKeys = data.categoryList || [];
+  currentCategoryIndex = 0;
+  currentChannelIndex = 0;
+  searchQuery = '';
+  isSearchInputActive = false;
 }
 
-function setupSearchBoxListeners() {
-  const searchInput = document.getElementById('channel-search-input');
-  const searchBox = document.getElementById('drawer-search-box');
-  const clearBtn = document.getElementById('search-clear-btn');
+export function updateWindowsClock() {
+  const timeEl = document.getElementById('win-time-display');
+  const dateEl = document.getElementById('win-date-display');
+  if (!timeEl || !dateEl) return;
 
-  if (!searchInput) return;
+  const now = new Date();
+  const hours = padZero(now.getHours());
+  const minutes = padZero(now.getMinutes());
+  const seconds = padZero(now.getSeconds());
 
-  searchInput.addEventListener('input', (e) => {
-    searchQuery = (e.target.value || '').trim();
-    if (clearBtn) {
-      clearBtn.style.display = searchQuery.length > 0 ? 'flex' : 'none';
-    }
+  const day = padZero(now.getDate());
+  const month = padZero(now.getMonth() + 1);
+  const year = now.getFullYear();
+
+  timeEl.textContent = `${hours}:${minutes}:${seconds}`;
+  dateEl.textContent = `${day}-${month}-${year}`;
+}
+
+export function getCurrentCategories() {
+  return categoryKeys;
+}
+
+export function getCurrentCategoryIndex() {
+  return currentCategoryIndex;
+}
+
+export function setCurrentCategoryIndex(idx) {
+  if (categoryKeys.length === 0) return;
+  currentCategoryIndex = Math.max(0, Math.min(idx, categoryKeys.length - 1));
+  currentChannelIndex = 0;
+}
+
+export function nextCategory() {
+  if (categoryKeys.length === 0) return;
+  currentCategoryIndex = (currentCategoryIndex + 1) % categoryKeys.length;
+  currentChannelIndex = 0;
+  renderCategories();
+  renderChannels();
+}
+
+export function prevCategory() {
+  if (categoryKeys.length === 0) return;
+  currentCategoryIndex = (currentCategoryIndex - 1 + categoryKeys.length) % categoryKeys.length;
+  currentChannelIndex = 0;
+  renderCategories();
+  renderChannels();
+}
+
+export function getCurrentChannels() {
+  if (searchQuery.trim().length > 0) {
+    const q = searchQuery.toLowerCase().trim();
+    return allChannelsList.filter(ch => ch.name.toLowerCase().includes(q));
+  }
+  const currentKey = categoryKeys[currentCategoryIndex];
+  return groupedChannelsMap[currentKey] || [];
+}
+
+export function getCurrentChannelIndex() {
+  return currentChannelIndex;
+}
+
+export function setCurrentChannelIndex(idx) {
+  const chs = getCurrentChannels();
+  if (chs.length === 0) {
     currentChannelIndex = 0;
-    renderCategories();
-    renderChannels();
-  });
+    return;
+  }
+  currentChannelIndex = Math.max(0, Math.min(idx, chs.length - 1));
+  updateChannelFocusVisual();
+}
 
-  searchInput.addEventListener('focus', () => {
-    isSearchInputActive = true;
-    if (searchBox) searchBox.classList.add('focused');
-    updateFocus();
-  });
+export function getCurrentSelectedChannel() {
+  const chs = getCurrentChannels();
+  if (chs.length === 0) return null;
+  return chs[currentChannelIndex] || null;
+}
 
-  searchInput.addEventListener('blur', () => {
-    isSearchInputActive = false;
-    if (searchBox) searchBox.classList.remove('focused');
-    updateFocus();
-  });
+export function nextChannel() {
+  const chs = getCurrentChannels();
+  if (chs.length === 0) return;
+  if (currentChannelIndex < chs.length - 1) {
+    currentChannelIndex++;
+    updateChannelFocusVisual();
+  }
+}
 
-  if (clearBtn) {
-    clearBtn.addEventListener('click', (e) => {
-      e.stopPropagation();
-      clearSearch();
-    });
+export function prevChannel() {
+  const chs = getCurrentChannels();
+  if (chs.length === 0) return;
+  if (currentChannelIndex > 0) {
+    currentChannelIndex--;
+    updateChannelFocusVisual();
   }
 }
 
@@ -94,133 +130,85 @@ export function isSearchFocused() {
 }
 
 export function focusSearchInput() {
-  const searchInput = document.getElementById('channel-search-input');
-  if (searchInput) {
-    searchInput.focus();
+  isSearchInputActive = true;
+  const input = document.getElementById('channel-search-input');
+  const box = document.querySelector('.search-input-box');
+  if (input) {
+    input.focus();
   }
+  if (box) {
+    box.classList.add('focused');
+  }
+  updateChannelFocusVisual();
 }
 
 export function blurSearchInput() {
-  const searchInput = document.getElementById('channel-search-input');
-  if (searchInput) {
-    searchInput.blur();
-  }
   isSearchInputActive = false;
-  const searchBox = document.getElementById('drawer-search-box');
-  if (searchBox) searchBox.classList.remove('focused');
-}
-
-export function clearSearch() {
-  searchQuery = '';
-  const searchInput = document.getElementById('channel-search-input');
-  if (searchInput) {
-    searchInput.value = '';
-    searchInput.blur();
+  const input = document.getElementById('channel-search-input');
+  const box = document.querySelector('.search-input-box');
+  if (input) {
+    input.blur();
   }
-  const clearBtn = document.getElementById('search-clear-btn');
-  if (clearBtn) clearBtn.style.display = 'none';
-
-  isSearchInputActive = false;
-  const searchBox = document.getElementById('drawer-search-box');
-  if (searchBox) searchBox.classList.remove('focused');
-
-  currentCategoryIndex = 0;
-  currentChannelIndex = 0;
-  renderCategories();
-  renderChannels();
+  if (box) {
+    box.classList.remove('focused');
+  }
+  updateChannelFocusVisual();
 }
 
 export function getSearchQuery() {
   return searchQuery;
 }
 
-export function getCurrentCategoryIndex() {
-  return currentCategoryIndex;
+export function setSearchQuery(q) {
+  searchQuery = q || '';
+  currentChannelIndex = 0;
+  renderChannels();
 }
 
-export function getCurrentChannelIndex() {
-  return currentChannelIndex;
+export function clearSearch() {
+  searchQuery = '';
+  const input = document.getElementById('channel-search-input');
+  if (input) input.value = '';
+  currentChannelIndex = 0;
+  renderChannels();
 }
 
-export function setCurrentChannelIndex(idx) {
-  currentChannelIndex = idx;
-}
-
-export function getCurrentChannels() {
-  if (searchQuery) {
-    const q = removeVietnameseTones(searchQuery.toLowerCase());
-    return allChannelsList.filter(ch => {
-      const name = removeVietnameseTones((ch.name || '').toLowerCase());
-      const grp = removeVietnameseTones((ch.group || '').toLowerCase());
-      return name.includes(q) || grp.includes(q);
-    });
-  }
-  if (categoryList.length === 0) return [];
-  const curCat = categoryList[currentCategoryIndex];
-  return groupedChannels[curCat] || [];
-}
-
-export function getCurrentSelectedChannel() {
-  const channels = getCurrentChannels();
-  return channels[currentChannelIndex] || null;
-}
-
-export function nextCategory() {
-  if (searchQuery) return;
-  if (currentCategoryIndex < categoryList.length - 1) {
-    currentCategoryIndex++;
-    currentChannelIndex = 0;
-    renderCategories();
-    renderChannels();
+function safeScrollIntoView(el) {
+  if (!el) return;
+  try {
+    if (typeof el.scrollIntoViewIfNeeded === 'function') {
+      el.scrollIntoViewIfNeeded(false);
+    } else {
+      el.scrollIntoView({ block: 'nearest', inline: 'nearest' });
+    }
+  } catch (e) {
+    try {
+      el.scrollIntoView(false);
+    } catch (err) {}
   }
 }
 
-export function prevCategory() {
-  if (searchQuery) return;
-  if (currentCategoryIndex > 0) {
-    currentCategoryIndex--;
-    currentChannelIndex = 0;
-    renderCategories();
-    renderChannels();
-  }
-}
-
-export function nextChannel() {
-  const channels = getCurrentChannels();
-  if (currentChannelIndex < channels.length - 1) {
-    currentChannelIndex++;
-    updateFocus();
-  }
-}
-
-export function prevChannel() {
-  if (currentChannelIndex > 0) {
-    currentChannelIndex--;
-    updateFocus();
-  } else if (currentChannelIndex === 0) {
-    focusSearchInput();
-  }
+function updateChannelFocusVisual() {
+  const items = document.querySelectorAll('.channel-row-item');
+  items.forEach((it, idx) => {
+    if (idx === currentChannelIndex && !isSearchInputActive) {
+      it.classList.add('focused');
+      safeScrollIntoView(it);
+    } else {
+      it.classList.remove('focused');
+    }
+  });
 }
 
 export function renderCategories() {
   const nav = document.getElementById('category-nav-bar');
   if (!nav) return;
+
   nav.innerHTML = '';
-
-  if (searchQuery) {
-    const channels = getCurrentChannels();
-    const chip = document.createElement('div');
-    chip.className = 'cat-chip active';
-    chip.textContent = `Kết quả: ${channels.length} kênh`;
-    nav.appendChild(chip);
-    return;
-  }
-
-  categoryList.forEach((cat, idx) => {
+  categoryKeys.forEach((catName, idx) => {
     const chip = document.createElement('div');
     chip.className = `cat-chip ${idx === currentCategoryIndex ? 'active' : ''}`;
-    chip.textContent = cat;
-
+    chip.textContent = catName;
     chip.onclick = (e) => {
       e.stopPropagation();
       currentCategoryIndex = idx;
@@ -228,7 +216,6 @@ export function renderCategories() {
       renderCategories();
       renderChannels();
     };
-
     nav.appendChild(chip);
   });
 
@@ -247,7 +234,7 @@ export function renderChannels() {
 
   if (channels.length === 0) {
     list.innerHTML = `
-      <div style="padding: 40px 20px; text-align: center; color: #64748b; font-size: 13.5px; font-weight: 600;">
+      <div style="padding: 40px 20px; text-align: center; color: #64748b; font-size: 14px; font-weight: 600;">
         Không tìm thấy kênh phù hợp
       </div>
     `;
@@ -270,13 +257,7 @@ export function renderChannels() {
     const epg = getChannelEPG(ch.name);
     let contentHtml = '';
 
-    if (!epgReady) {
-      contentHtml = `
-        <div class="ch-name-orange">${ch.name}</div>
-        <div class="skeleton-box skeleton-title"></div>
-        <div class="skeleton-box skeleton-timeline"></div>
-      `;
-    } else if (epg && epg.current && epg.current.title) {
+    if (epg && epg.current && epg.current.title) {
       contentHtml = `
         <div class="ch-name-orange">${ch.name}</div>
         <div class="ch-program-gray">${epg.current.title}</div>
@@ -287,6 +268,12 @@ export function renderChannels() {
           </div>
           <span class="ch-time-text">${epg.current.stopTimeStr}</span>
         </div>
+      `;
+    } else if (!epgReady) {
+      contentHtml = `
+        <div class="ch-name-orange">${ch.name}</div>
+        <div class="skeleton-box skeleton-title"></div>
+        <div class="skeleton-box skeleton-timeline"></div>
       `;
     } else {
       contentHtml = `
@@ -308,44 +295,18 @@ export function renderChannels() {
 
     row.onclick = (e) => {
       e.stopPropagation();
-      blurSearchInput();
       currentChannelIndex = idx;
-      updateFocus();
-      if (onSelectChannelCallback) onSelectChannelCallback(ch);
+      updateChannelFocusVisual();
+      if (window._onPlayChannelDirect) {
+        window._onPlayChannelDirect(ch);
+      }
     };
 
     list.appendChild(row);
   });
 
-  updateFocus();
-}
-
-export function updateFocus() {
-  const items = document.querySelectorAll('.channel-row-item');
-  items.forEach((it, idx) => {
-    const isFoc = (idx === currentChannelIndex && !isSearchInputActive);
-    it.classList.toggle('focused', isFoc);
-    if (isFoc) {
-      safeScrollIntoView(it);
-    }
-  });
-}
-
-export function updateWindowsClock() {
-  try {
-    const now = new Date();
-    const timeEl = document.getElementById('drawer-time');
-    const dateEl = document.getElementById('drawer-date');
-    if (timeEl && dateEl) {
-      const hh = padZero(now.getHours());
-      const mm = padZero(now.getMinutes());
-      const ss = padZero(now.getSeconds());
-      timeEl.innerText = `${hh}:${mm}:${ss}`;
-
-      const dd = padZero(now.getDate());
-      const month = padZero(now.getMonth() + 1);
-      const yyyy = now.getFullYear();
-      dateEl.innerText = `${dd}-${month}-${yyyy}`;
-    }
-  } catch (e) {}
+  const focusedRow = list.querySelector('.channel-row-item.focused');
+  if (focusedRow) {
+    safeScrollIntoView(focusedRow);
+  }
 }

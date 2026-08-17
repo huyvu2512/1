@@ -1,5 +1,5 @@
-export const EPG_SOURCE_1 = 'https://lichphatsong.io.vn/epg.xml'; // Nguồn EPG 1 (Ưu tiên)
-export const EPG_SOURCE_2 = 'https://epg.blaosolar.vn/schedule/epg.xml'; // Nguồn EPG 2 (Bổ sung kênh thiếu)
+export const EPG_SOURCE_1 = 'https://epg.blaosolar.vn/schedule/epg.xml'; // Nguồn EPG 1 (Lịch phát sóng trực tiếp hôm nay)
+export const EPG_SOURCE_2 = 'https://lichphatsong.io.vn/epg.xml'; // Nguồn EPG 2 (Bổ sung kênh thiếu)
 
 let epgData = {};
 let isLoaded = false;
@@ -173,7 +173,7 @@ function fetchXml(url, callback) {
   const bustUrl = `${url}?_t=${Date.now()}`;
 
   xhr.open('GET', bustUrl, true);
-  xhr.timeout = 20000;
+  xhr.timeout = 25000;
 
   xhr.onreadystatechange = function () {
     if (xhr.readyState === 4 && !done) {
@@ -211,41 +211,36 @@ function fetchXml(url, callback) {
 }
 
 export function loadEPG(onLoaded) {
+  // 1. Tải Nguồn 1 (BlaoSolar - Lịch hôm nay)
   fetchXml(EPG_SOURCE_1, (err1, xml1) => {
     if (!err1 && xml1) {
       const src1Data = parseEpgXmlFast(xml1);
       Object.assign(epgData, src1Data);
       isLoaded = true;
-      console.log(`[EPG] Đã nạp siêu tốc Nguồn 1: ${Object.keys(epgData).length} kênh.`);
+      console.log(`[EPG] Đã nạp Nguồn 1 (BlaoSolar): ${Object.keys(epgData).length} kênh.`);
       if (onLoaded) onLoaded();
     }
 
+    // 2. Tải tiếp Nguồn 2 (LichPhatSong)
     fetchXml(EPG_SOURCE_2, (err2, xml2) => {
       if (!err2 && xml2) {
         const src2Data = parseEpgXmlFast(xml2);
         const now = new Date();
         let added = 0;
-        let updated = 0;
 
         Object.keys(src2Data).forEach(key => {
           const s2List = src2Data[key] || [];
           if (s2List.length === 0) return;
 
           const s1List = epgData[key] || [];
-          const s1HasValid = s1List.some(p => p.stop >= now);
-          const s2HasValid = s2List.some(p => p.stop >= now);
-
           if (s1List.length === 0) {
             epgData[key] = s2List;
             added++;
-          } else if (!s1HasValid && s2HasValid) {
-            epgData[key] = s2List;
-            updated++;
           }
         });
 
         isLoaded = true;
-        console.log(`[EPG] Nguồn 2: Thêm mới ${added} kênh, Cập nhật ${updated} kênh. Tổng: ${Object.keys(epgData).length} kênh EPG!`);
+        console.log(`[EPG] Nguồn 2: Thêm mới ${added} kênh. Tổng: ${Object.keys(epgData).length} kênh EPG!`);
         if (onLoaded) onLoaded();
       } else {
         isLoaded = true;

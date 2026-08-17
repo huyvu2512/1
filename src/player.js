@@ -222,30 +222,36 @@ export function initPlayer(videoElement) {
       });
     }
 
-    // Thử khởi tạo Shaka Player an toàn
+    // Khởi tạo Shaka Player đúng thứ tự: installAll() TRƯỚC isBrowserSupported()
     const sh = getShakaSafe();
-    if (sh && sh.Player && sh.Player.isBrowserSupported && sh.Player.isBrowserSupported()) {
+    if (sh) {
       try {
         if (sh.polyfill && sh.polyfill.installAll) {
           sh.polyfill.installAll();
         }
-        playerInstance = new sh.Player(videoElement);
-        playerInstance.configure({
-          streaming: {
-            bufferingGoal: 2,
-            rebufferingGoal: 0.1,
-            jumpLargeGaps: true,
-            retryParameters: { maxAttempts: 2, timeout: 3000 }
-          }
-        });
+        if (sh.Player && sh.Player.isBrowserSupported && sh.Player.isBrowserSupported()) {
+          playerInstance = new sh.Player(videoElement);
+          playerInstance.configure({
+            streaming: {
+              bufferingGoal: 3,
+              rebufferingGoal: 0.2,
+              bufferBehind: 10,
+              jumpLargeGaps: true,
+              retryParameters: { maxAttempts: 3, timeout: 5000 }
+            }
+          });
 
-        playerInstance.addEventListener('error', (event) => {
-          const err = event.detail;
-          if (err && err.severity === 2) {
-            handleStreamFailure(err);
-          }
-        });
-        console.log('[Player] Đã khởi tạo Shaka Player thành công!');
+          playerInstance.addEventListener('error', (event) => {
+            const err = event.detail;
+            console.warn('[Player] Shaka Error detail:', err);
+            if (err && err.severity === 2) {
+              handleStreamFailure(err);
+            }
+          });
+          console.log('[Player] Đã khởi tạo Shaka Player thành công!');
+        } else {
+          console.log('[Player] Shaka không hỗ trợ trình duyệt này, dùng Native Hardware Video!');
+        }
       } catch (e) {
         console.warn('[Player] Shaka khởi tạo thất bại, dùng Native Video:', e.message);
         playerInstance = null;
@@ -290,12 +296,12 @@ function playCurrentChannelInternal() {
   const url = currentChannelData.url;
   const isDrm = !!currentChannelData.licenseKey || url.includes('.mpd');
 
-  // 1. Nếu có Shaka Player và là luồng DRM / MPD: Dùng Shaka
-  if (playerInstance && isDrm) {
+  // 1. Dùng Shaka Player cho các kênh DRM ClearKey hoặc MPEG-DASH
+  if (playerInstance) {
     try {
       playerInstance.unload().catch(() => {});
 
-      const drmConfig = { servers: {}, clearKeys: {} };
+      const drmConfig = { servers: {}, clearKeys: {}, advanced: {} };
       if (currentChannelData.licenseKey) {
         const clearKeyObj = parseClearKey(currentChannelData.licenseKey);
         if (clearKeyObj) {
@@ -312,7 +318,7 @@ function playCurrentChannelInternal() {
           setTimeout(() => onMediaStatsChangedCb(getRealMediaStats()), 500);
         }
       }).catch((e) => {
-        console.warn('[Player] Shaka load thất bại, thử Native Video:', e);
+        console.warn('[Player] Shaka load error, chuyển Native Video:', e);
         playWithNativeVideo(url);
       });
       return;
