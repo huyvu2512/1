@@ -24,6 +24,23 @@ let epgActiveColumn = 'schedule'; // 'channel' | 'schedule'
 
 const ACTION_BUTTONS = ['btn-action-drawer', 'btn-action-epg', 'btn-action-quality', 'btn-action-audio'];
 
+function safeScroll(el, blockPos) {
+  if (!el) return;
+  try {
+    if (typeof el.scrollIntoView === 'function') {
+      if (blockPos === 'center' || blockPos === 'nearest') {
+        el.scrollIntoView({ block: blockPos, behavior: 'auto' });
+      } else {
+        el.scrollIntoView(false);
+      }
+    }
+  } catch (e) {
+    try {
+      el.scrollIntoView(false);
+    } catch (err) {}
+  }
+}
+
 export function setOpenDrawerCallback(cb) {
   onOpenDrawerCallback = cb;
 }
@@ -273,7 +290,6 @@ function renderTwoColumnEpgModal() {
 
   // 2. Render cột bên phải (Lịch phát sóng)
   let itemsHtml = '';
-  // Kiểm tra xem kênh có lịch phát sóng hợp lệ cho hôm nay không (có chương trình đang live hoặc sắp chiếu)
   const hasValidSchedule = dialogOptions.length > 0 && dialogOptions.some(p => p.isCurrent || p.isFuture);
 
   if (!hasValidSchedule) {
@@ -313,18 +329,17 @@ function renderTwoColumnEpgModal() {
   `;
   dlg.classList.add('active');
 
-  // Cuộn kênh đang chọn và chương trình đang chiếu ra giữa
   setTimeout(() => {
     const chEl = dlg.querySelector('.epg-ch-item.selected');
-    if (chEl) chEl.scrollIntoView({ block: 'nearest', behavior: 'auto' });
+    if (chEl) safeScroll(chEl, 'nearest');
 
     if (hasValidSchedule) {
-      const curProgEl = dlg.querySelector('.epg-schedule-item.focused') || dlg.querySelector('.epg-schedule-item .epg-live-badge')?.parentElement;
-      if (curProgEl) curProgEl.scrollIntoView({ block: 'center', behavior: 'auto' });
+      const curProgEl = dlg.querySelector('.epg-schedule-item.focused') || dlg.querySelector('.epg-schedule-item .epg-live-badge');
+      const targetEl = curProgEl ? (curProgEl.classList.contains('epg-schedule-item') ? curProgEl : curProgEl.parentElement) : null;
+      if (targetEl) safeScroll(targetEl, 'center');
     }
   }, 10);
 
-  // Click vào kênh bên trái: chuyển kênh đang xem lịch
   const chEls = dlg.querySelectorAll('.epg-ch-item');
   chEls.forEach(el => {
     el.onclick = (e) => {
@@ -334,7 +349,6 @@ function renderTwoColumnEpgModal() {
     };
   });
 
-  // Click vào lịch bên phải: nếu muốn đổi kênh và phát luôn
   const progEls = dlg.querySelectorAll('.epg-schedule-item');
   progEls.forEach(el => {
     el.onclick = (e) => {
@@ -428,13 +442,11 @@ function renderDialogContent(titleText) {
 export function navigateDialog(dir, currentChannel) {
   if (!isDialogOpen) return;
 
-  // XỬ LÝ ĐIỀU HƯỚNG 2 CỘT CHO LỊCH PHÁT SÓNG
   if (dialogType === 'epg') {
     const hasValidSchedule = dialogOptions.length > 0 && dialogOptions.some(p => p.isCurrent || p.isFuture);
 
     if (epgActiveColumn === 'schedule') {
       if (dir === 'left' || !hasValidSchedule) {
-        // Sang trái: chuyển focus sang cột Danh sách kênh bên trái
         epgActiveColumn = 'channel';
         renderTwoColumnEpgModal();
         return;
@@ -457,12 +469,10 @@ export function navigateDialog(dir, currentChannel) {
       }
     } else if (epgActiveColumn === 'channel') {
       if (dir === 'left') {
-        // Sang trái khi đang ở cột kênh: đóng dialog và về thanh OSD
         closeQualityAudioDialog(currentChannel);
         return;
       }
       if (dir === 'right') {
-        // Sang phải: nếu có lịch hợp lệ thì chuyển focus sang cột Lịch
         if (hasValidSchedule) {
           epgActiveColumn = 'schedule';
           renderTwoColumnEpgModal();
@@ -485,7 +495,6 @@ export function navigateDialog(dir, currentChannel) {
     return;
   }
 
-  // CÁC POPUP THÔNG THƯỜNG (CHẤT LƯỢNG / ÂM THANH)
   if (dir === 'left') {
     closeQualityAudioDialog(currentChannel);
     return;
@@ -506,7 +515,7 @@ export function navigateDialog(dir, currentChannel) {
     const isFoc = (idx === dialogFocusedIndex);
     el.classList.toggle('focused', isFoc);
     if (isFoc) {
-      el.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
+      safeScroll(el, 'nearest');
     }
   });
 }
@@ -519,7 +528,7 @@ function updateScheduleFocusDOM() {
     const isFoc = (idx === dialogFocusedIndex);
     el.classList.toggle('focused', isFoc);
     if (isFoc) {
-      el.scrollIntoView({ block: 'center', behavior: 'smooth' });
+      safeScroll(el, 'center');
     }
   });
 }

@@ -5,14 +5,14 @@ export const SOURCE_2_URL = 'https://raw.githubusercontent.com/vuminhthanh12/vum
 export const SOURCE_3_URL = 'https://tv.vietanhtv.top/tv/'; // VietAnhTV DRM (Nguồn 3 - Bổ sung kênh thiếu)
 
 export function xhrGet(url, callback) {
+  let done = false;
   const xhr = new XMLHttpRequest();
   xhr.open('GET', url, true);
-  xhr.setRequestHeader('Cache-Control', 'no-cache, no-store, must-revalidate');
-  xhr.setRequestHeader('Pragma', 'no-cache');
-  xhr.setRequestHeader('Expires', '0');
+  xhr.timeout = 10000; // Timeout 10s cho mỗi nguồn playlist
 
   xhr.onreadystatechange = function () {
-    if (xhr.readyState === 4) {
+    if (xhr.readyState === 4 && !done) {
+      done = true;
       if (xhr.status >= 200 && xhr.status < 300) {
         callback(null, xhr.responseText);
       } else {
@@ -20,13 +20,28 @@ export function xhrGet(url, callback) {
       }
     }
   };
+
   xhr.onerror = function () {
-    callback(new Error('Network error'), null);
+    if (!done) {
+      done = true;
+      callback(new Error('Network error'), null);
+    }
   };
+
+  xhr.ontimeout = function () {
+    if (!done) {
+      done = true;
+      callback(new Error('Timeout'), null);
+    }
+  };
+
   try {
     xhr.send();
   } catch (e) {
-    callback(e, null);
+    if (!done) {
+      done = true;
+      callback(e, null);
+    }
   }
 }
 
@@ -115,14 +130,12 @@ export function standardizeCategory(cat) {
 export function normalizeName(name, tvgId) {
   let s = (name || '').toLowerCase();
 
-  // 1. Tách cấu trúc dạng VietAnhTV "TN HD | TH Tây Ninh", "ATV1 HD | TH An Giang", "DRT HD | TH Đắk Lắk"
   if (/\|\s*th\s*/i.test(s)) {
     s = s.replace(/^.*?\|\s*th\s*/i, '');
   } else if (/\|\s*b/i.test(s)) {
     s = s.replace(/\s*\|\s*b.*$/i, '');
   }
 
-  // Cắt bỏ các đuôi râu ria
   s = s.split(' - đài ptth')[0];
   s = s.split(' - báo và ptth')[0];
   s = s.split(' - đài truyền hình')[0];
@@ -131,14 +144,12 @@ export function normalizeName(name, tvgId) {
   s = s.split(' - vie channel')[0];
   s = s.split(' - you tv')[0];
 
-  // Bỏ dấu tiếng Việt
   s = removeVietnameseTones(s);
 
-  // Bỏ các từ định dạng chất lượng / tag
   s = s.replace(/\b(hd|sd|fhd|4k|2k|uhd|50fps|60fps|raw|vip|tivi|tv|channel|ott|live|hls|mpd)\b/g, '');
   s = s.replace(/[^a-z0-9]/g, '').trim();
 
-  // 2. Quy đổi bí danh (Alias mapping) cho toàn bộ các đài tỉnh
+  // Quy đổi bí danh (Alias mapping) cho toàn bộ các đài tỉnh
   if (s.startsWith('vinhlong') || s.startsWith('thvl')) {
     const num = s.match(/\d+/);
     return num ? `thvl${num[0]}` : 'thvl1';
@@ -305,6 +316,9 @@ export function loadAndMergePlaylists(callback) {
 
   sources.forEach((srcObj, index) => {
     xhrGet(getFetchUrl(srcObj.url), (err, text) => {
+      if (err) {
+        console.warn(`[Sources] Không thể tải ${srcObj.name}:`, err.message);
+      }
       parsedLists[index] = {
         name: srcObj.name,
         channels: (!err && text) ? parseM3U(text) : []
@@ -312,16 +326,18 @@ export function loadAndMergePlaylists(callback) {
       completed++;
 
       if (completed === sources.length) {
-        const mergedMap = new Map();
+        const mergedObj = {};
         const mergedList = [];
 
         // Duyệt tuần tự theo đúng thứ tự ưu tiên: Nguồn 1 -> Nguồn 2 -> Nguồn 3
-        parsedLists.forEach(srcData => {
-          if (!srcData || !srcData.channels) return;
-          srcData.channels.forEach(ch => {
-            // LỌC BỎ HOÀN TOÀN NHÓM VÀ KÊNH: UPDATE, DỰ PHÒNG, THÔNG BÁO...
+        for (let i = 0; i < parsedLists.length; i++) {
+          const srcData = parsedLists[i];
+          if (!srcData || !srcData.channels) continue;
+
+          for (let j = 0; j < srcData.channels.length; j++) {
+            const ch = srcData.channels[j];
             if (isBlockedChannelOrGroup(ch.name, ch.group)) {
-              return;
+              continue;
             }
 
             const cleanGroup = standardizeCategory(ch.group);
@@ -331,7 +347,7 @@ export function loadAndMergePlaylists(callback) {
             fixChannelStream(ch);
 
             const norm = normalizeName(ch.name, ch.tvgId);
-            if (!norm) return;
+            if (!norm) continue;
 
             const streamSource = {
               sourceName: srcData.name,
@@ -341,15 +357,15 @@ export function loadAndMergePlaylists(callback) {
             };
 
             // NẾU KÊNH CHƯA CÓ TRONG DANH SÁCH: THÊM MỚI VÀO
-            if (!mergedMap.has(norm)) {
+            if (!mergedObj[norm]) {
               ch.sources = [streamSource];
               ch.activeSourceIndex = 0;
-              mergedMap.set(norm, ch);
+              mergedObj[norm] = ch;
               mergedList.push(ch);
             } 
-            // NẾU KÊNH ĐÃ CÓ (Ưu tiên nguồn trước): LƯU NGUỒN NÀY LÀM DỰ PHÒNG
+            // NẾU KÊNH ĐÃ CÓ: LƯU THÊM NGUỒN PHÁT DỰ PHÒNG
             else {
-              const existing = mergedMap.get(norm);
+              const existing = mergedObj[norm];
               if (!existing.sources) {
                 existing.sources = [{
                   sourceName: 'Gốc',
@@ -366,20 +382,21 @@ export function loadAndMergePlaylists(callback) {
                 existing.logo = ch.logo;
               }
             }
-          });
-        });
+          }
+        }
 
         const groupedChannels = {};
         const categoryList = [];
 
-        mergedList.forEach(ch => {
+        for (let k = 0; k < mergedList.length; k++) {
+          const ch = mergedList[k];
           const grp = ch.group || 'Khác';
           if (!groupedChannels[grp]) {
             groupedChannels[grp] = [];
             categoryList.push(grp);
           }
           groupedChannels[grp].push(ch);
-        });
+        }
 
         console.log(`[Sources] Đã gộp và lọc trùng hoàn toàn: ${mergedList.length} kênh duy nhất, ${categoryList.length} nhóm danh mục!`);
         callback({ allChannels: mergedList, groupedChannels, categoryList });

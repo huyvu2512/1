@@ -14,7 +14,7 @@ const DEFAULT_TV_ICON_SVG = `<svg width="24" height="24" viewBox="0 0 24 24" fil
 function removeVietnameseTones(str) {
   if (!str) return '';
   str = str.replace(/à|á|ạ|ả|ã|â|ầ|ấ|ậ|ẩ|ẫ|ă|ằ|ắ|ặ|ẳ|ẵ/g, 'a');
-  str = str.replace(/è|é|ẹ|ẻ|ẽ|ê|ề|ế|ệ|Ể|ễ/g, 'e');
+  str = str.replace(/è|é|ẹ|ẻ|ẽ|ê|ề|ế|ệ|ể|ễ/g, 'e');
   str = str.replace(/ì|í|ị|ỉ|ĩ/g, 'i');
   str = str.replace(/ò|ó|ọ|ỏ|õ|ô|ồ|ố|ộ|ổ|ỗ|ơ|ờ|ớ|ợ|ở|ỡ/g, 'o');
   str = str.replace(/ù|ú|ụ|ủ|ũ|ư|ừ|ứ|ự|ử|ữ/g, 'u');
@@ -28,6 +28,15 @@ function removeVietnameseTones(str) {
   str = str.replace(/Ỳ|Ý|Ỵ|Ỷ|Ỹ/g, 'Y');
   str = str.replace(/Đ/g, 'D');
   return str;
+}
+
+function safeScrollIntoView(el, alignBottom) {
+  if (!el) return;
+  try {
+    if (typeof el.scrollIntoView === 'function') {
+      el.scrollIntoView(alignBottom !== undefined ? alignBottom : false);
+    }
+  } catch (e) {}
 }
 
 export function initDrawerState(data, onSelect) {
@@ -210,7 +219,7 @@ export function renderCategories() {
 
   const activeChip = nav.querySelector('.cat-chip.active');
   if (activeChip) {
-    activeChip.scrollIntoView({ inline: 'center', behavior: 'smooth' });
+    safeScrollIntoView(activeChip);
   }
 }
 
@@ -302,7 +311,7 @@ export function updateFocus() {
     const isFoc = (idx === currentChannelIndex && !isSearchInputActive);
     it.classList.toggle('focused', isFoc);
     if (isFoc) {
-      it.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
+      safeScrollIntoView(it);
     }
   });
 }

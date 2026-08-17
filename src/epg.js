@@ -168,6 +168,7 @@ function parseEpgXml(xmlText) {
 }
 
 function fetchXml(url, callback) {
+  let done = false;
   const xhr = new XMLHttpRequest();
   const bustUrl = `${url}?_t=${Date.now()}`;
   const fetchUrl = (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1')
@@ -175,13 +176,11 @@ function fetchXml(url, callback) {
     : bustUrl;
 
   xhr.open('GET', fetchUrl, true);
-  xhr.timeout = 15000; // 15s để tải đầy đủ dữ liệu EPG 6MB
-  xhr.setRequestHeader('Cache-Control', 'no-cache, no-store, must-revalidate');
-  xhr.setRequestHeader('Pragma', 'no-cache');
-  xhr.setRequestHeader('Expires', '0');
+  xhr.timeout = 15000;
 
   xhr.onreadystatechange = function () {
-    if (xhr.readyState === 4) {
+    if (xhr.readyState === 4 && !done) {
+      done = true;
       if (xhr.status >= 200 && xhr.status < 300) {
         callback(null, xhr.responseText);
       } else {
@@ -189,21 +188,32 @@ function fetchXml(url, callback) {
       }
     }
   };
+
   xhr.onerror = function () {
-    callback(new Error('Network error'), null);
+    if (!done) {
+      done = true;
+      callback(new Error('Network error'), null);
+    }
   };
+
   xhr.ontimeout = function () {
-    callback(new Error('Timeout'), null);
+    if (!done) {
+      done = true;
+      callback(new Error('Timeout'), null);
+    }
   };
+
   try {
     xhr.send();
   } catch (e) {
-    callback(e, null);
+    if (!done) {
+      done = true;
+      callback(e, null);
+    }
   }
 }
 
 export function loadEPG(onLoaded) {
-  // NGUYÊN TẮC HỢP NHẤT EPG THÔNG MINH:
   // 1. Tải Nguồn 1 (LichPhatSong)
   fetchXml(EPG_SOURCE_1, (err1, xml1) => {
     if (!err1 && xml1) {
@@ -214,7 +224,7 @@ export function loadEPG(onLoaded) {
       if (onLoaded) onLoaded();
     }
 
-    // 2. Tải tiếp Nguồn 2 (BlaoSolar) và hợp nhất thông minh (bổ sung kênh thiếu HOẶC cập nhật kênh bị hết hạn ở Nguồn 1)
+    // 2. Tải tiếp Nguồn 2 (BlaoSolar)
     fetchXml(EPG_SOURCE_2, (err2, xml2) => {
       if (!err2 && xml2) {
         const src2Data = parseEpgXml(xml2);
@@ -234,7 +244,6 @@ export function loadEPG(onLoaded) {
             epgData[key] = s2List;
             added++;
           } else if (!s1HasValid && s2HasValid) {
-            // Nguồn 1 chỉ có lịch cũ của hôm qua, Nguồn 2 có lịch hôm nay -> Cập nhật sang Nguồn 2!
             epgData[key] = s2List;
             updated++;
           }
