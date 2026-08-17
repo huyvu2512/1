@@ -6,6 +6,11 @@ var onMediaStatsChangedCb = null;
 var onPlaybackErrorCb = null;
 var isSwitchingBackup = false;
 
+var stallWatchdogInterval = null;
+var lastVideoTime = -1;
+var lastAdvanceTimestamp = Date.now();
+var lastStallFixAttempt = 0;
+
 function getShakaSafe() {
   if (shakaModule) return shakaModule;
   if (typeof window !== 'undefined' && window.shaka) {
@@ -204,6 +209,75 @@ export function parseClearKey(drmString) {
   return null;
 }
 
+function startStallAndLiveWatchdog() {
+  if (stallWatchdogInterval) clearInterval(stallWatchdogInterval);
+  lastVideoTime = -1;
+  lastAdvanceTimestamp = Date.now();
+  lastStallFixAttempt = 0;
+
+  stallWatchdogInterval = setInterval(function() {
+    if (!currentVideoElement || !currentChannelData) return;
+
+    var curTime = currentVideoElement.currentTime;
+    var now = Date.now();
+
+    // 1. Kiểm tra tiến độ thời gian phát video
+    if (Math.abs(curTime - lastVideoTime) > 0.05) {
+      lastVideoTime = curTime;
+      lastAdvanceTimestamp = now;
+    }
+
+    // 2. TỰ ĐỘNG BẮT KỊP THỜI GIAN THỰC (Live Edge Sync) nếu bị trễ hơn 10s
+    if (playerInstance && typeof playerInstance.isLive === 'function' && playerInstance.isLive()) {
+      try {
+        var seekRange = playerInstance.seekRange();
+        if (seekRange && typeof seekRange.end === 'number' && seekRange.end > 0) {
+          var liveLatency = seekRange.end - curTime;
+          if (liveLatency > 10 && (now - lastStallFixAttempt > 3500)) {
+            lastStallFixAttempt = now;
+            console.warn('[LiveSync] Luồng bị trễ ' + liveLatency.toFixed(1) + 's. Tự động nhảy lên thời gian thực hiện tại!');
+            var targetTime = Math.max(seekRange.start, seekRange.end - 3.5);
+            currentVideoElement.currentTime = targetTime;
+            currentVideoElement.play().catch(function() {});
+          }
+        }
+      } catch (err) {}
+    }
+
+    // 3. PHÁT HIỆN ĐỨNG HÌNH (STALL WATCHDOG) - KHI FILE VẪN TẢI NHƯNG MÀN HÌNH BỊ ĐỨNG
+    if (!currentVideoElement.paused && !currentVideoElement.ended && currentVideoElement.readyState >= 1) {
+      var timeSinceAdvance = now - lastAdvanceTimestamp;
+      if (timeSinceAdvance > 2200 && (now - lastStallFixAttempt > 2500)) {
+        lastStallFixAttempt = now;
+        console.warn('[StallGuard] Màn hình bị đứng ' + (timeSinceAdvance / 1000).toFixed(1) + 's. Tự động tiếp tục luồng!');
+        
+        if (playerInstance && typeof playerInstance.isLive === 'function' && playerInstance.isLive()) {
+          try {
+            var range = playerInstance.seekRange();
+            if (range && range.end > 0) {
+              currentVideoElement.currentTime = Math.max(range.start, range.end - 3.0);
+            } else {
+              currentVideoElement.currentTime += 0.25;
+            }
+          } catch(e) {
+            currentVideoElement.currentTime += 0.25;
+          }
+        } else {
+          currentVideoElement.currentTime += 0.25;
+        }
+
+        currentVideoElement.play().catch(function() {});
+
+        // Nếu đứng hình liên tục hơn 6.5s: tự động chuyển nguồn phát dự phòng
+        if (timeSinceAdvance > 6500) {
+          console.warn('[StallGuard] Đứng hình quá lâu, chuyển sang nguồn phát dự phòng!');
+          handleStreamFailure(new Error('Playback Stalled'));
+        }
+      }
+    }
+  }, 1200);
+}
+
 export function initPlayer(videoElement) {
   return new Promise(function(resolve) {
     currentVideoElement = videoElement;
@@ -218,35 +292,40 @@ export function initPlayer(videoElement) {
         if (sh.Player && sh.Player.isBrowserSupported && sh.Player.isBrowserSupported()) {
           playerInstance = new sh.Player(videoElement);
 
-          // Cấu hình chống giật hình + ưu tiên codec âm thanh AAC tương thích Smart TV
+          // Cấu hình chống giật hình + tự động bắt kịp thời gian trực tiếp + ưu tiên AAC Stereo
           playerInstance.configure({
             preferredAudioLanguage: 'vie',
             preferredAudioChannelCount: 2,
             preferredAudioCodecs: ['mp4a.40.2', 'mp4a.40.5', 'mp4a', 'aac'],
             abr: {
               enabled: true,
-              defaultBandwidthEstimate: 1500000,
-              switchInterval: 10
+              defaultBandwidthEstimate: 2000000,
+              switchInterval: 8
             },
             streaming: {
-              bufferingGoal: 15,          // Buffer 15s để không bị nghẽn
-              rebufferingGoal: 3,         // Nạp trước 3s để mượt mà
-              bufferBehind: 30,
-              safeSeekOffset: 8,          // Cách live edge 8s an toàn
-              jumpLargeGaps: true,        // Tự động nhảy qua timestamp rỗng
-              stallEnabled: true,
-              stallThreshold: 1.5,
-              stallSkip: 0.5,
+              bufferingGoal: 10,          // Buffer 10s an toàn
+              rebufferingGoal: 2,         // Nạp trước 2s để phát ngay
+              bufferBehind: 15,
+              safeSeekOffset: 4,          // Cách Live Edge 4s (không bị trễ xa)
+              jumpLargeGaps: true,        // Tự động nhảy qua khoảng trống timestamp
+              smallGapLimit: 0.5,
+              gapDetectionThreshold: 0.2,
+              stallEnabled: true,         // Tự động sửa stall đứng hình
+              stallThreshold: 1.0,        // Phát hiện stall sau 1s
+              stallSkip: 0.2,             // Nhảy nhẹ 0.2s để tiếp tục
+              inaccurateManifestTolerance: 0,
               retryParameters: {
-                maxAttempts: 4,
-                baseDelay: 500,
-                backoffFactor: 1.5
+                maxAttempts: 5,
+                baseDelay: 400,
+                backoffFactor: 1.4
               }
             },
             manifest: {
               dash: {
-                ignoreMinBufferTime: true
-              }
+                ignoreMinBufferTime: true,
+                autoCorrectDrift: true    // Tự động đồng bộ drift thời gian thực DASH
+              },
+              availabilityWindowOverride: 60
             }
           });
 
@@ -332,6 +411,8 @@ function playCurrentChannelInternal() {
 
   currentVideoElement.muted = false;
   currentVideoElement.volume = 1.0;
+
+  startStallAndLiveWatchdog();
 
   // Nếu là raw audio stream (mp3, aac, shoutcast): dùng trực tiếp Native Engine
   if (isRawAudio) {
@@ -494,6 +575,11 @@ export function playStream(channel, onStatusUpdate) {
 }
 
 export function stopStream() {
+  if (stallWatchdogInterval) {
+    clearInterval(stallWatchdogInterval);
+    stallWatchdogInterval = null;
+  }
+
   if (currentVideoElement) {
     try {
       currentVideoElement.pause();
