@@ -260,14 +260,14 @@ export var globalStyles = '\
       bottom: 0;\
       left: 0;\
       right: 0;\
-      background: linear-gradient(to top, rgba(14, 16, 21, 0.94) 0%, rgba(14, 16, 21, 0.82) 65%, rgba(14, 16, 21, 0) 100%);\
+      background: linear-gradient(to top, rgba(14, 16, 21, 0.97) 0%, rgba(14, 16, 21, 0.85) 60%, rgba(14, 16, 21, 0) 100%);\
       border: none;\
       border-radius: 0;\
-      padding: 44px 50px 24px 50px;\
+      padding: 48px 60px 32px 60px;\
       z-index: 25;\
       display: flex;\
       flex-direction: column;\
-      gap: 14px;\
+      gap: 16px;\
       opacity: 0;\
       transform: translateY(20px);\
       transition: opacity 0.2s ease, transform 0.2s ease;\
@@ -282,40 +282,55 @@ export var globalStyles = '\
       background: rgba(32, 36, 43, 0.96) !important;\
       border: 1.5px solid rgba(255, 255, 255, 0.24) !important;\
       border-radius: 20px !important;\
-      padding: 16px 24px !important;\
+      padding: 18px 26px !important;\
       box-shadow: 0 18px 45px rgba(0, 0, 0, 0.85) !important;\
     }\
-    .osd-main-row { display: flex; align-items: center; justify-content: space-between; min-height: 52px; }\
-    .osd-left-info { display: flex; align-items: center; gap: 20px; min-width: 0; flex: 1; }\
+    .osd-main-row { display: flex; align-items: center; justify-content: space-between; min-height: 58px; }\
+    .osd-left-info { display: flex; align-items: center; gap: 22px; min-width: 0; flex: 1; }\
     .osd-logo-box {\
-      width: 80px; height: 52px;\
+      width: 90px; height: 58px;\
       background: transparent;\
       border: none;\
       display: flex; align-items: center; justify-content: center;\
       flex-shrink: 0;\
     }\
     .osd-logo-box img { max-width: 100%; max-height: 100%; object-fit: contain; }\
-    .osd-text-col { display: flex; flex-direction: column; gap: 3px; min-width: 0; flex: 1; }\
-    .osd-ch-name { font-size: 26px; font-weight: 900; color: #ffffff; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; letter-spacing: -0.3px; }\
-    .osd-prog-name { font-size: 19px; font-weight: 700; color: #fb923c; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; min-height: 24px; }\
-    .osd-right-info { display: flex; align-items: center; gap: 16px; flex-shrink: 0; }\
-    .osd-live-tag { padding: 6px 14px; background: #ef4444; color: #ffffff; font-size: 15px; font-weight: 900; border-radius: 8px; letter-spacing: 0.5px; }\
-    .osd-specs-text { font-size: 16px; font-weight: 700; color: #cbd5e1; }\
-    .osd-timeline-row { display: flex; align-items: center; gap: 16px; min-height: 18px; }\
-    .osd-time-bound { font-size: 15px; font-weight: 700; color: #cbd5e1; flex-shrink: 0; }\
-    .osd-timeline-track { flex: 1; height: 6px; background: rgba(255, 255, 255, 0.24); border-radius: 3px; overflow: hidden; }\
-    .osd-timeline-fill { height: 100%; background: #fb923c; border-radius: 3px; }\
+    .osd-text-col { display: flex; flex-direction: column; gap: 4px; min-width: 0; flex: 1; }\
+    .osd-ch-name { font-size: 30px; font-weight: 900; color: #ffffff; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; letter-spacing: -0.3px; }\
+    .osd-prog-name { font-size: 21px; font-weight: 700; color: #fb923c; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; min-height: 28px; }\
+    .osd-right-info { display: flex; align-items: center; gap: 18px; flex-shrink: 0; }\
+    .osd-live-tag { padding: 7px 16px; background: #ef4444; color: #ffffff; font-size: 16px; font-weight: 900; border-radius: 9px; letter-spacing: 0.6px; }\
+    .osd-specs-text { font-size: 18px; font-weight: 700; color: #cbd5e1; letter-spacing: 0.2px; }\
+    .osd-timeline-row { display: flex; align-items: center; gap: 20px; min-height: 22px; margin: 2px 0; }\
+    .osd-time-bound { font-size: 17px; font-weight: 800; color: #cbd5e1; flex-shrink: 0; }\
+    .osd-timeline-track { flex: 1; height: 7px; background: rgba(255, 255, 255, 0.24); border-radius: 4px; overflow: hidden; }\
+    .osd-timeline-fill { height: 100%; background: #fb923c; border-radius: 4px; }\
     .osd-action-pills-row {\
       display: flex;\
       align-items: center;\
       justify-content: center;\
-      gap: 16px;\
-      margin-top: 6px;\
+      gap: 22px;\
+      margin-top: 8px;\
       width: 100%;\
     }\
-    .bottom-pill-btn { display: flex; align-items: center; gap: 12px; padding: 12px 22px; background: rgba(255, 255, 255, 0.12); border: 2px solid transparent; border-radius: 30px; color: #e2e8f0; font-size: 16px; font-weight: 700; cursor: pointer; transition: background 0.12s ease, color 0.12s ease; }\
-    .bottom-pill-btn svg { width: 20px; height: 20px; stroke: currentColor; fill: none; stroke-width: 2.2; }\
-    .bottom-pill-btn:hover { background: rgba(255, 255, 255, 0.2); color: #ffffff; }\
+    .bottom-pill-btn {\
+      display: flex;\
+      align-items: center;\
+      gap: 14px;\
+      padding: 15px 30px;\
+      background: rgba(255, 255, 255, 0.12);\
+      border: 2px solid transparent;\
+      border-radius: 34px;\
+      color: #f1f5f9;\
+      font-size: 19px;\
+      font-weight: 800;\
+      letter-spacing: 0.2px;\
+      cursor: pointer;\
+      transition: background 0.12s ease, color 0.12s ease;\
+      white-space: nowrap;\
+    }\
+    .bottom-pill-btn svg { width: 22px; height: 22px; stroke: currentColor; fill: none; stroke-width: 2.3; flex-shrink: 0; }\
+    .bottom-pill-btn:hover { background: rgba(255, 255, 255, 0.22); color: #ffffff; }\
     .bottom-pill-btn.focused { background: #ffffff !important; border-color: #ffffff !important; color: #0b0d14 !important; box-shadow: none !important; }\
     .bottom-pill-btn.focused svg { stroke: #0b0d14 !important; }\
     #quality-audio-dialog {\
@@ -327,7 +342,7 @@ export var globalStyles = '\
       display: none;\
       align-items: flex-end;\
       justify-content: flex-end;\
-      padding: 0 60px 220px 0;\
+      padding: 0 60px 240px 0;\
       pointer-events: auto;\
     }\
     #quality-audio-dialog.active { display: flex !important; }\
@@ -339,37 +354,37 @@ export var globalStyles = '\
     .dialog-card {\
       background: rgba(24, 28, 35, 0.96);\
       border: none;\
-      border-radius: 20px;\
-      padding: 24px 28px;\
-      min-width: 380px;\
-      max-width: 440px;\
+      border-radius: 22px;\
+      padding: 28px 34px;\
+      min-width: 440px;\
+      max-width: 500px;\
       box-shadow: 0 18px 45px rgba(0, 0, 0, 0.85);\
       pointer-events: auto;\
     }\
     .dialog-title {\
-      font-size: 22px;\
+      font-size: 24px;\
       font-weight: 800;\
       color: #ffffff;\
-      margin-bottom: 18px;\
-      padding-bottom: 14px;\
-      border-bottom: 1.5px solid rgba(255, 255, 255, 0.12);\
+      margin-bottom: 20px;\
+      padding-bottom: 16px;\
+      border-bottom: 1.5px solid rgba(255, 255, 255, 0.14);\
     }\
     .dialog-list {\
       display: flex;\
       flex-direction: column;\
-      gap: 10px;\
-      max-height: 420px;\
+      gap: 12px;\
+      max-height: 440px;\
       overflow-y: auto;\
     }\
     .dialog-item {\
       display: flex;\
       align-items: center;\
       justify-content: space-between;\
-      padding: 14px 20px;\
+      padding: 16px 24px;\
       background: #2b303a;\
       border: none;\
-      border-radius: 14px;\
-      font-size: 18px;\
+      border-radius: 16px;\
+      font-size: 20px;\
       font-weight: 700;\
       color: #f1f5f9;\
       cursor: pointer;\
