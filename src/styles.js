@@ -347,9 +347,9 @@ export var globalStyles = '\
     }\
     #quality-audio-dialog.active { display: flex !important; }\
     #quality-audio-dialog.epg-mode {\
-      align-items: center !important;\
+      align-items: flex-end !important;\
       justify-content: flex-end !important;\
-      padding: 0 40px 0 0 !important;\
+      padding: 0 60px 240px 0 !important;\
     }\
     .dialog-card {\
       background: rgba(24, 28, 35, 0.96);\
@@ -368,6 +368,9 @@ export var globalStyles = '\
       margin-bottom: 20px;\
       padding-bottom: 16px;\
       border-bottom: 1.5px solid rgba(255, 255, 255, 0.14);\
+      white-space: nowrap;\
+      overflow: hidden;\
+      text-overflow: ellipsis;\
     }\
     .dialog-list {\
       display: flex;\
@@ -401,17 +404,59 @@ export var globalStyles = '\
     .dialog-item.focused .dialog-check-icon { stroke: #0b0d14 !important; }\
     .dialog-item.active { color: #fb923c; }\
     .epg-schedule-card {\
-      min-width: 58vw !important;\
-      max-width: 68vw !important;\
-      height: 75vh !important;\
+      width: 64vw !important;\
+      min-width: 64vw !important;\
+      max-width: 64vw !important;\
+      height: 60vh !important;\
+      max-height: 60vh !important;\
       display: flex !important;\
       flex-direction: column !important;\
       padding: 24px 30px !important;\
       border: none !important;\
+      border-radius: 22px !important;\
+      background: rgba(24, 28, 35, 0.96) !important;\
+      box-shadow: 0 18px 45px rgba(0, 0, 0, 0.85) !important;\
+      box-sizing: border-box !important;\
     }\
-    .epg-dialog-body { display: flex; gap: 20px; flex: 1; min-height: 0; overflow: hidden; }\
-    .epg-channel-sidebar { width: 320px; flex-shrink: 0; border-right: 1.5px solid rgba(255, 255, 255, 0.16); overflow-y: auto; padding-right: 14px; display: flex; flex-direction: column; gap: 10px; }\
-    .epg-ch-item { display: flex; align-items: center; gap: 16px; padding: 12px 16px; border-radius: 14px; background: #2b303a; color: #e2e8f0; font-size: 18px; font-weight: 700; cursor: pointer; border: 2px solid rgba(255, 255, 255, 0.12); transition: background 0.12s ease; min-height: 64px; }\
+    .epg-dialog-body {\
+      display: flex;\
+      gap: 20px;\
+      flex: 1;\
+      min-height: 0;\
+      overflow: hidden;\
+      width: 100%;\
+    }\
+    .epg-channel-sidebar {\
+      width: 290px;\
+      min-width: 290px;\
+      max-width: 290px;\
+      flex-shrink: 0;\
+      border-right: 1.5px solid rgba(255, 255, 255, 0.16);\
+      overflow-y: auto;\
+      padding-right: 14px;\
+      display: flex;\
+      flex-direction: column;\
+      gap: 10px;\
+    }\
+    .epg-channel-sidebar::-webkit-scrollbar { width: 5px; }\
+    .epg-channel-sidebar::-webkit-scrollbar-thumb { background: rgba(255, 255, 255, 0.2); border-radius: 3px; }\
+    .epg-ch-item {\
+      display: flex;\
+      align-items: center;\
+      gap: 16px;\
+      padding: 12px 16px;\
+      border-radius: 14px;\
+      background: #2b303a;\
+      color: #e2e8f0;\
+      font-size: 18px;\
+      font-weight: 700;\
+      cursor: pointer;\
+      border: 2px solid transparent;\
+      transition: background 0.12s ease;\
+      min-height: 64px;\
+      width: 100%;\
+      min-width: 0;\
+    }\
     .epg-ch-item.selected { background: #ffffff; color: #0f172a; border-color: #ffffff; box-shadow: none; }\
     .epg-ch-item.focused { background: #ffffff !important; border-color: #ffffff !important; color: #0b0d14 !important; box-shadow: none !important; }\
     .epg-ch-logo-container {\
@@ -423,13 +468,69 @@ export var globalStyles = '\
     }\
     .epg-ch-logo-img { max-width: 100%; max-height: 100%; object-fit: contain; }\
     .epg-ch-logo-fallback { width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; }\
-    .epg-schedule-panel { flex: 1; overflow-y: auto; display: flex; flex-direction: column; gap: 10px; padding-right: 10px; }\
-    .epg-schedule-item { display: flex; align-items: center; gap: 18px; padding: 16px 22px; background: #2b303a; border: 2px solid rgba(255, 255, 255, 0.12); border-radius: 14px; cursor: pointer; transition: background 0.12s ease; min-height: 58px; }\
+    .epg-schedule-panel {\
+      flex: 1;\
+      min-width: 0;\
+      overflow-y: auto;\
+      display: flex;\
+      flex-direction: column;\
+      gap: 10px;\
+      padding-right: 10px;\
+    }\
+    .epg-schedule-panel::-webkit-scrollbar { width: 5px; }\
+    .epg-schedule-panel::-webkit-scrollbar-thumb { background: rgba(255, 255, 255, 0.2); border-radius: 3px; }\
+    .epg-schedule-item {\
+      display: flex;\
+      align-items: center;\
+      gap: 16px;\
+      padding: 14px 20px;\
+      background: #2b303a;\
+      border: 2px solid transparent;\
+      border-radius: 14px;\
+      cursor: pointer;\
+      transition: background 0.12s ease;\
+      min-height: 56px;\
+      width: 100%;\
+      min-width: 0;\
+      box-sizing: border-box;\
+    }\
     .epg-schedule-item.past { opacity: 0.4; }\
-    .epg-schedule-item.focused { background: #3f4756 !important; border-color: #ffffff !important; color: #ffffff !important; box-shadow: none !important; opacity: 1 !important; }\
-    .epg-time-range { font-size: 16px; font-weight: 800; color: #fb923c; flex-shrink: 0; }\
-    .epg-item-title { flex: 1; font-size: 18px; font-weight: 700; color: #ffffff; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }\
-    .epg-live-badge { padding: 5px 12px; background: #ef4444; color: #ffffff; font-size: 13px; font-weight: 900; border-radius: 6px; flex-shrink: 0; }\
+    .epg-schedule-item.focused {\
+      background: #3f4756 !important;\
+      border-color: #ffffff !important;\
+      color: #ffffff !important;\
+      box-shadow: none !important;\
+      opacity: 1 !important;\
+    }\
+    .epg-time-range {\
+      font-size: 16px;\
+      font-weight: 800;\
+      color: #fb923c;\
+      flex-shrink: 0;\
+      width: 110px;\
+      white-space: nowrap;\
+    }\
+    .epg-item-title {\
+      flex: 1;\
+      min-width: 0;\
+      font-size: 18px;\
+      font-weight: 700;\
+      color: #ffffff;\
+      white-space: nowrap;\
+      overflow: hidden;\
+      text-overflow: ellipsis;\
+    }\
+    .epg-live-badge {\
+      padding: 5px 12px;\
+      background: #ef4444;\
+      color: #ffffff;\
+      font-size: 13px;\
+      font-weight: 900;\
+      border-radius: 6px;\
+      flex-shrink: 0;\
+      margin-left: 8px;\
+      white-space: nowrap;\
+    }\
 ';
 
 export function injectStyles() {
