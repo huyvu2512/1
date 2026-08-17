@@ -189,14 +189,13 @@ export var globalStyles = '\
       box-shadow: none !important;\
     }\
     .ch-logo-container {\
-      width: 76px; height: 50px;\
-      background: #14171d;\
-      border-radius: 10px;\
+      width: 76px; height: 52px;\
+      background: transparent;\
+      border: none;\
       display: flex; align-items: center; justify-content: center;\
-      flex-shrink: 0; overflow: hidden;\
-      border: 1.5px solid rgba(255, 255, 255, 0.16);\
+      flex-shrink: 0;\
     }\
-    .ch-logo-img { max-width: 90%; max-height: 90%; object-fit: contain; }\
+    .ch-logo-img { max-width: 100%; max-height: 100%; object-fit: contain; }\
     .ch-logo-fallback { width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; }\
     .ch-content-col { flex: 1; display: flex; flex-direction: column; justify-content: center; min-width: 0; gap: 4px; }\
     .ch-name-orange { font-size: 20px; font-weight: 800; color: #fb923c; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }\
@@ -247,8 +246,14 @@ export var globalStyles = '\
     }\
     .osd-main-row { display: flex; align-items: center; justify-content: space-between; min-height: 52px; }\
     .osd-left-info { display: flex; align-items: center; gap: 20px; min-width: 0; flex: 1; }\
-    .osd-logo-box { width: 80px; height: 52px; background: #14171d; border: 1.5px solid rgba(255, 255, 255, 0.22); border-radius: 12px; display: flex; align-items: center; justify-content: center; overflow: hidden; flex-shrink: 0; }\
-    .osd-logo-box img { max-width: 90%; max-height: 90%; object-fit: contain; }\
+    .osd-logo-box {\
+      width: 80px; height: 52px;\
+      background: transparent;\
+      border: none;\
+      display: flex; align-items: center; justify-content: center;\
+      flex-shrink: 0;\
+    }\
+    .osd-logo-box img { max-width: 100%; max-height: 100%; object-fit: contain; }\
     .osd-text-col { display: flex; flex-direction: column; gap: 3px; min-width: 0; flex: 1; }\
     .osd-ch-name { font-size: 26px; font-weight: 900; color: #ffffff; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; letter-spacing: -0.3px; }\
     .osd-prog-name { font-size: 19px; font-weight: 700; color: #fb923c; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; min-height: 24px; }\
@@ -294,8 +299,14 @@ export var globalStyles = '\
     .epg-ch-item { display: flex; align-items: center; gap: 16px; padding: 12px 16px; border-radius: 14px; background: #2b303a; color: #e2e8f0; font-size: 18px; font-weight: 700; cursor: pointer; border: 2px solid rgba(255, 255, 255, 0.12); transition: background 0.12s ease; min-height: 64px; }\
     .epg-ch-item.selected { background: #ffffff; color: #0f172a; border-color: #ffffff; box-shadow: none; }\
     .epg-ch-item.focused { background: #ffffff !important; border-color: #ffffff !important; color: #0b0d14 !important; box-shadow: none !important; }\
-    .epg-ch-logo-container { width: 62px; height: 42px; background: #14171d; border-radius: 8px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; overflow: hidden; border: 1.5px solid rgba(255, 255, 255, 0.16); }\
-    .epg-ch-logo-img { max-width: 90%; max-height: 90%; object-fit: contain; }\
+    .epg-ch-logo-container {\
+      width: 62px; height: 42px;\
+      background: transparent;\
+      border: none;\
+      display: flex; align-items: center; justify-content: center;\
+      flex-shrink: 0;\
+    }\
+    .epg-ch-logo-img { max-width: 100%; max-height: 100%; object-fit: contain; }\
     .epg-ch-logo-fallback { width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; }\
     .epg-schedule-panel { flex: 1; overflow-y: auto; display: flex; flex-direction: column; gap: 10px; padding-right: 10px; }\
     .epg-schedule-item { display: flex; align-items: center; gap: 18px; padding: 16px 22px; background: #2b303a; border: 2px solid rgba(255, 255, 255, 0.12); border-radius: 14px; cursor: pointer; transition: background 0.12s ease; min-height: 58px; }\
