@@ -82,7 +82,7 @@ export function showCenterPlayPause(type) {
   }
 }
 
-export function updateOsdInfo(ch, isDrawerOpen) {
+export function updateOsdInfo(ch, isDrawerOpen, forceShow) {
   var banner = document.getElementById('dl-osd-banner');
   if (!banner || !ch) return;
 
@@ -159,15 +159,17 @@ export function updateOsdInfo(ch, isDrawerOpen) {
     if (osdHideTimeout) clearTimeout(osdHideTimeout);
   } else {
     banner.classList.remove('pip-right');
-    banner.classList.add('active');
     if (actionRowEl) actionRowEl.style.display = 'flex';
     updateActionPillFocus();
 
-    if (osdHideTimeout) clearTimeout(osdHideTimeout);
-    if (!isDialogOpen) {
-      osdHideTimeout = setTimeout(function() {
-        banner.classList.remove('active');
-      }, 5000);
+    if (forceShow) {
+      banner.classList.add('active');
+      if (osdHideTimeout) clearTimeout(osdHideTimeout);
+      if (!isDialogOpen) {
+        osdHideTimeout = setTimeout(function() {
+          banner.classList.remove('active');
+        }, 4000);
+      }
     }
   }
 }
@@ -200,7 +202,7 @@ export function isOsdVisible() {
 
 export function showOsdBar(channel, isDrawerOpen) {
   if (!channel) return;
-  updateOsdInfo(channel, isDrawerOpen);
+  updateOsdInfo(channel, isDrawerOpen, true);
 }
 
 export function hideOsdBar() {
@@ -218,6 +220,13 @@ export function navigateActionBar(dir, getCurrentChannel, getAllChannels) {
     if (currentActionIndex < ACTION_BUTTONS.length - 1) currentActionIndex++;
   }
   updateActionPillFocus();
+
+  if (osdHideTimeout) clearTimeout(osdHideTimeout);
+  if (!isDialogOpen) {
+    osdHideTimeout = setTimeout(function() {
+      hideOsdBar();
+    }, 4000);
+  }
 }
 
 function updateActionPillFocus() {
@@ -481,7 +490,7 @@ export function closeQualityAudioDialog(currentChannel) {
     dlg.innerHTML = '';
   }
   if (currentChannel) {
-    updateOsdInfo(currentChannel, false);
+    updateOsdInfo(currentChannel, false, true);
   }
 }
 

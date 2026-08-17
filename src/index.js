@@ -207,7 +207,7 @@ function playSelectedChannel(ch) {
   showCenterPlayPause(null);
   hidePlaybackError();
   showVideoSpinner();
-  updateOsdInfo(ch, isDrawerOpen);
+  updateOsdInfo(ch, isDrawerOpen, true);
 
   var isRadio = ch.group && (ch.group.toLowerCase().indexOf('radio') !== -1 || ch.name.toLowerCase().indexOf('vov') !== -1);
   var radioLayer = document.getElementById('radio-visualizer-layer');
@@ -265,7 +265,7 @@ function openDrawer() {
   renderCategories();
   renderChannels();
   if (currentPlayingChannel) {
-    updateOsdInfo(currentPlayingChannel, true);
+    updateOsdInfo(currentPlayingChannel, true, true);
   }
 }
 
@@ -289,7 +289,7 @@ function closeDrawer() {
   if (errorLayer) errorLayer.classList.remove('pip-right');
 
   if (currentPlayingChannel) {
-    updateOsdInfo(currentPlayingChannel, false);
+    updateOsdInfo(currentPlayingChannel, false, true);
   }
 }
 
@@ -376,7 +376,7 @@ function handleKeyDown(e) {
       if (isOsdVisible()) {
         navigateActionBar('left', currentPlayingChannel);
       } else {
-        if (currentPlayingChannel) updateOsdInfo(currentPlayingChannel, false);
+        if (currentPlayingChannel) updateOsdInfo(currentPlayingChannel, false, true);
       }
       return;
     }
@@ -384,7 +384,7 @@ function handleKeyDown(e) {
       if (isOsdVisible()) {
         navigateActionBar('right', currentPlayingChannel);
       } else {
-        if (currentPlayingChannel) updateOsdInfo(currentPlayingChannel, false);
+        if (currentPlayingChannel) updateOsdInfo(currentPlayingChannel, false, true);
       }
       return;
     }
@@ -394,7 +394,7 @@ function handleKeyDown(e) {
         executeActionPill(currentPlayingChannel, allChannels);
       } else {
         // Mở thanh điều khiển OSD khi đang xem toàn màn hình
-        if (currentPlayingChannel) updateOsdInfo(currentPlayingChannel, false);
+        if (currentPlayingChannel) updateOsdInfo(currentPlayingChannel, false, true);
       }
       return;
     }
@@ -422,7 +422,7 @@ function handleKeyDown(e) {
     }
 
     if (key === TV_KEYS.INFO) {
-      if (currentPlayingChannel) updateOsdInfo(currentPlayingChannel, false);
+      if (currentPlayingChannel) updateOsdInfo(currentPlayingChannel, false, true);
       return;
     }
 
@@ -521,12 +521,12 @@ function startApplication() {
     setupDOM();
     updateWindowsClock();
     
-    // Tự động làm mới đồng hồ, thanh tiến độ phát sóng và chương trình EPG liên tục mỗi 4 giây
+    // Tự động làm mới đồng hồ, thanh tiến độ phát sóng và chương trình EPG liên tục mỗi 4 giây (chạy nền im lặng, không tự mở OSD)
     setInterval(function() {
       updateWindowsClock();
       updateDrawerEpgProgress();
       if (currentPlayingChannel) {
-        updateOsdInfo(currentPlayingChannel, isDrawerOpen);
+        updateOsdInfo(currentPlayingChannel, isDrawerOpen, false);
       }
     }, 4000);
 
@@ -614,7 +614,7 @@ function startApplication() {
     loadEPG(function() {
       renderChannels();
       if (currentPlayingChannel) {
-        updateOsdInfo(currentPlayingChannel, isDrawerOpen);
+        updateOsdInfo(currentPlayingChannel, isDrawerOpen, false);
       }
     });
   });
