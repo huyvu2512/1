@@ -9,6 +9,7 @@ var currentChannelIndex = 0;
 var isSearchInputActive = false;
 var searchQuery = '';
 var onPlayChannelCallback = null;
+var lastFocusedItem = null;
 
 var DEFAULT_TV_ICON_SVG = '<svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="#64748b" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="7" width="20" height="15" rx="2" ry="2"></rect><polyline points="17 2 12 7 7 2"></polyline></svg>';
 
@@ -25,6 +26,7 @@ export function initDrawerState(data, playCallback) {
   searchQuery = '';
   isSearchInputActive = false;
   onPlayChannelCallback = playCallback || null;
+  lastFocusedItem = null;
 }
 
 export function updateWindowsClock() {
@@ -41,8 +43,11 @@ export function updateWindowsClock() {
   var month = padZero(now.getMonth() + 1);
   var year = now.getFullYear();
 
-  timeEl.textContent = hours + ':' + minutes + ':' + seconds;
-  dateEl.textContent = day + '-' + month + '-' + year;
+  var timeStr = hours + ':' + minutes + ':' + seconds;
+  var dateStr = day + '/' + month + '/' + year;
+
+  timeEl.innerHTML = timeStr;
+  dateEl.innerHTML = dateStr;
 }
 
 export function getCurrentCategories() {
@@ -168,19 +173,28 @@ function safeScrollIntoView(el) {
     if (typeof el.scrollIntoViewIfNeeded === 'function') {
       el.scrollIntoViewIfNeeded(false);
     } else {
-      el.scrollIntoView(false);
+      el.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
     }
-  } catch (e) {}
+  } catch (e) {
+    try { el.scrollIntoView(false); } catch(err) {}
+  }
 }
 
 function updateChannelFocusVisual() {
-  var items = document.querySelectorAll('.channel-row-item');
-  for (var i = 0; i < items.length; i++) {
-    if (i === currentChannelIndex && !isSearchInputActive) {
-      items[i].classList.add('focused');
-      safeScrollIntoView(items[i]);
-    } else {
-      items[i].classList.remove('focused');
+  var list = document.getElementById('drawer-channel-list');
+  if (!list) return;
+  var items = list.children;
+
+  if (lastFocusedItem) {
+    lastFocusedItem.classList.remove('focused');
+  }
+
+  if (currentChannelIndex >= 0 && currentChannelIndex < items.length && !isSearchInputActive) {
+    var cur = items[currentChannelIndex];
+    if (cur) {
+      cur.classList.add('focused');
+      safeScrollIntoView(cur);
+      lastFocusedItem = cur;
     }
   }
 }
@@ -217,9 +231,10 @@ export function renderChannels() {
 
   var channels = getCurrentChannels();
   list.innerHTML = '';
+  lastFocusedItem = null;
 
   if (channels.length === 0) {
-    list.innerHTML = '<div style="padding: 40px 20px; text-align: center; color: #64748b; font-size: 16px; font-weight: 600;">Không tìm thấy kênh phù hợp</div>';
+    list.innerHTML = '<div style="padding: 40px 20px; text-align: center; color: #64748b; font-size: 18px; font-weight: 600;">Không tìm thấy kênh phù hợp</div>';
     return;
   }
 
@@ -231,6 +246,7 @@ export function renderChannels() {
       var row = document.createElement('div');
       var isFoc = (idx === currentChannelIndex && !isSearchInputActive);
       row.className = 'channel-row-item' + (isFoc ? ' focused' : '');
+      if (isFoc) lastFocusedItem = row;
 
       var hasLogo = (ch.logo && typeof ch.logo === 'string' && ch.logo.trim().length > 0);
       var logoImgHtml = hasLogo
@@ -276,6 +292,5 @@ export function renderChannels() {
     })(i);
   }
 
-  var focusedRow = list.querySelector('.channel-row-item.focused');
-  if (focusedRow) safeScrollIntoView(focusedRow);
+  if (lastFocusedItem) safeScrollIntoView(lastFocusedItem);
 }

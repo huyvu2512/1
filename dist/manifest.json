@@ -2,8 +2,8 @@
   "schemaVersion": 1,
   "name": "iptv-vn",
   "displayName": "IPTV Player DRM",
-  "version": "1.0.2",
-  "description": "IPTV player for TizenBrew Samsung TV",
+  "version": "1.0.3",
+  "description": "IPTV Player DRM for TizenBrew Samsung TV",
   "targetUrl": "https://localhost",
   "assets": {
     "scripts": [
@@ -17,6 +17,12 @@
       "enter": true,
       "back": true,
       "playPause": true
+    },
+    "performance": {
+      "removeAnimations": false,
+      "lazyMedia": false,
+      "hideComments": false,
+      "memorySaver": false
     }
   }
 }

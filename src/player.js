@@ -1,8 +1,30 @@
-let currentChannelData = null;
-let currentVideoElement = null;
-let onMediaStatsChangedCb = null;
-let onPlaybackErrorCb = null;
-let isSwitchingBackup = false;
+var shakaModule = null;
+var playerInstance = null;
+var currentChannelData = null;
+var currentVideoElement = null;
+var liveSyncInterval = null;
+var onMediaStatsChangedCb = null;
+var onPlaybackErrorCb = null;
+var isSwitchingBackup = false;
+
+function getShakaSafe() {
+  if (shakaModule) return shakaModule;
+  if (typeof window !== 'undefined' && window.shaka) {
+    shakaModule = window.shaka;
+    return shakaModule;
+  }
+  try {
+    var sh = require('shaka-player/dist/shaka-player.compiled.js');
+    if (typeof window !== 'undefined') {
+      window.shaka = sh;
+    }
+    shakaModule = sh;
+    return sh;
+  } catch (e) {
+    console.warn('[Player] Không thể nạp Shaka Player:', e);
+    return null;
+  }
+}
 
 export function setStatsCallback(cb) {
   onMediaStatsChangedCb = cb;
@@ -18,6 +40,18 @@ export function getRealMediaStats() {
     var width = currentVideoElement.videoWidth || 1920;
     var height = currentVideoElement.videoHeight || 1080;
     var fps = 25.0;
+
+    if (playerInstance && playerInstance.getVariantTracks) {
+      var tracks = playerInstance.getVariantTracks();
+      for (var i = 0; i < tracks.length; i++) {
+        if (tracks[i].active) {
+          if (tracks[i].width) width = tracks[i].width;
+          if (tracks[i].height) height = tracks[i].height;
+          if (tracks[i].frameRate) fps = tracks[i].frameRate;
+          break;
+        }
+      }
+    }
 
     if (currentChannelData) {
       var nameLow = currentChannelData.name.toLowerCase();
@@ -39,35 +73,146 @@ export function getRealMediaStats() {
 }
 
 export function getRealVideoQualities() {
+  if (playerInstance && playerInstance.getVariantTracks) {
+    try {
+      var tracks = playerInstance.getVariantTracks();
+      var trackMap = {};
+      var list = [];
+      for (var i = 0; i < tracks.length; i++) {
+        var t = tracks[i];
+        if (t.height && !trackMap[t.height]) {
+          trackMap[t.height] = true;
+          list.push({
+            label: t.height + 'p',
+            value: t.height,
+            active: !!t.active
+          });
+        }
+      }
+      list.sort(function(a, b) { return b.value - a.value; });
+      list.unshift({ label: 'Auto (Khuyên dùng)', value: 'auto', active: true });
+      return list;
+    } catch (e) {}
+  }
   return [
-    { label: 'Auto', value: 'auto', active: true },
-    { label: '1080p', value: 1080, active: false },
-    { label: '720p', value: 720, active: false },
-    { label: '576p', value: 576, active: false }
+    { label: 'Auto (Khuyên dùng)', value: 'auto', active: true },
+    { label: '1080p FHD', value: 1080, active: false },
+    { label: '720p HD', value: 720, active: false }
   ];
 }
 
-export function setRealVideoQuality(val) {
-  // Native video không hỗ trợ chọn chất lượng trực tiếp
+export function setRealVideoQuality(heightVal) {
+  if (!playerInstance || !playerInstance.getVariantTracks) return;
+  try {
+    if (heightVal === 'auto') {
+      playerInstance.configure({ abr: { enabled: true } });
+    } else {
+      playerInstance.configure({ abr: { enabled: false } });
+      var tracks = playerInstance.getVariantTracks();
+      for (var i = 0; i < tracks.length; i++) {
+        if (tracks[i].height === heightVal) {
+          playerInstance.selectVariantTrack(tracks[i], true);
+          break;
+        }
+      }
+    }
+  } catch (e) {}
 }
 
 export function getRealAudioTracks() {
+  if (playerInstance && playerInstance.getAudioLanguages) {
+    try {
+      var langs = playerInstance.getAudioLanguages();
+      if (langs && langs.length > 0) {
+        return langs.map(function(l) {
+          return { label: l.toUpperCase() === 'VI' ? 'Tiếng Việt' : l.toUpperCase(), value: l, active: true };
+        });
+      }
+    } catch (e) {}
+  }
   return [
     { label: 'Tiếng Việt (Gốc)', value: 'vi', active: true }
   ];
 }
 
 export function setRealAudioTrack(audioObj) {
-  // Native video chỉ có 1 track âm thanh
+  if (playerInstance && playerInstance.selectAudioLanguage && audioObj) {
+    try {
+      playerInstance.selectAudioLanguage(audioObj.value);
+    } catch (e) {}
+  }
 }
 
 export function parseClearKey(drmString) {
+  if (!drmString || typeof drmString !== 'string') return null;
+  var clean = drmString.trim();
+  var parts = clean.split(':');
+  if (parts.length === 2) {
+    var obj = {};
+    obj[parts[0].trim()] = parts[1].trim();
+    return obj;
+  }
   return null;
 }
 
 export function initPlayer(videoElement) {
   return new Promise(function(resolve) {
     currentVideoElement = videoElement;
+
+    var sh = getShakaSafe();
+    if (sh) {
+      try {
+        if (sh.polyfill && typeof sh.polyfill.installAll === 'function') {
+          sh.polyfill.installAll();
+        }
+
+        if (sh.Player && sh.Player.isBrowserSupported && sh.Player.isBrowserSupported()) {
+          playerInstance = new sh.Player(videoElement);
+
+          playerInstance.configure({
+            abr: {
+              enabled: true,
+              defaultBandwidthEstimate: 3000000
+            },
+            streaming: {
+              bufferingGoal: 10,
+              rebufferingGoal: 2,
+              bufferBehind: 15,
+              retryParameters: {
+                maxAttempts: 3,
+                baseDelay: 500,
+                backoffFactor: 1.5
+              }
+            }
+          });
+
+          var netEngine = playerInstance.getNetworkingEngine();
+          if (netEngine) {
+            netEngine.registerRequestFilter(function(type, request) {
+              request.allowCrossSiteCredentials = false;
+              if (currentChannelData && currentChannelData.userAgent) {
+                request.headers['User-Agent'] = currentChannelData.userAgent;
+              }
+            });
+          }
+
+          playerInstance.addEventListener('error', function(event) {
+            var err = event.detail;
+            if (err && err.severity === 2) {
+              console.warn('[Shaka] Fatal Error:', err);
+              handleStreamFailure(err);
+            }
+          });
+
+          console.log('[Player] Shaka Player khởi tạo thành công!');
+        } else {
+          console.log('[Player] Shaka không hỗ trợ, sử dụng Native Video Engine!');
+        }
+      } catch (e) {
+        console.warn('[Player] Shaka init exception:', e);
+        playerInstance = null;
+      }
+    }
 
     if (videoElement) {
       videoElement.addEventListener('playing', function() {
@@ -82,8 +227,7 @@ export function initPlayer(videoElement) {
       });
     }
 
-    console.log('[Player] Samsung Tizen Native Hardware Video Engine - Sẵn sàng!');
-    resolve(null);
+    resolve(playerInstance);
   });
 }
 
@@ -96,20 +240,6 @@ export function handleStreamFailure(err) {
   var sources = currentChannelData.sources || [];
   var currentIdx = currentChannelData.activeSourceIndex || 0;
   var nextIndex = currentIdx + 1;
-
-  // Tìm nguồn HLS tiếp theo (ưu tiên .m3u8)
-  while (nextIndex < sources.length) {
-    var nextUrl = sources[nextIndex].url || '';
-    // Ưu tiên bỏ qua MPD, chọn HLS
-    if (nextUrl.indexOf('.m3u8') !== -1) {
-      break;
-    }
-    nextIndex++;
-  }
-  // Nếu không có HLS, thử bất kỳ nguồn nào còn lại
-  if (nextIndex >= sources.length) {
-    nextIndex = currentIdx + 1;
-  }
 
   if (nextIndex < sources.length) {
     isSwitchingBackup = true;
@@ -124,6 +254,7 @@ export function handleStreamFailure(err) {
     playCurrentChannelInternal();
     isSwitchingBackup = false;
   } else {
+    console.warn('[Player] Tất cả nguồn dự phòng đều lỗi:', currentChannelData.name);
     if (onPlaybackErrorCb) onPlaybackErrorCb(err);
   }
 }
@@ -132,34 +263,61 @@ function playCurrentChannelInternal() {
   if (!currentChannelData || !currentVideoElement) return;
 
   var url = currentChannelData.url;
+  var isDrm = !!currentChannelData.licenseKey || (url.indexOf('.mpd') !== -1);
 
-  // Trên Samsung Tizen 3, thẻ <video> native hỗ trợ HLS phần cứng
-  // Nếu URL là MPD (DRM), thử chuyển sang nguồn HLS dự phòng ngay lập tức
-  if (url.indexOf('.mpd') !== -1) {
-    var sources = currentChannelData.sources || [];
-    var hlsSource = null;
-    for (var i = 0; i < sources.length; i++) {
-      if (sources[i].url && sources[i].url.indexOf('.m3u8') !== -1) {
-        hlsSource = sources[i];
-        break;
+  // 1. Nếu có Shaka Player và luồng là DRM MPEG-DASH hoặc Shaka khả dụng:
+  if (playerInstance) {
+    try {
+      playerInstance.unload().catch(function() {});
+
+      var drmConfig = { servers: {}, clearKeys: {}, advanced: {} };
+      if (currentChannelData.licenseKey) {
+        var clearKeyObj = parseClearKey(currentChannelData.licenseKey);
+        if (clearKeyObj) {
+          drmConfig.clearKeys = clearKeyObj;
+        } else {
+          drmConfig.servers['com.widevine.alpha'] = currentChannelData.licenseKey;
+        }
       }
-    }
-    if (hlsSource) {
-      console.log('[Player] Kênh DRM MPD -> Chuyển sang nguồn HLS:', hlsSource.url);
-      url = hlsSource.url;
-      currentChannelData.url = url;
-      currentChannelData.activeSourceIndex = sources.indexOf(hlsSource);
-    } else {
-      console.warn('[Player] Kênh chỉ có MPD/DRM, thử phát trực tiếp...');
+
+      playerInstance.configure({
+        drm: drmConfig,
+        abr: { enabled: true }
+      });
+
+      playerInstance.load(url).then(function() {
+        var playPromise = currentVideoElement.play();
+        if (playPromise && typeof playPromise.then === 'function') {
+          playPromise.catch(function() {});
+        }
+        if (onMediaStatsChangedCb) {
+          setTimeout(function() { onMediaStatsChangedCb(getRealMediaStats()); }, 500);
+        }
+      }).catch(function(e) {
+        console.warn('[Player] Shaka load error, chuyển sang Native / Backup:', e);
+        if (!isDrm) {
+          playWithNativeVideo(url);
+        } else {
+          handleStreamFailure(e);
+        }
+      });
+      return;
+    } catch (e) {
+      console.warn('[Player] Shaka exception, thử Native Video:', e);
     }
   }
 
+  // 2. Mặc định dùng Native Video
   playWithNativeVideo(url);
 }
 
 function playWithNativeVideo(streamUrl) {
   if (!currentVideoElement) return;
   try {
+    if (playerInstance) {
+      try { playerInstance.unload().catch(function() {}); } catch (e) {}
+    }
+
     currentVideoElement.pause();
     currentVideoElement.removeAttribute('src');
     currentVideoElement.load();
@@ -174,8 +332,10 @@ function playWithNativeVideo(streamUrl) {
           function unmute() {
             if (currentVideoElement) currentVideoElement.muted = false;
             window.removeEventListener('keydown', unmute);
+            window.removeEventListener('click', unmute);
           }
-          window.addEventListener('keydown', unmute);
+          window.addEventListener('keydown', unmute, { once: true });
+          window.addEventListener('click', unmute, { once: true });
         }).catch(function() {});
       });
     }
@@ -211,6 +371,12 @@ export function stopStream() {
       currentVideoElement.pause();
       currentVideoElement.removeAttribute('src');
       currentVideoElement.load();
+    } catch (e) {}
+  }
+
+  if (playerInstance) {
+    try {
+      playerInstance.unload().catch(function() {});
     } catch (e) {}
   }
 }

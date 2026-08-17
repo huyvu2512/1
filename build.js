@@ -4,24 +4,23 @@ var fs = require('fs');
 var path = require('path');
 
 async function build() {
-  console.log('1. Bundling with esbuild (NO Shaka Player)...');
+  console.log('1. Bundling with esbuild (including Shaka Player)...');
   var bundleResult = await esbuild.build({
     entryPoints: ['src/index.js'],
     bundle: true,
     write: false,
-    format: 'iife',
-    external: ['shaka-player', 'shaka-player/*']
+    format: 'iife'
   });
 
   var bundledCode = bundleResult.outputFiles[0].text;
 
-  console.log('2. Transpiling with Babel to Chrome 47 / Tizen 3 (ES5)...');
+  console.log('2. Transpiling with Babel to pure ES5 for Tizen 3 / Chrome 38+...');
   var babelResult = await babel.transformAsync(bundledCode, {
     presets: [
       [
         '@babel/preset-env',
         {
-          targets: { chrome: '47' },
+          targets: { browsers: ['chrome >= 38', 'ie >= 11'] },
           modules: false
         }
       ]
@@ -44,11 +43,13 @@ async function build() {
     schemaVersion: 1,
     name: pkg.name || "iptv-vn",
     displayName: pkg.appName || "IPTV Player DRM",
-    version: pkg.version || "1.0.0",
-    description: pkg.description || "IPTV Player for TizenBrew",
+    version: pkg.version || "1.0.3",
+    description: pkg.description || "IPTV Player DRM for TizenBrew with ClearKey DRM & EPG Support",
     targetUrl: "https://localhost",
     assets: {
-      scripts: ["index.js"],
+      scripts: [
+        "index.js"
+      ],
       styles: []
     },
     capabilities: {
@@ -57,6 +58,12 @@ async function build() {
         enter: true,
         back: true,
         playPause: true
+      },
+      performance: {
+        removeAnimations: false,
+        lazyMedia: false,
+        hideComments: false,
+        memorySaver: false
       }
     }
   };
@@ -64,7 +71,7 @@ async function build() {
   fs.writeFileSync(path.join(distDir, 'manifest.json'), JSON.stringify(manifest, null, 2), 'utf8');
 
   console.log('3. Build complete! Output size:', (babelResult.code.length / 1024).toFixed(2), 'KB');
-  console.log('   Generated dist/index.js and dist/manifest.json (name: ' + manifest.name + ')');
+  console.log('   Generated dist/index.js and dist/manifest.json (name: ' + manifest.name + ' v' + manifest.version + ')');
 }
 
 build().catch(function(err) {

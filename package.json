@@ -1,7 +1,7 @@
 {
   "name": "iptv-vn",
-  "version": "1.0.2",
-  "description": "IPTV player for TizenBrew Samsung TV",
+  "version": "1.0.3",
+  "description": "IPTV Player DRM for TizenBrew Samsung TV",
   "license": "MIT",
   "private": false,
   "packageType": "app",
@@ -30,12 +30,13 @@
     "dev": "node server.js",
     "start": "node server.js"
   },
+  "dependencies": {
+    "shaka-player": "^4.16.44"
+  },
   "devDependencies": {
     "@babel/cli": "^8.0.4",
     "@babel/core": "^8.0.1",
     "@babel/preset-env": "^8.0.2",
-    "core-js": "^3.50.0",
-    "esbuild": "^0.25.0",
-    "regenerator-runtime": "^0.14.1"
+    "esbuild": "^0.25.0"
   }
 }
