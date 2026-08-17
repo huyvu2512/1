@@ -1,33 +1,26 @@
 import { parseM3U } from './parser.js';
+import { FALLBACK_M3U_SOURCE_1, FALLBACK_M3U_SOURCE_2 } from './fallback_data.js';
 
 export var SOURCE_CONFIGS = [
   {
     name: 'SuperOK',
-    urls: [
-      'https://fastly.jsdelivr.net/gh/hieu-TQS/error@main/error.m3u',
-      'https://cdn.jsdelivr.net/gh/hieu-TQS/error@main/error.m3u',
-      'https://raw.githubusercontent.com/hieu-TQS/error/refs/heads/main/error.m3u'
-    ]
+    rawUrl: 'https://raw.githubusercontent.com/hieu-TQS/error/refs/heads/main/error.m3u',
+    apiUrl: 'https://api.github.com/repos/hieu-TQS/error/contents/error.m3u',
+    fallbackM3u: FALLBACK_M3U_SOURCE_1
   },
   {
     name: 'VMT',
-    urls: [
-      'https://fastly.jsdelivr.net/gh/vuminhthanh12/vuminhthanh12@main/vmttv',
-      'https://cdn.jsdelivr.net/gh/vuminhthanh12/vuminhthanh12@main/vmttv',
-      'https://raw.githubusercontent.com/vuminhthanh12/vuminhthanh12/refs/heads/main/vmttv'
-    ]
+    rawUrl: 'https://raw.githubusercontent.com/vuminhthanh12/vuminhthanh12/refs/heads/main/vmttv',
+    apiUrl: 'https://api.github.com/repos/vuminhthanh12/vuminhthanh12/contents/vmttv',
+    fallbackM3u: FALLBACK_M3U_SOURCE_2
   },
   {
     name: 'VietAnhTV',
-    urls: [
-      'https://tv.vietanhtv.top/tv/'
-    ]
+    rawUrl: 'https://tv.vietanhtv.top/tv/',
+    apiUrl: null,
+    fallbackM3u: ''
   }
 ];
-
-export var SOURCE_1_URL = SOURCE_CONFIGS[0].urls[0];
-export var SOURCE_2_URL = SOURCE_CONFIGS[1].urls[0];
-export var SOURCE_3_URL = SOURCE_CONFIGS[2].urls[0];
 
 export function xhrGet(url, callback) {
   var done = false;
@@ -75,35 +68,75 @@ export function getFetchUrl(url) {
   if (cleanUrl.indexOf('tv.vietanhtv.top/tv') !== -1 && cleanUrl.slice(-1) !== '/') {
     cleanUrl += '/';
   }
-  // Cache buster 3 phút để chống 429 Rate Limit từ CDN và GitHub
   var cacheBucket = Math.floor(Date.now() / 180000);
   var separator = cleanUrl.indexOf('?') !== -1 ? '&' : '?';
   return cleanUrl + separator + '_cb=' + cacheBucket;
 }
 
-function fetchSourceWithFallback(srcConfig, callback) {
-  var urls = srcConfig.urls || [srcConfig.url];
-  var urlIndex = 0;
+function decodeBase64Safe(str) {
+  try {
+    var cleanStr = str.replace(/\s/g, '');
+    if (typeof window !== 'undefined' && typeof window.atob === 'function') {
+      var raw = window.atob(cleanStr);
+      try {
+        return decodeURIComponent(escape(raw));
+      } catch (e) {
+        return raw;
+      }
+    } else if (typeof Buffer !== 'undefined') {
+      return Buffer.from(cleanStr, 'base64').toString('utf-8');
+    }
+  } catch (e) {
+    console.warn('[Sources] Lỗi giải mã Base64:', e);
+  }
+  return '';
+}
 
-  function tryNext() {
-    if (urlIndex >= urls.length) {
-      callback(new Error('Tất cả mirror đều lỗi'), null);
+function fetchSourceWithFallback(srcConfig, callback) {
+  // 1. Thử tải link raw trực tiếp
+  xhrGet(getFetchUrl(srcConfig.rawUrl), function (err, text) {
+    if (!err && text && text.trim().length > 200) {
+      callback(null, text);
       return;
     }
-    var currentUrl = urls[urlIndex];
-    urlIndex++;
 
-    xhrGet(getFetchUrl(currentUrl), function(err, text) {
-      if (!err && text && text.trim().length > 100) {
-        callback(null, text);
-      } else {
-        console.warn('[Sources] Nguồn ' + srcConfig.name + ' mirror [' + currentUrl + '] bị lỗi (' + (err ? err.message : 'empty') + '), tự động chuyển sang mirror tiếp theo...');
-        tryNext();
-      }
-    });
-  }
+    console.warn('[Sources] Không thể tải raw ' + srcConfig.name + ' (' + (err ? err.message : 'empty') + '), chuyển sang GitHub API...');
 
-  tryNext();
+    // 2. Nếu raw bị 429 hoặc lỗi: Thử tải qua GitHub REST API
+    if (srcConfig.apiUrl) {
+      xhrGet(getFetchUrl(srcConfig.apiUrl), function (apiErr, apiText) {
+        if (!apiErr && apiText) {
+          try {
+            var json = JSON.parse(apiText);
+            if (json && json.content) {
+              var decoded = decodeBase64Safe(json.content);
+              if (decoded && decoded.trim().length > 200) {
+                console.log('[Sources] Đã tải thành công ' + srcConfig.name + ' qua GitHub REST API!');
+                callback(null, decoded);
+                return;
+              }
+            }
+          } catch (e) {}
+        }
+
+        console.warn('[Sources] GitHub API ' + srcConfig.name + ' lỗi, kích hoạt bản dự phòng Offline!');
+        // 3. Nếu cả 2 đều lỗi: Dùng bản bundle Offline
+        if (srcConfig.fallbackM3u && srcConfig.fallbackM3u.trim().length > 100) {
+          callback(null, srcConfig.fallbackM3u);
+        } else {
+          callback(new Error('Tất cả nguồn đều lỗi'), null);
+        }
+      });
+      return;
+    }
+
+    // 3. Nguồn không có API (VietAnhTV): nếu lỗi thì trả về fallback
+    if (srcConfig.fallbackM3u && srcConfig.fallbackM3u.trim().length > 100) {
+      callback(null, srcConfig.fallbackM3u);
+    } else {
+      callback(new Error('Tất cả nguồn đều lỗi'), null);
+    }
+  });
 }
 
 /**
@@ -224,7 +257,7 @@ function isValidLogoUrl(url) {
 
 export function getFallbackChannelLogo(name, tvgId) {
   var s = removeVietnameseTones(((name || '') + ' ' + (tvgId || '')).toLowerCase()).replace(/[^a-z0-9]/g, '');
-  var LOGO_BASE = 'https://fastly.jsdelivr.net/gh/hieu-TQS/LOGO-IPTV@main/';
+  var LOGO_BASE = 'https://raw.githubusercontent.com/hieu-TQS/LOGO-IPTV/main/';
 
   var MAP = {
     'vtv1': LOGO_BASE + '1.png',
