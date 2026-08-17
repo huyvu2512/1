@@ -4,6 +4,10 @@ export const EPG_SOURCE_2 = 'https://epg.blaosolar.vn/schedule/epg.xml'; // Ngu�
 let epgData = {};
 let isLoaded = false;
 
+function padZero(num) {
+  return num < 10 ? '0' + num : '' + num;
+}
+
 function parseXMLTVDate(str) {
   if (!str) return null;
   try {
@@ -27,7 +31,7 @@ function removeVietnameseTones(str) {
   str = str.replace(/ì|í|ị|ỉ|ĩ/g, 'i');
   str = str.replace(/ò|ó|ọ|ỏ|õ|ô|ồ|ố|ộ|ổ|ỗ|ơ|ờ|ớ|ợ|ở|ỡ/g, 'o');
   str = str.replace(/ù|ú|ụ|ủ|ũ|ư|ừ|ứ|ự|ử|ữ/g, 'u');
-  str = str.replace(/ỳ|ý|ỵ|ỷ|ỹ/g, 'y');
+  str = str.replace(/ỳ|ý|Ỵ|Ỷ|Ỹ/g, 'y');
   str = str.replace(/đ/g, 'd');
   str = str.replace(/À|Á|Ạ|Ả|Ã|Â|Ầ|Ấ|Ậ|Ẩ|Ẫ|Ă|Ằ|Ắ|Ặ|Ẳ|Ẵ/g, 'A');
   str = str.replace(/È|É|Ẹ|Ẻ|Ẽ|Ê|Ề|Ế|Ệ|Ể|Ễ/g, 'E');
@@ -171,11 +175,8 @@ function fetchXml(url, callback) {
   let done = false;
   const xhr = new XMLHttpRequest();
   const bustUrl = `${url}?_t=${Date.now()}`;
-  const fetchUrl = (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1')
-    ? `/api/stream?url=${encodeURIComponent(bustUrl)}`
-    : bustUrl;
 
-  xhr.open('GET', fetchUrl, true);
+  xhr.open('GET', bustUrl, true);
   xhr.timeout = 15000;
 
   xhr.onreadystatechange = function () {
@@ -214,17 +215,15 @@ function fetchXml(url, callback) {
 }
 
 export function loadEPG(onLoaded) {
-  // 1. Tải Nguồn 1 (LichPhatSong)
   fetchXml(EPG_SOURCE_1, (err1, xml1) => {
     if (!err1 && xml1) {
       const src1Data = parseEpgXml(xml1);
       Object.assign(epgData, src1Data);
       isLoaded = true;
-      console.log(`[EPG] Đã nạp thành công Nguồn 1 (LichPhatSong): ${Object.keys(epgData).length} kênh.`);
+      console.log(`[EPG] Đã nạp thành công Nguồn 1: ${Object.keys(epgData).length} kênh.`);
       if (onLoaded) onLoaded();
     }
 
-    // 2. Tải tiếp Nguồn 2 (BlaoSolar)
     fetchXml(EPG_SOURCE_2, (err2, xml2) => {
       if (!err2 && xml2) {
         const src2Data = parseEpgXml(xml2);
@@ -250,10 +249,9 @@ export function loadEPG(onLoaded) {
         });
 
         isLoaded = true;
-        console.log(`[EPG] Nguồn 2 (BlaoSolar): Thêm mới ${added} kênh, Cập nhật mới ${updated} kênh. Tổng: ${Object.keys(epgData).length} kênh EPG!`);
+        console.log(`[EPG] Nguồn 2: Thêm mới ${added} kênh, Cập nhật ${updated} kênh. Tổng: ${Object.keys(epgData).length} kênh EPG!`);
         if (onLoaded) onLoaded();
       } else {
-        console.warn('[EPG] Nguồn 2 (BlaoSolar) lỗi hoặc quá tải, tiếp tục với Nguồn 1.');
         isLoaded = true;
         if (onLoaded) onLoaded();
       }
@@ -263,7 +261,7 @@ export function loadEPG(onLoaded) {
 
 const formatHM = (d) => {
   if (!d) return '--:--';
-  return `${String(d.getHours()).padStart(2, '0')}:${String(d.getMinutes()).padStart(2, '0')}`;
+  return `${padZero(d.getHours())}:${padZero(d.getMinutes())}`;
 };
 
 export function getChannelEPG(channelName) {

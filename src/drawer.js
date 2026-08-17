@@ -11,6 +11,10 @@ let isSearchInputActive = false;
 
 const DEFAULT_TV_ICON_SVG = `<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#f97316" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="20" height="15" x="2" y="7" rx="2" ry="2"/><polyline points="17 2 12 7 7 2"/></svg>`;
 
+function padZero(num) {
+  return num < 10 ? '0' + num : '' + num;
+}
+
 function removeVietnameseTones(str) {
   if (!str) return '';
   str = str.replace(/à|á|ạ|ả|ã|â|ầ|ấ|ậ|ẩ|ẫ|ă|ằ|ắ|ặ|ẳ|ẵ/g, 'a');
@@ -18,7 +22,7 @@ function removeVietnameseTones(str) {
   str = str.replace(/ì|í|ị|ỉ|ĩ/g, 'i');
   str = str.replace(/ò|ó|ọ|ỏ|õ|ô|ồ|ố|ộ|ổ|ỗ|ơ|ờ|ớ|ợ|ở|ỡ/g, 'o');
   str = str.replace(/ù|ú|ụ|ủ|ũ|ư|ừ|ứ|ự|ử|ữ/g, 'u');
-  str = str.replace(/ỳ|ý|ỵ|ỷ|ỹ/g, 'y');
+  str = str.replace(/ỳ|ý|Ỵ|Ỷ|Ỹ/g, 'y');
   str = str.replace(/đ/g, 'd');
   str = str.replace(/À|Á|Ạ|Ả|Ã|Â|Ầ|Ấ|Ậ|Ẩ|Ẫ|Ă|Ằ|Ắ|Ặ|Ẳ|Ẵ/g, 'A');
   str = str.replace(/È|É|Ẹ|Ẻ|Ẽ|Ê|Ề|Ế|Ệ|Ể|Ễ/g, 'E');
@@ -58,7 +62,7 @@ function setupSearchBoxListeners() {
   searchInput.addEventListener('input', (e) => {
     searchQuery = (e.target.value || '').trim();
     if (clearBtn) {
-      clearBtn.style.display = searchQuery ? 'flex' : 'none';
+      clearBtn.style.display = searchQuery.length > 0 ? 'flex' : 'none';
     }
     currentChannelIndex = 0;
     renderCategories();
@@ -68,11 +72,13 @@ function setupSearchBoxListeners() {
   searchInput.addEventListener('focus', () => {
     isSearchInputActive = true;
     if (searchBox) searchBox.classList.add('focused');
+    updateFocus();
   });
 
   searchInput.addEventListener('blur', () => {
     isSearchInputActive = false;
     if (searchBox) searchBox.classList.remove('focused');
+    updateFocus();
   });
 
   if (clearBtn) {
@@ -81,21 +87,6 @@ function setupSearchBoxListeners() {
       clearSearch();
     });
   }
-}
-
-export function clearSearch() {
-  const searchInput = document.getElementById('channel-search-input');
-  const clearBtn = document.getElementById('search-clear-btn');
-  if (searchInput) searchInput.value = '';
-  if (clearBtn) clearBtn.style.display = 'none';
-  searchQuery = '';
-  currentChannelIndex = 0;
-  renderCategories();
-  renderChannels();
-}
-
-export function getSearchQuery() {
-  return searchQuery;
 }
 
 export function isSearchFocused() {
@@ -117,6 +108,30 @@ export function blurSearchInput() {
   isSearchInputActive = false;
   const searchBox = document.getElementById('drawer-search-box');
   if (searchBox) searchBox.classList.remove('focused');
+}
+
+export function clearSearch() {
+  searchQuery = '';
+  const searchInput = document.getElementById('channel-search-input');
+  if (searchInput) {
+    searchInput.value = '';
+    searchInput.blur();
+  }
+  const clearBtn = document.getElementById('search-clear-btn');
+  if (clearBtn) clearBtn.style.display = 'none';
+
+  isSearchInputActive = false;
+  const searchBox = document.getElementById('drawer-search-box');
+  if (searchBox) searchBox.classList.remove('focused');
+
+  currentCategoryIndex = 0;
+  currentChannelIndex = 0;
+  renderCategories();
+  renderChannels();
+}
+
+export function getSearchQuery() {
+  return searchQuery;
 }
 
 export function getCurrentCategoryIndex() {
@@ -317,18 +332,20 @@ export function updateFocus() {
 }
 
 export function updateWindowsClock() {
-  const now = new Date();
-  const timeEl = document.getElementById('drawer-time');
-  const dateEl = document.getElementById('drawer-date');
-  if (timeEl && dateEl) {
-    const hh = String(now.getHours()).padStart(2, '0');
-    const mm = String(now.getMinutes()).padStart(2, '0');
-    const ss = String(now.getSeconds()).padStart(2, '0');
-    timeEl.innerText = `${hh}:${mm}:${ss}`;
+  try {
+    const now = new Date();
+    const timeEl = document.getElementById('drawer-time');
+    const dateEl = document.getElementById('drawer-date');
+    if (timeEl && dateEl) {
+      const hh = padZero(now.getHours());
+      const mm = padZero(now.getMinutes());
+      const ss = padZero(now.getSeconds());
+      timeEl.innerText = `${hh}:${mm}:${ss}`;
 
-    const dd = String(now.getDate()).padStart(2, '0');
-    const month = String(now.getMonth() + 1).padStart(2, '0');
-    const yyyy = now.getFullYear();
-    dateEl.innerText = `${dd}-${month}-${yyyy}`;
-  }
+      const dd = padZero(now.getDate());
+      const month = padZero(now.getMonth() + 1);
+      const yyyy = now.getFullYear();
+      dateEl.innerText = `${dd}-${month}-${yyyy}`;
+    }
+  } catch (e) {}
 }

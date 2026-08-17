@@ -1,9 +1,9 @@
 {
   "schemaVersion": 1,
-  "name": "tizenbrew-iptv-drm",
+  "name": "huyvu-tv",
   "displayName": "IPTV Player DRM",
-  "version": "1.2.1",
-  "description": "IPTV Player DRM for TizenBrew with ClearKey DRM & EPG Support",
+  "version": "1.0.1",
+  "description": "IPTV player module for TizenBrew with Widevine DRM and MPEG-DASH support",
   "targetUrl": "https://localhost",
   "assets": {
     "scripts": [

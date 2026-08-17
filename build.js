@@ -37,13 +37,16 @@ async function build() {
   const outPath = path.join(distDir, 'index.js');
   fs.writeFileSync(outPath, babelResult.code, 'utf8');
 
+  // Đọc thông tin từ package.json
+  const pkg = JSON.parse(fs.readFileSync(path.join(__dirname, 'package.json'), 'utf8'));
+
   // Tạo manifest.json chuẩn cho TizenBrew Module Manager
   const manifest = {
     schemaVersion: 1,
-    name: "tizenbrew-iptv-drm",
-    displayName: "IPTV Player DRM",
-    version: "1.2.1",
-    description: "IPTV Player DRM for TizenBrew with ClearKey DRM & EPG Support",
+    name: pkg.name || "huyvu-tv",
+    displayName: pkg.appName || "IPTV Player DRM",
+    version: pkg.version || "1.0.1",
+    description: pkg.description || "IPTV Player DRM for TizenBrew with ClearKey DRM & EPG Support",
     targetUrl: "https://localhost",
     assets: {
       scripts: [
@@ -70,7 +73,7 @@ async function build() {
   fs.writeFileSync(path.join(distDir, 'manifest.json'), JSON.stringify(manifest, null, 2), 'utf8');
 
   console.log('3. Build complete! Output size:', (babelResult.code.length / 1024).toFixed(2), 'KB');
-  console.log('   Generated dist/index.js and dist/manifest.json');
+  console.log('   Generated dist/index.js and dist/manifest.json (name: ' + manifest.name + ')');
 }
 
 build().catch(err => {

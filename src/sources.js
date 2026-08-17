@@ -51,11 +51,7 @@ export function getFetchUrl(url) {
     cleanUrl += '/';
   }
   const separator = cleanUrl.includes('?') ? '&' : '?';
-  const bustUrl = `${cleanUrl}${separator}_t=${Date.now()}`;
-  if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') {
-    return `/api/stream?url=${encodeURIComponent(bustUrl)}`;
-  }
-  return bustUrl;
+  return `${cleanUrl}${separator}_t=${Date.now()}`;
 }
 
 export function cleanTitle(str) {
@@ -73,7 +69,7 @@ function removeVietnameseTones(str) {
   str = str.replace(/ì|í|ị|ỉ|ĩ/g, 'i');
   str = str.replace(/ò|ó|ọ|ỏ|õ|ô|ồ|ố|ộ|ổ|ỗ|ơ|ờ|ớ|ợ|ở|ỡ/g, 'o');
   str = str.replace(/ù|ú|ụ|ủ|ũ|ư|ừ|ứ|ự|ử|ữ/g, 'u');
-  str = str.replace(/ỳ|ý|ỵ|ỷ|ỹ/g, 'y');
+  str = str.replace(/ỳ|ý|Ỵ|Ỷ|Ỹ/g, 'y');
   str = str.replace(/đ/g, 'd');
   str = str.replace(/À|Á|Ạ|Ả|Ã|Â|Ầ|Ấ|Ậ|Ẩ|Ẫ|Ă|Ằ|Ắ|Ặ|Ẳ|Ẵ/g, 'A');
   str = str.replace(/È|É|Ẹ|Ẻ|Ẽ|Ê|Ề|Ế|Ệ|Ể|Ễ/g, 'E');
@@ -98,55 +94,35 @@ export function isBlockedChannelOrGroup(name, group) {
  */
 export function standardizeCategory(cat) {
   const cleaned = cleanTitle(cat);
-  if (!cleaned) return 'Khác';
-  const lower = removeVietnameseTones(cleaned.toLowerCase());
+  const norm = removeVietnameseTones(cleaned.toLowerCase()).replace(/[\s\-_]/g, '');
 
-  if (lower.includes('dia phuong') || lower.includes('tinh')) return 'Địa Phương';
-  if (lower.includes('quoc te')) return 'Quốc Tế';
-  if (lower.includes('the thao') || lower.includes('sport')) return 'Thể Thao';
-  if (lower.includes('vtv') && !lower.includes('vtvcab') && !lower.includes('vtvprime')) return 'VTV';
-  if (lower.includes('htv') && !lower.includes('htvc')) return 'HTV';
-  if (lower.includes('htvc')) return 'HTVC';
-  if (lower.includes('sctv')) return 'SCTV';
-  if (lower.includes('vtvcab') || lower.includes('on ')) return 'VTVCab';
-  if (lower.includes('thiet yeu')) return 'Thiết Yếu';
-  if (lower.includes('su kien tv360') || lower.includes('tv360')) return 'Sự Kiện TV360';
-  if (lower.includes('su kien fpt') || lower.includes('fpt play') || lower.includes('su kien') || lower.includes('event')) return 'Sự Kiện';
-  if (lower.includes('radio') || lower.includes('nghe nhac')) return 'Radio';
-  if (lower.includes('phim') || lower.includes('rap phim') || lower.includes('movie')) return 'Phim & Giải Trí';
-  if (lower.includes('samsung')) return 'Samsung TV';
-  if (lower.includes('rakuten')) return 'Rakuten';
-  if (lower.includes('abc kids') || lower.includes('pbs kids')) return 'Thiếu Nhi';
-  if (lower.includes('han quoc') || lower.includes('korea')) return 'Hàn Quốc';
-  if (lower.includes('trung quoc') || lower.includes('china') || lower.includes('cctv')) return 'Trung Quốc';
-  if (lower.includes('in the box')) return 'In The Box';
+  if (norm.includes('vtv') || norm.includes('daiquocgia')) return 'VTV';
+  if (norm.includes('vtvcab') || norm.includes('onlive') || norm.includes('oncine')) return 'VTVcab';
+  if (norm.includes('htv') || norm.includes('htvc') || norm.includes('tphcm')) return 'HTV & HTVC';
+  if (norm.includes('sctv') || norm.includes('saigontourist')) return 'SCTV';
+  if (norm.includes('thethao') || norm.includes('sport') || norm.includes('kplus') || norm.includes('k+')) return 'Thể Thao & K+';
+  if (norm.includes('thvl') || norm.includes('vinhlong')) return 'Truyền hình Vĩnh Long';
+  if (norm.includes('phim') || norm.includes('movie') || norm.includes('cinema') || norm.includes('hbo')) return 'Phim Truyện';
+  if (norm.includes('thieunhi') || norm.includes('kids') || norm.includes('cartoon') || norm.includes('hoathinh')) return 'Thiếu Nhi';
+  if (norm.includes('tintuc') || norm.includes('news') || norm.includes('thoisu')) return 'Tin Tức & Thời Sự';
+  if (norm.includes('giaitri') || norm.includes('amnhac') || norm.includes('music') || norm.includes('show')) return 'Giải Trí & Âm Nhạc';
+  if (norm.includes('khoahoc') || norm.includes('khampha') || norm.includes('discovery') || norm.includes('natgeo')) return 'Khám Phá';
+  if (norm.includes('quocte') || norm.includes('international') || norm.includes('world')) return 'Kênh Quốc Tế';
+  if (norm.includes('diaphuong') || norm.includes('tinh') || norm.includes('local')) return 'Kênh Địa Phương';
 
-  return cleaned;
+  return 'Kênh Tổng Hợp';
 }
 
 /**
- * Chuẩn hóa mã kênh (Unique ID) để nhận diện và gộp chính xác 100% giữa 3 nguồn
+ * Chuẩn hóa tên kênh để so sánh và gộp kênh trùng giữa 3 nguồn
  */
 export function normalizeName(name, tvgId) {
-  let s = (name || '').toLowerCase();
+  let str = (name || '') + ' ' + (tvgId || '');
+  str = cleanTitle(str);
+  let s = removeVietnameseTones(str.toLowerCase());
 
-  if (/\|\s*th\s*/i.test(s)) {
-    s = s.replace(/^.*?\|\s*th\s*/i, '');
-  } else if (/\|\s*b/i.test(s)) {
-    s = s.replace(/\s*\|\s*b.*$/i, '');
-  }
-
-  s = s.split(' - đài ptth')[0];
-  s = s.split(' - báo và ptth')[0];
-  s = s.split(' - đài truyền hình')[0];
-  s = s.split(' | báo và ptth')[0];
-  s = s.split(' - báo ')[0];
-  s = s.split(' - vie channel')[0];
-  s = s.split(' - you tv')[0];
-
-  s = removeVietnameseTones(s);
-
-  s = s.replace(/\b(hd|sd|fhd|4k|2k|uhd|50fps|60fps|raw|vip|tivi|tv|channel|ott|live|hls|mpd)\b/g, '');
+  // Loại bỏ các từ khóa thừa
+  s = s.replace(/(fhd|uhd|4k|2k|hd|sd|50fps|60fps|hevc|h265|raw|tv|backup|du phong|vip|server\s*\d+|nguon\s*\d+)/g, '');
   s = s.replace(/[^a-z0-9]/g, '').trim();
 
   // Quy đổi bí danh (Alias mapping) cho toàn bộ các đài tỉnh
@@ -250,53 +226,28 @@ export function normalizeName(name, tvgId) {
     if (s.includes('phim')) return 'sctvphim';
   }
 
-  // TV360 Events
-  if (s.includes('tv360')) {
-    const num = s.match(/\d+/);
-    if (num) return `tv360plus${num[0]}`;
-  }
-
-  // VTVcab
-  if (s.includes('viegiaitri') || s.includes('giaitritv')) return 'onviegiaitri';
-  if (s.includes('phimviet')) return 'onphimviet';
-  if (s.includes('onmovies') || s.includes('vanhoa')) return 'onmovies';
-  if (s.includes('echannel') || s.includes('onechannel')) return 'onechannel';
-  if (s.includes('o2tv') || s.includes('ono2tv')) return 'ono2tv';
-  if (s.includes('bibi')) return 'onbibi';
-  if (s.includes('infotv') || s.includes('oninfotv')) return 'oninfotv';
-  if (s.includes('oncine') || s.includes('filmtv')) return 'oncine';
-  if (s.includes('onstyle') || s.includes('styletv')) return 'onstyle';
-  if (s.includes('onmusic') || s.includes('mchannel')) return 'onmusic';
-  if (s.includes('ontrending') || s.includes('yeah1tv')) return 'ontrending';
-  if (s.includes('viedramas') || s.includes('ddramas')) return 'onviedramas';
-  if (s.includes('vfamily')) return 'onvfamily';
-  if (s.includes('onkids')) return 'onkids';
-  if (s.includes('onlife') || s.includes('lifetv')) return 'onlife';
-  if (s.includes('onsports') || s.includes('thethaotv') || s.includes('onsport')) return 'onsports';
-  if (s.includes('onfootball') || s.includes('football')) return 'onfootball';
-
-  // In The Box
-  if (s.includes('boxmovie1') || s.includes('boxmovies1') || s.includes('bm1')) return 'boxmovie1';
-  if (s.includes('boxhits') || s.includes('boxhit')) return 'boxhits';
-  if (s.includes('hollywoodclassic')) return 'hollywoodclassics';
-  if (s.includes('musicbox')) return 'musicbox';
-
-  return s;
+  return s || 'channel';
 }
 
+/**
+ * Định dạng tên hiển thị của kênh sạch đẹp, sang trọng
+ */
 export function formatPrettyChannelName(rawName) {
   let name = cleanTitle(rawName);
-  if (/\|\s*th\s*/i.test(name)) {
-    name = name.replace(/^.*?\|\s*th\s*/i, '').trim();
-  }
-  name = name.replace(/\s*-\s*(đài ptth|báo và ptth|đài truyền hình|báo).*$/i, '').trim();
-  name = name.replace(/\s*\|\s*(báo và ptth|báo).*$/i, '').trim();
-  return name;
+  name = name.replace(/\s+(FHD|UHD|4K|2K|HD|SD|50fps|60fps|HEVC|H265|RAW)(\s+|$)/gi, ' ');
+  name = name.replace(/^(Kênh|Kenh|Channel)\s+/i, '');
+  return name.trim();
 }
 
 export function fixChannelStream(ch) {
-  const norm = normalizeName(ch.name);
-  if (norm.includes('qpvn') || norm.includes('quocphong')) {
+  const norm = normalizeName(ch.name, ch.id);
+  if (norm === 'vtv3') {
+    ch.url = 'https://live.fptplay53.net/live/media/vtv3hd/live-hls-avc/vtv3hd.m3u8';
+  } else if (norm === 'vtv1') {
+    ch.url = 'https://live.fptplay53.net/live/media/vtv1hd/live-hls-avc/vtv1hd.m3u8';
+  } else if (norm === 'vtv6' || norm === 'vtvcantho') {
+    ch.url = 'https://live.fptplay53.net/live/media/vtv6hd/live-hls-avc/vtv6hd.m3u8';
+  } else if (norm.includes('quocphong')) {
     ch.url = 'https://live.fptplay53.net/live/media/quocphongvn/live-hls-avc/quocphongvn.m3u8';
   } else if (norm.includes('antv') || norm.includes('anninh')) {
     ch.url = 'https://live.fptplay53.net/fnxhd2/anninhtv_vhls.smil/chunklist.m3u8';
@@ -346,7 +297,7 @@ export function loadAndMergePlaylists(callback) {
             ch.group = cleanGroup;
             fixChannelStream(ch);
 
-            const norm = normalizeName(ch.name, ch.tvgId);
+            const norm = normalizeName(ch.name, ch.id);
             if (!norm) continue;
 
             const streamSource = {
