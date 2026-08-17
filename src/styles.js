@@ -327,7 +327,7 @@ export var globalStyles = '\
       display: none;\
       align-items: flex-end;\
       justify-content: flex-end;\
-      padding: 0 60px 130px 0;\
+      padding: 0 60px 220px 0;\
       pointer-events: auto;\
     }\
     #quality-audio-dialog.active { display: flex !important; }\
@@ -358,7 +358,7 @@ export var globalStyles = '\
       display: flex;\
       flex-direction: column;\
       gap: 10px;\
-      max-height: 400px;\
+      max-height: 420px;\
       overflow-y: auto;\
     }\
     .dialog-item {\
