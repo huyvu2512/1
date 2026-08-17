@@ -1,6 +1,6 @@
 {
-  "name": "huyvu-tv",
-  "version": "1.0.2",
+  "name": "huyvutv",
+  "version": "1.0.0",
   "description": "IPTV player module for TizenBrew with Widevine DRM and MPEG-DASH support",
   "license": "MIT",
   "private": false,
