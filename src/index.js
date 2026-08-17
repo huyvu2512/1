@@ -293,9 +293,10 @@ function autoPlayFirstChannel() {
 }
 
 function handleKeyDown(e) {
-  const key = e.keyCode;
+  var key = e.keyCode;
+  var navKeys = [TV_KEYS.UP, TV_KEYS.DOWN, TV_KEYS.LEFT, TV_KEYS.RIGHT, 8, 27, TV_KEYS.RETURN, TV_KEYS.BACK_PC, TV_KEYS.INFO, TV_KEYS.PLAY, TV_KEYS.PAUSE, TV_KEYS.PLAY_PAUSE];
 
-  if ([TV_KEYS.UP, TV_KEYS.DOWN, TV_KEYS.LEFT, TV_KEYS.RIGHT, 8, 27, TV_KEYS.RETURN, TV_KEYS.BACK_PC, TV_KEYS.INFO, TV_KEYS.PLAY, TV_KEYS.PAUSE, TV_KEYS.PLAY_PAUSE].includes(key)) {
+  if (navKeys.indexOf(key) !== -1) {
     if (!isSearchFocused() || key !== 8) {
       e.preventDefault();
     }

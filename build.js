@@ -48,9 +48,7 @@ async function build() {
     description: pkg.description || "IPTV Player for TizenBrew",
     targetUrl: "https://localhost",
     assets: {
-      scripts: [
-        "index.js"
-      ],
+      scripts: ["index.js"],
       styles: []
     },
     capabilities: {
@@ -59,12 +57,6 @@ async function build() {
         enter: true,
         back: true,
         playPause: true
-      },
-      performance: {
-        removeAnimations: false,
-        lazyMedia: false,
-        hideComments: false,
-        memorySaver: false
       }
     }
   };
