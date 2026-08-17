@@ -77,19 +77,25 @@ export function getRealVideoQualities() {
       var tracks = playerInstance.getVariantTracks();
       var trackMap = {};
       var list = [];
+      var isAbrOn = true;
+      try {
+        var conf = playerInstance.getConfiguration();
+        isAbrOn = conf.abr && conf.abr.enabled;
+      } catch (e) {}
+
       for (var i = 0; i < tracks.length; i++) {
         var t = tracks[i];
         if (t.height && !trackMap[t.height]) {
           trackMap[t.height] = true;
           list.push({
-            label: t.height + 'p',
+            label: t.height + 'p' + (t.height >= 1080 ? ' FHD' : (t.height >= 720 ? ' HD' : '')),
             value: t.height,
-            active: !!t.active
+            active: !isAbrOn && !!t.active
           });
         }
       }
       list.sort(function(a, b) { return b.value - a.value; });
-      list.unshift({ label: 'Auto (Khuyên dùng)', value: 'auto', active: true });
+      list.unshift({ label: 'Auto (Khuyên dùng)', value: 'auto', active: isAbrOn });
       return list;
     } catch (e) {}
   }
@@ -119,26 +125,53 @@ export function setRealVideoQuality(heightVal) {
 }
 
 export function getRealAudioTracks() {
-  if (playerInstance && playerInstance.getAudioLanguages) {
+  if (playerInstance && playerInstance.getVariantTracks) {
     try {
-      var langs = playerInstance.getAudioLanguages();
+      var tracks = playerInstance.getVariantTracks();
+      var activeLang = null;
+      for (var i = 0; i < tracks.length; i++) {
+        if (tracks[i].active && tracks[i].language) {
+          activeLang = tracks[i].language;
+          break;
+        }
+      }
+
+      var langs = (typeof playerInstance.getAudioLanguages === 'function') ? playerInstance.getAudioLanguages() : [];
       if (langs && langs.length > 0) {
+        if (!activeLang) activeLang = langs[0];
         return langs.map(function(l) {
-          return { label: l.toUpperCase() === 'VI' ? 'Tiếng Việt' : l.toUpperCase(), value: l, active: true };
+          var label = l.toUpperCase();
+          if (label === 'VI' || label === 'VIE' || label === 'VN') label = 'Tiếng Việt';
+          else if (label === 'EN' || label === 'ENG' || label === 'US') label = 'Tiếng Anh';
+          else if (label === 'UND' || label === 'MAIN') label = 'Âm thanh gốc';
+          else if (label === 'IK') label = 'Kênh 1 (Gốc)';
+          else if (label === 'AA') label = 'Kênh 2 (Thuyết minh)';
+          else if (label === 'VE') label = 'Kênh 3 (Lồng tiếng)';
+          return {
+            label: label,
+            value: l,
+            active: (l === activeLang) // CHỈ tích dấu V cho kênh đang chọn
+          };
         });
       }
     } catch (e) {}
   }
   return [
-    { label: 'Tiếng Việt (Gốc)', value: 'vi', active: true }
+    { label: 'Tiếng Việt (Gốc)', value: 'vie', active: true }
   ];
 }
 
-export function setRealAudioTrack(audioObj) {
-  if (playerInstance && playerInstance.selectAudioLanguage && audioObj) {
-    try {
-      playerInstance.selectAudioLanguage(audioObj.value);
-    } catch (e) {}
+export function setRealAudioTrack(audioObjOrVal) {
+  if (!playerInstance) return;
+  try {
+    var val = (typeof audioObjOrVal === 'object' && audioObjOrVal !== null) ? audioObjOrVal.value : audioObjOrVal;
+    if (!val) return;
+    if (typeof playerInstance.selectAudioLanguage === 'function') {
+      playerInstance.selectAudioLanguage(val);
+      console.log('[Player] Đã chọn kênh âm thanh:', val);
+    }
+  } catch (e) {
+    console.warn('[Player] Lỗi chọn audio:', e);
   }
 }
 
@@ -168,21 +201,22 @@ export function initPlayer(videoElement) {
         if (sh.Player && sh.Player.isBrowserSupported && sh.Player.isBrowserSupported()) {
           playerInstance = new sh.Player(videoElement);
 
-          // Cấu hình chống đứng hình (buffer 15s + an toàn 8s)
+          // Cấu hình chống giật hình + ưu tiên codec âm thanh AAC tương thích Smart TV
           playerInstance.configure({
             preferredAudioLanguage: 'vie',
             preferredAudioChannelCount: 2,
+            preferredAudioCodecs: ['mp4a.40.2', 'mp4a.40.5', 'mp4a', 'aac'],
             abr: {
               enabled: true,
               defaultBandwidthEstimate: 1500000,
               switchInterval: 10
             },
             streaming: {
-              bufferingGoal: 15,          // Buffer 15s để không bị giật lag
-              rebufferingGoal: 3,         // Chờ 3s trước khi tiếp tục để ổn định
+              bufferingGoal: 15,          // Buffer 15s để không bị nghẽn
+              rebufferingGoal: 3,         // Nạp trước 3s để mượt mà
               bufferBehind: 30,
-              safeSeekOffset: 8,          // Luôn cách live edge 8s an toàn
-              jumpLargeGaps: true,        // Tự động bỏ qua phân đoạn lỗi
+              safeSeekOffset: 8,          // Cách live edge 8s an toàn
+              jumpLargeGaps: true,        // Tự động nhảy qua timestamp rỗng
               stallEnabled: true,
               stallThreshold: 1.5,
               stallSkip: 0.5,
@@ -278,7 +312,6 @@ function playCurrentChannelInternal() {
   var url = currentChannelData.url;
   var isDrm = !!currentChannelData.licenseKey || (url.indexOf('.mpd') !== -1);
 
-  // Đảm bảo bật âm thanh
   currentVideoElement.muted = false;
   currentVideoElement.volume = 1.0;
 
@@ -301,6 +334,7 @@ function playCurrentChannelInternal() {
         drm: drmConfig,
         preferredAudioLanguage: 'vie',
         preferredAudioChannelCount: 2,
+        preferredAudioCodecs: ['mp4a.40.2', 'mp4a.40.5', 'mp4a', 'aac'],
         abr: { enabled: true }
       });
 
@@ -310,10 +344,35 @@ function playCurrentChannelInternal() {
           currentVideoElement.volume = 1.0;
         }
 
+        // Tự động kiểm tra và chuyển sang track AAC Stereo nếu track hiện tại là EC-3/AC-3
+        try {
+          var varTracks = playerInstance.getVariantTracks();
+          var currentActive = null;
+          var bestAacTrack = null;
+          for (var t = 0; t < varTracks.length; t++) {
+            var trk = varTracks[t];
+            if (trk.active) currentActive = trk;
+            var codecLow = (trk.audioCodec || '').toLowerCase();
+            if (codecLow.indexOf('mp4a') !== -1 || codecLow.indexOf('aac') !== -1) {
+              if (!bestAacTrack || trk.bandwidth > bestAacTrack.bandwidth) {
+                bestAacTrack = trk;
+              }
+            }
+          }
+
+          if (currentActive) {
+            var activeCodec = (currentActive.audioCodec || '').toLowerCase();
+            if ((activeCodec.indexOf('ec-3') !== -1 || activeCodec.indexOf('ac-3') !== -1) && bestAacTrack) {
+              console.log('[Player] Tự động chuyển từ EC-3 sang AAC Stereo cho Smart TV!');
+              playerInstance.selectVariantTrack(bestAacTrack, true);
+            }
+          }
+        } catch (err) {}
+
         var playPromise = currentVideoElement.play();
         if (playPromise && typeof playPromise.then === 'function') {
           playPromise.catch(function(err) {
-            console.warn('[Player] Autoplay âm thanh thất bại, thử muted:', err);
+            console.warn('[Player] Autoplay có tiếng thất bại, thử muted:', err);
             currentVideoElement.muted = true;
             currentVideoElement.play().then(function() {
               function unmute() {
