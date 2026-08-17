@@ -1,14 +1,39 @@
 import { parseM3U } from './parser.js';
 
-export var SOURCE_1_URL = 'https://raw.githubusercontent.com/hieu-TQS/error/refs/heads/main/error.m3u'; // SuperOK VIP DRM (Nguồn 1 - Ưu tiên hàng đầu)
-export var SOURCE_2_URL = 'https://raw.githubusercontent.com/vuminhthanh12/vuminhthanh12/refs/heads/main/vmttv'; // VMT Thể Thao (Nguồn 2)
-export var SOURCE_3_URL = 'https://tv.vietanhtv.top/tv/'; // VietAnhTV DRM (Nguồn 3 - Bổ sung kênh thiếu)
+export var SOURCE_CONFIGS = [
+  {
+    name: 'SuperOK',
+    urls: [
+      'https://fastly.jsdelivr.net/gh/hieu-TQS/error@main/error.m3u',
+      'https://cdn.jsdelivr.net/gh/hieu-TQS/error@main/error.m3u',
+      'https://raw.githubusercontent.com/hieu-TQS/error/refs/heads/main/error.m3u'
+    ]
+  },
+  {
+    name: 'VMT',
+    urls: [
+      'https://fastly.jsdelivr.net/gh/vuminhthanh12/vuminhthanh12@main/vmttv',
+      'https://cdn.jsdelivr.net/gh/vuminhthanh12/vuminhthanh12@main/vmttv',
+      'https://raw.githubusercontent.com/vuminhthanh12/vuminhthanh12/refs/heads/main/vmttv'
+    ]
+  },
+  {
+    name: 'VietAnhTV',
+    urls: [
+      'https://tv.vietanhtv.top/tv/'
+    ]
+  }
+];
+
+export var SOURCE_1_URL = SOURCE_CONFIGS[0].urls[0];
+export var SOURCE_2_URL = SOURCE_CONFIGS[1].urls[0];
+export var SOURCE_3_URL = SOURCE_CONFIGS[2].urls[0];
 
 export function xhrGet(url, callback) {
   var done = false;
   var xhr = new XMLHttpRequest();
   xhr.open('GET', url, true);
-  xhr.timeout = 10000;
+  xhr.timeout = 8000;
 
   xhr.onreadystatechange = function () {
     if (xhr.readyState === 4 && !done) {
@@ -24,7 +49,7 @@ export function xhrGet(url, callback) {
   xhr.onerror = function () {
     if (!done) {
       done = true;
-      callback(new Error('Network error'), null);
+      callback(new Error('Network error / CORS'), null);
     }
   };
 
@@ -50,8 +75,35 @@ export function getFetchUrl(url) {
   if (cleanUrl.indexOf('tv.vietanhtv.top/tv') !== -1 && cleanUrl.slice(-1) !== '/') {
     cleanUrl += '/';
   }
+  // Cache buster 3 phút để chống 429 Rate Limit từ CDN và GitHub
+  var cacheBucket = Math.floor(Date.now() / 180000);
   var separator = cleanUrl.indexOf('?') !== -1 ? '&' : '?';
-  return cleanUrl + separator + '_t=' + Date.now();
+  return cleanUrl + separator + '_cb=' + cacheBucket;
+}
+
+function fetchSourceWithFallback(srcConfig, callback) {
+  var urls = srcConfig.urls || [srcConfig.url];
+  var urlIndex = 0;
+
+  function tryNext() {
+    if (urlIndex >= urls.length) {
+      callback(new Error('Tất cả mirror đều lỗi'), null);
+      return;
+    }
+    var currentUrl = urls[urlIndex];
+    urlIndex++;
+
+    xhrGet(getFetchUrl(currentUrl), function(err, text) {
+      if (!err && text && text.trim().length > 100) {
+        callback(null, text);
+      } else {
+        console.warn('[Sources] Nguồn ' + srcConfig.name + ' mirror [' + currentUrl + '] bị lỗi (' + (err ? err.message : 'empty') + '), tự động chuyển sang mirror tiếp theo...');
+        tryNext();
+      }
+    });
+  }
+
+  tryNext();
 }
 
 /**
@@ -75,7 +127,7 @@ export function removeVietnameseTones(str) {
   var s = str;
   s = s.replace(/à|á|ạ|ả|ã|â|ầ|ấ|ậ|ẩ|ẫ|ă|ằ|ắ|ặ|ẳ|ẵ/g, 'a');
   s = s.replace(/è|é|ẹ|ẻ|ẽ|ê|ề|ế|ệ|ể|ễ/g, 'e');
-  s = s.replace(/ì|í|ị|ỉ|ĩ/g, 'i');
+  s = s.replace(/ì|í|ỉ|ĩ|ị/g, 'i');
   s = s.replace(/ò|ó|ọ|ỏ|õ|ô|ồ|ố|ộ|ổ|ỗ|ơ|ờ|ớ|ợ|ở|ỡ/g, 'o');
   s = s.replace(/ù|ú|ụ|ủ|ũ|ư|ừ|ứ|ự|ử|ữ/g, 'u');
   s = s.replace(/ỳ|ý|ỵ|ỷ|ỹ/g, 'y');
@@ -172,7 +224,7 @@ function isValidLogoUrl(url) {
 
 export function getFallbackChannelLogo(name, tvgId) {
   var s = removeVietnameseTones(((name || '') + ' ' + (tvgId || '')).toLowerCase()).replace(/[^a-z0-9]/g, '');
-  var LOGO_BASE = 'https://raw.githubusercontent.com/hieu-TQS/LOGO-IPTV/main/';
+  var LOGO_BASE = 'https://fastly.jsdelivr.net/gh/hieu-TQS/LOGO-IPTV@main/';
 
   var MAP = {
     'vtv1': LOGO_BASE + '1.png',
@@ -295,27 +347,21 @@ function getRadioDirectSources(chName) {
 }
 
 export function loadAndMergePlaylists(callback) {
-  var sources = [
-    { url: SOURCE_1_URL, name: 'SuperOK' },
-    { url: SOURCE_2_URL, name: 'VMT' },
-    { url: SOURCE_3_URL, name: 'VietAnhTV' }
-  ];
-
   var completed = 0;
   var parsedLists = [];
 
-  sources.forEach(function (srcObj, index) {
-    xhrGet(getFetchUrl(srcObj.url), function (err, text) {
+  SOURCE_CONFIGS.forEach(function (srcConfig, index) {
+    fetchSourceWithFallback(srcConfig, function (err, text) {
       if (err) {
-        console.warn('[Sources] Không thể tải ' + srcObj.name + ':', err.message);
+        console.warn('[Sources] Không thể tải ' + srcConfig.name + ':', err.message);
       }
       parsedLists[index] = {
-        name: srcObj.name,
+        name: srcConfig.name,
         channels: (!err && text) ? parseM3U(text) : []
       };
       completed++;
 
-      if (completed === sources.length) {
+      if (completed === SOURCE_CONFIGS.length) {
         var mergedObj = {};
         var mergedList = [];
 
@@ -396,6 +442,21 @@ export function loadAndMergePlaylists(callback) {
           }
         }
 
+        // Nếu tất cả nguồn đều gặp sự cố 429 hoặc mất mạng: Nạp từ Local Storage Cache!
+        if (mergedList.length === 0) {
+          try {
+            var cachedStr = localStorage.getItem('cached_iptv_payload');
+            if (cachedStr) {
+              var cachedData = JSON.parse(cachedStr);
+              if (cachedData && cachedData.allChannels && cachedData.allChannels.length > 0) {
+                console.warn('[Sources] Kích hoạt chế độ cứu hộ: Đã nạp ' + cachedData.allChannels.length + ' kênh từ bộ nhớ đệm Cache!');
+                callback(cachedData);
+                return;
+              }
+            }
+          } catch(e) {}
+        }
+
         // Kiểm tra lượt cuối: Nếu kênh nào chưa có logo hợp lệ, gán từ kho Logo Fallback
         for (var m = 0; m < mergedList.length; m++) {
           if (!isValidLogoUrl(mergedList[m].logo)) {
@@ -427,8 +488,16 @@ export function loadAndMergePlaylists(callback) {
           return rawCategoryOrder.indexOf(a) - rawCategoryOrder.indexOf(b);
         });
 
-        console.log('[Sources] Đã gộp và sắp xếp VTV/VTVcab lên đầu: ' + mergedList.length + ' kênh, ' + categoryList.length + ' nhóm danh mục!');
-        callback({ allChannels: mergedList, groupedChannels: groupedChannels, categoryList: categoryList });
+        var payload = { allChannels: mergedList, groupedChannels: groupedChannels, categoryList: categoryList };
+        
+        if (mergedList.length > 0) {
+          try {
+            localStorage.setItem('cached_iptv_payload', JSON.stringify(payload));
+          } catch(e) {}
+        }
+
+        console.log('[Sources] Đã gộp thành công ' + mergedList.length + ' kênh, ' + categoryList.length + ' nhóm danh mục!');
+        callback(payload);
       }
     });
   });
