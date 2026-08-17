@@ -1,38 +1,13 @@
 {
-  "name": "@huyvu2512/tizenbrew-iptv-drm",
-  "version": "1.2.1",
+  "name": "huyvu-tv",
+  "version": "1.0.0",
   "description": "IPTV player module for TizenBrew with Widevine DRM and MPEG-DASH support",
-  "main": "dist/index.js",
-  "scripts": {
-    "build": "node build.js",
-    "dev": "node server.js",
-    "start": "node server.js"
-  },
-  "keywords": [
-    "tizen",
-    "tizenbrew",
-    "iptv",
-    "widevine",
-    "drm",
-    "shaka-player",
-    "mpd"
-  ],
-  "author": "huyvu2512",
   "license": "MIT",
-  "dependencies": {
-    "shaka-player": "^4.11.7"
-  },
-  "devDependencies": {
-    "@babel/cli": "^8.0.4",
-    "@babel/core": "^8.0.1",
-    "@babel/preset-env": "^8.0.2",
-    "core-js": "^3.50.0",
-    "esbuild": "^0.25.0",
-    "regenerator-runtime": "^0.14.1"
-  },
+  "private": false,
   "packageType": "app",
   "appName": "IPTV Player DRM",
   "appPath": "index.html",
+  "main": "dist/index.js",
   "keys": [
     "ColorF0Red",
     "ColorF1Green",
@@ -46,5 +21,33 @@
   "files": [
     "index.html",
     "dist"
-  ]
+  ],
+  "publishConfig": {
+    "access": "public"
+  },
+  "scripts": {
+    "build": "node build.js",
+    "dev": "node server.js",
+    "start": "node server.js"
+  },
+  "keywords": [
+    "iptv",
+    "tizen",
+    "tizenbrew",
+    "tv",
+    "player",
+    "m3u",
+    "streaming"
+  ],
+  "dependencies": {
+    "shaka-player": "^4.11.7"
+  },
+  "devDependencies": {
+    "@babel/cli": "^8.0.4",
+    "@babel/core": "^8.0.1",
+    "@babel/preset-env": "^8.0.2",
+    "core-js": "^3.50.0",
+    "esbuild": "^0.25.0",
+    "regenerator-runtime": "^0.14.1"
+  }
 }
