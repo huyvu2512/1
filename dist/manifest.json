@@ -1,9 +1,9 @@
 {
   "schemaVersion": 1,
-  "name": "tizen-iptv-vn",
+  "name": "@huyvu2512/1",
   "displayName": "IPTV Player DRM",
-  "version": "1.0.2",
-  "description": "IPTV player module for TizenBrew with Widevine DRM and MPEG-DASH support",
+  "version": "1.0.0",
+  "description": "IPTV player module for TizenBrew",
   "targetUrl": "https://localhost",
   "assets": {
     "scripts": [

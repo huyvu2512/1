@@ -1,7 +1,7 @@
 {
-  "name": "tizen-iptv-vn",
-  "version": "1.0.2",
-  "description": "IPTV player module for TizenBrew with Widevine DRM and MPEG-DASH support",
+  "name": "@huyvu2512/1",
+  "version": "1.0.0",
+  "description": "IPTV player module for TizenBrew",
   "license": "MIT",
   "private": false,
   "packageType": "app",
@@ -33,11 +33,7 @@
   "keywords": [
     "iptv",
     "tizen",
-    "tizenbrew",
-    "tv",
-    "player",
-    "m3u",
-    "streaming"
+    "tizenbrew"
   ],
   "dependencies": {
     "shaka-player": "^4.11.7"
