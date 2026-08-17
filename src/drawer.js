@@ -6,7 +6,8 @@ var categoryKeys = [];
 
 var currentCategoryIndex = 0;
 var currentChannelIndex = 0;
-var isSearchInputActive = false;
+var isSearchBoxActive = false;
+var isSearchInputEditing = false;
 var searchQuery = '';
 var onPlayChannelCallback = null;
 var lastFocusedItem = null;
@@ -24,9 +25,25 @@ export function initDrawerState(data, playCallback) {
   currentCategoryIndex = 0;
   currentChannelIndex = 0;
   searchQuery = '';
-  isSearchInputActive = false;
+  isSearchBoxActive = false;
+  isSearchInputEditing = false;
   onPlayChannelCallback = playCallback || null;
   lastFocusedItem = null;
+
+  setupSearchInputEvents();
+}
+
+function setupSearchInputEvents() {
+  var input = document.getElementById('channel-search-input');
+  var clearBtn = document.getElementById('search-clear-btn');
+  if (input) {
+    input.oninput = function() {
+      setSearchQuery(input.value);
+      if (clearBtn) {
+        clearBtn.style.display = input.value.length > 0 ? 'flex' : 'none';
+      }
+    };
+  }
 }
 
 export function updateWindowsClock() {
@@ -62,12 +79,14 @@ export function setCurrentCategoryIndex(idx) {
   if (categoryKeys.length === 0) return;
   currentCategoryIndex = Math.max(0, Math.min(idx, categoryKeys.length - 1));
   currentChannelIndex = 0;
+  isSearchBoxActive = false;
 }
 
 export function nextCategory() {
   if (categoryKeys.length === 0) return;
   currentCategoryIndex = (currentCategoryIndex + 1) % categoryKeys.length;
   currentChannelIndex = 0;
+  isSearchBoxActive = false;
   renderCategories();
   renderChannels();
 }
@@ -76,6 +95,7 @@ export function prevCategory() {
   if (categoryKeys.length === 0) return;
   currentCategoryIndex = (currentCategoryIndex - 1 + categoryKeys.length) % categoryKeys.length;
   currentChannelIndex = 0;
+  isSearchBoxActive = false;
   renderCategories();
   renderChannels();
 }
@@ -100,6 +120,7 @@ export function setCurrentChannelIndex(idx) {
     return;
   }
   currentChannelIndex = Math.max(0, Math.min(idx, chs.length - 1));
+  isSearchBoxActive = false;
   updateChannelFocusVisual();
 }
 
@@ -110,6 +131,15 @@ export function getCurrentSelectedChannel() {
 }
 
 export function nextChannel() {
+  if (isSearchBoxActive) {
+    // Từ ô tìm kiếm bấm xuống -> Nhảy vào kênh đầu tiên
+    isSearchBoxActive = false;
+    currentChannelIndex = 0;
+    updateSearchBoxFocusVisual();
+    updateChannelFocusVisual();
+    return;
+  }
+
   var chs = getCurrentChannels();
   if (chs.length === 0) return;
   if (currentChannelIndex < chs.length - 1) {
@@ -119,34 +149,71 @@ export function nextChannel() {
 }
 
 export function prevChannel() {
-  var chs = getCurrentChannels();
-  if (chs.length === 0) return;
+  if (isSearchBoxActive) return;
+
+  if (currentChannelIndex === 0) {
+    // Đang ở kênh đầu tiên bấm lên -> Nhảy thẳng lên ô Tìm kiếm
+    focusSearchBox();
+    return;
+  }
+
   if (currentChannelIndex > 0) {
     currentChannelIndex--;
     updateChannelFocusVisual();
   }
 }
 
-export function isSearchFocused() {
-  return isSearchInputActive;
+// Focus vào ô tìm kiếm (chỉ viền sáng, chưa mở bàn phím)
+export function isSearchBoxFocused() {
+  return isSearchBoxActive;
 }
 
-export function focusSearchInput() {
-  isSearchInputActive = true;
-  var input = document.getElementById('channel-search-input');
-  var box = document.querySelector('.search-input-box');
-  if (input) input.focus();
-  if (box) box.classList.add('focused');
+export function focusSearchBox() {
+  isSearchBoxActive = true;
+  isSearchInputEditing = false;
+  updateSearchBoxFocusVisual();
   updateChannelFocusVisual();
 }
 
-export function blurSearchInput() {
-  isSearchInputActive = false;
+export function blurSearchBox() {
+  isSearchBoxActive = false;
+  isSearchInputEditing = false;
   var input = document.getElementById('channel-search-input');
-  var box = document.querySelector('.search-input-box');
   if (input) input.blur();
-  if (box) box.classList.remove('focused');
+  updateSearchBoxFocusVisual();
   updateChannelFocusVisual();
+}
+
+// Người dùng ấn OK trên ô tìm kiếm -> Mới mở bàn phím ảo
+export function isSearchEditing() {
+  return isSearchInputEditing;
+}
+
+export function startSearchEditing() {
+  isSearchBoxActive = true;
+  isSearchInputEditing = true;
+  var input = document.getElementById('channel-search-input');
+  if (input) {
+    input.focus();
+  }
+  updateSearchBoxFocusVisual();
+}
+
+export function stopSearchEditing() {
+  isSearchInputEditing = false;
+  var input = document.getElementById('channel-search-input');
+  if (input) input.blur();
+  updateSearchBoxFocusVisual();
+}
+
+function updateSearchBoxFocusVisual() {
+  var box = document.getElementById('drawer-search-box');
+  if (!box) return;
+  if (isSearchBoxActive) {
+    box.classList.add('focused');
+  } else {
+    box.classList.remove('focused');
+  }
 }
 
 export function getSearchQuery() {
@@ -163,6 +230,8 @@ export function clearSearch() {
   searchQuery = '';
   var input = document.getElementById('channel-search-input');
   if (input) input.value = '';
+  var clearBtn = document.getElementById('search-clear-btn');
+  if (clearBtn) clearBtn.style.display = 'none';
   currentChannelIndex = 0;
   renderChannels();
 }
@@ -189,7 +258,11 @@ function updateChannelFocusVisual() {
     lastFocusedItem.classList.remove('focused');
   }
 
-  if (currentChannelIndex >= 0 && currentChannelIndex < items.length && !isSearchInputActive) {
+  if (isSearchBoxActive) {
+    return; // Khi ô tìm kiếm đang focus thì danh sách kênh không sáng
+  }
+
+  if (currentChannelIndex >= 0 && currentChannelIndex < items.length) {
     var cur = items[currentChannelIndex];
     if (cur) {
       cur.classList.add('focused');
@@ -203,6 +276,19 @@ export function renderCategories() {
   var nav = document.getElementById('category-nav-bar');
   if (!nav) return;
 
+  var chips = nav.querySelectorAll('.cat-chip');
+  if (chips.length === categoryKeys.length && chips.length > 0) {
+    for (var k = 0; k < chips.length; k++) {
+      if (k === currentCategoryIndex) {
+        chips[k].classList.add('active');
+        safeScrollIntoView(chips[k]);
+      } else {
+        chips[k].classList.remove('active');
+      }
+    }
+    return;
+  }
+
   nav.innerHTML = '';
   for (var i = 0; i < categoryKeys.length; i++) {
     (function(idx) {
@@ -214,6 +300,7 @@ export function renderCategories() {
         e.stopPropagation();
         currentCategoryIndex = idx;
         currentChannelIndex = 0;
+        isSearchBoxActive = false;
         renderCategories();
         renderChannels();
       };
@@ -239,58 +326,66 @@ export function renderChannels() {
   }
 
   var epgReady = isEpgReady();
+  var htmlBuffer = '';
 
   for (var i = 0; i < channels.length; i++) {
-    (function(idx) {
-      var ch = channels[idx];
-      var row = document.createElement('div');
-      var isFoc = (idx === currentChannelIndex && !isSearchInputActive);
-      row.className = 'channel-row-item' + (isFoc ? ' focused' : '');
-      if (isFoc) lastFocusedItem = row;
+    var ch = channels[i];
+    var isFoc = (i === currentChannelIndex && !isSearchBoxActive);
+    var hasLogo = (ch.logo && typeof ch.logo === 'string' && ch.logo.trim().length > 0);
+    var logoImgHtml = hasLogo
+      ? '<img class="ch-logo-img" src="' + ch.logo + '" alt="" onerror="this.style.display=\'none\';if(this.nextElementSibling)this.nextElementSibling.style.display=\'flex\';" />'
+      : '';
+    var fallbackStyle = hasLogo ? 'display:none;' : 'display:flex;';
 
-      var hasLogo = (ch.logo && typeof ch.logo === 'string' && ch.logo.trim().length > 0);
-      var logoImgHtml = hasLogo
-        ? '<img class="ch-logo-img" src="' + ch.logo + '" alt="" onerror="this.style.display=\'none\';if(this.nextElementSibling)this.nextElementSibling.style.display=\'flex\';" />'
-        : '';
-      var fallbackStyle = hasLogo ? 'display:none;' : 'display:flex;';
+    var epg = getChannelEPG(ch.name);
+    var contentHtml = '';
 
-      var epg = getChannelEPG(ch.name);
-      var contentHtml = '';
+    if (epg && epg.current && epg.current.title) {
+      contentHtml = '<div class="ch-name-orange">' + ch.name + '</div>' +
+        '<div class="ch-program-gray">' + epg.current.title + '</div>' +
+        '<div class="ch-timeline-row">' +
+          '<span class="ch-time-text">' + epg.current.startTimeStr + '</span>' +
+          '<div class="ch-timeline-bar-bg"><div class="ch-timeline-bar-fill" style="width:' + epg.current.progressPercent + '%;"></div></div>' +
+          '<span class="ch-time-text">' + epg.current.stopTimeStr + '</span>' +
+        '</div>';
+    } else if (!epgReady) {
+      contentHtml = '<div class="ch-name-orange">' + ch.name + '</div>' +
+        '<div class="skeleton-box skeleton-title"></div>' +
+        '<div class="skeleton-box skeleton-timeline"></div>';
+    } else {
+      contentHtml = '<div class="ch-name-plain">' + ch.name + '</div>';
+    }
 
-      if (epg && epg.current && epg.current.title) {
-        contentHtml = '<div class="ch-name-orange">' + ch.name + '</div>' +
-          '<div class="ch-program-gray">' + epg.current.title + '</div>' +
-          '<div class="ch-timeline-row">' +
-            '<span class="ch-time-text">' + epg.current.startTimeStr + '</span>' +
-            '<div class="ch-timeline-bar-bg"><div class="ch-timeline-bar-fill" style="width:' + epg.current.progressPercent + '%;"></div></div>' +
-            '<span class="ch-time-text">' + epg.current.stopTimeStr + '</span>' +
-          '</div>';
-      } else if (!epgReady) {
-        contentHtml = '<div class="ch-name-orange">' + ch.name + '</div>' +
-          '<div class="skeleton-box skeleton-title"></div>' +
-          '<div class="skeleton-box skeleton-timeline"></div>';
-      } else {
-        contentHtml = '<div class="ch-name-plain">' + ch.name + '</div>';
-      }
-
-      row.innerHTML = '<div class="ch-logo-container">' +
-          logoImgHtml +
-          '<div class="ch-logo-fallback" style="' + fallbackStyle + '">' + DEFAULT_TV_ICON_SVG + '</div>' +
-        '</div>' +
-        '<div class="ch-content-col">' + contentHtml + '</div>';
-
-      row.onclick = function(e) {
-        e.stopPropagation();
-        currentChannelIndex = idx;
-        updateChannelFocusVisual();
-        if (onPlayChannelCallback) {
-          onPlayChannelCallback(ch);
-        }
-      };
-
-      list.appendChild(row);
-    })(i);
+    htmlBuffer += '<div class="channel-row-item' + (isFoc ? ' focused' : '') + '" data-index="' + i + '">' +
+      '<div class="ch-logo-container">' +
+        logoImgHtml +
+        '<div class="ch-logo-fallback" style="' + fallbackStyle + '">' + DEFAULT_TV_ICON_SVG + '</div>' +
+      '</div>' +
+      '<div class="ch-content-col">' + contentHtml + '</div>' +
+    '</div>';
   }
 
-  if (lastFocusedItem) safeScrollIntoView(lastFocusedItem);
+  list.innerHTML = htmlBuffer;
+
+  // Gán sự kiện click nhanh
+  var children = list.children;
+  for (var j = 0; j < children.length; j++) {
+    (function(itemIdx) {
+      children[itemIdx].onclick = function(e) {
+        e.stopPropagation();
+        currentChannelIndex = itemIdx;
+        isSearchBoxActive = false;
+        updateSearchBoxFocusVisual();
+        updateChannelFocusVisual();
+        if (onPlayChannelCallback && channels[itemIdx]) {
+          onPlayChannelCallback(channels[itemIdx]);
+        }
+      };
+    })(j);
+  }
+
+  if (!isSearchBoxActive && children[currentChannelIndex]) {
+    lastFocusedItem = children[currentChannelIndex];
+    safeScrollIntoView(lastFocusedItem);
+  }
 }

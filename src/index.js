@@ -27,9 +27,12 @@ import {
   setCurrentChannelIndex, 
   getCurrentSelectedChannel, 
   updateWindowsClock,
-  isSearchFocused,
-  blurSearchInput,
-  focusSearchInput,
+  isSearchBoxFocused,
+  focusSearchBox,
+  blurSearchBox,
+  isSearchEditing,
+  startSearchEditing,
+  stopSearchEditing,
   clearSearch,
   getSearchQuery
 } from './drawer.js';
@@ -38,7 +41,7 @@ import { initPlayer, playStream, stopStream, setStatsCallback, setPlaybackErrorC
 import { loadEPG } from './epg.js';
 import { TV_KEYS, registerTizenKeys } from './remote.js';
 
-var APP_VERSION = 'v2.0';
+var APP_VERSION = 'v2.1';
 
 var allChannels = [];
 var currentPlayingChannel = null;
@@ -221,7 +224,7 @@ function openDrawer() {
 
 function closeDrawer() {
   isDrawerOpen = false;
-  blurSearchInput();
+  blurSearchBox();
   var drawer = document.getElementById('tivimate-drawer');
   var video = document.getElementById('video-screen');
   var osdBanner = document.getElementById('dl-osd-banner');
@@ -275,7 +278,7 @@ function handleKeyDown(e) {
   var navKeys = [TV_KEYS.UP, TV_KEYS.DOWN, TV_KEYS.LEFT, TV_KEYS.RIGHT, 8, 27, TV_KEYS.RETURN, TV_KEYS.BACK_PC, TV_KEYS.INFO, TV_KEYS.PLAY, TV_KEYS.PAUSE, TV_KEYS.PLAY_PAUSE];
 
   if (navKeys.indexOf(key) !== -1) {
-    if (!isSearchFocused() || key !== 8) {
+    if (!isSearchEditing() || key !== 8) {
       e.preventDefault();
     }
   }
@@ -374,14 +377,11 @@ function handleKeyDown(e) {
     return;
   }
 
-  // 3. KHI MENU ĐANG MỞ
-  if (isSearchFocused()) {
-    if (key === TV_KEYS.DOWN) {
-      blurSearchInput();
-      return;
-    }
-    if (key === TV_KEYS.ENTER) {
-      blurSearchInput();
+  // 3. KHI ĐANG TRONG TRẠNG THÁI GÕ BÀN PHÍM ẢO
+  if (isSearchEditing()) {
+    if (key === TV_KEYS.DOWN || key === TV_KEYS.ENTER) {
+      stopSearchEditing();
+      blurSearchBox();
       var ch = getCurrentSelectedChannel();
       if (ch) playSelectedChannel(ch);
       return;
@@ -390,7 +390,8 @@ function handleKeyDown(e) {
       if (getSearchQuery()) {
         clearSearch();
       } else {
-        blurSearchInput();
+        stopSearchEditing();
+        blurSearchBox();
         closeDrawer();
       }
       return;
@@ -398,6 +399,37 @@ function handleKeyDown(e) {
     return;
   }
 
+  // 4. KHI ĐANG FOCUS VIỀN SÁNG VÀO Ô TÌM KIẾM (CHƯA GÕ PHÍM)
+  if (isSearchBoxFocused()) {
+    if (key === TV_KEYS.ENTER) {
+      startSearchEditing(); // Người dùng ấn OK -> Mới mở bàn phím ảo
+      return;
+    }
+    if (key === TV_KEYS.DOWN) {
+      nextChannel(); // Ấn xuống -> Trở lại kênh đầu tiên
+      return;
+    }
+    if (key === TV_KEYS.LEFT) {
+      prevCategory();
+      return;
+    }
+    if (key === TV_KEYS.RIGHT) {
+      nextCategory();
+      return;
+    }
+    if (key === TV_KEYS.BACK_PC || key === TV_KEYS.RETURN || key === 27 || key === 8) {
+      if (getSearchQuery()) {
+        clearSearch();
+      } else {
+        blurSearchBox();
+        closeDrawer();
+      }
+      return;
+    }
+    return;
+  }
+
+  // 5. KHI MENU DANH SÁCH KÊNH ĐANG HOẠT ĐỘNG
   switch (key) {
     case TV_KEYS.UP:
       prevChannel();

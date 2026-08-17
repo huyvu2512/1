@@ -2,7 +2,6 @@ var shakaModule = null;
 var playerInstance = null;
 var currentChannelData = null;
 var currentVideoElement = null;
-var liveSyncInterval = null;
 var onMediaStatsChangedCb = null;
 var onPlaybackErrorCb = null;
 var isSwitchingBackup = false;
@@ -169,19 +168,33 @@ export function initPlayer(videoElement) {
         if (sh.Player && sh.Player.isBrowserSupported && sh.Player.isBrowserSupported()) {
           playerInstance = new sh.Player(videoElement);
 
+          // Cấu hình chống đứng hình (buffer 15s + an toàn 8s)
           playerInstance.configure({
+            preferredAudioLanguage: 'vie',
+            preferredAudioChannelCount: 2,
             abr: {
               enabled: true,
-              defaultBandwidthEstimate: 3000000
+              defaultBandwidthEstimate: 1500000,
+              switchInterval: 10
             },
             streaming: {
-              bufferingGoal: 10,
-              rebufferingGoal: 2,
-              bufferBehind: 15,
+              bufferingGoal: 15,          // Buffer 15s để không bị giật lag
+              rebufferingGoal: 3,         // Chờ 3s trước khi tiếp tục để ổn định
+              bufferBehind: 30,
+              safeSeekOffset: 8,          // Luôn cách live edge 8s an toàn
+              jumpLargeGaps: true,        // Tự động bỏ qua phân đoạn lỗi
+              stallEnabled: true,
+              stallThreshold: 1.5,
+              stallSkip: 0.5,
               retryParameters: {
-                maxAttempts: 3,
+                maxAttempts: 4,
                 baseDelay: 500,
                 backoffFactor: 1.5
+              }
+            },
+            manifest: {
+              dash: {
+                ignoreMinBufferTime: true
               }
             }
           });
@@ -265,7 +278,11 @@ function playCurrentChannelInternal() {
   var url = currentChannelData.url;
   var isDrm = !!currentChannelData.licenseKey || (url.indexOf('.mpd') !== -1);
 
-  // 1. Nếu có Shaka Player và luồng là DRM MPEG-DASH hoặc Shaka khả dụng:
+  // Đảm bảo bật âm thanh
+  currentVideoElement.muted = false;
+  currentVideoElement.volume = 1.0;
+
+  // 1. Nếu có Shaka Player:
   if (playerInstance) {
     try {
       playerInstance.unload().catch(function() {});
@@ -282,13 +299,35 @@ function playCurrentChannelInternal() {
 
       playerInstance.configure({
         drm: drmConfig,
+        preferredAudioLanguage: 'vie',
+        preferredAudioChannelCount: 2,
         abr: { enabled: true }
       });
 
       playerInstance.load(url).then(function() {
+        if (currentVideoElement) {
+          currentVideoElement.muted = false;
+          currentVideoElement.volume = 1.0;
+        }
+
         var playPromise = currentVideoElement.play();
         if (playPromise && typeof playPromise.then === 'function') {
-          playPromise.catch(function() {});
+          playPromise.catch(function(err) {
+            console.warn('[Player] Autoplay âm thanh thất bại, thử muted:', err);
+            currentVideoElement.muted = true;
+            currentVideoElement.play().then(function() {
+              function unmute() {
+                if (currentVideoElement) {
+                  currentVideoElement.muted = false;
+                  currentVideoElement.volume = 1.0;
+                }
+                window.removeEventListener('keydown', unmute);
+                window.removeEventListener('click', unmute);
+              }
+              window.addEventListener('keydown', unmute, { once: true });
+              window.addEventListener('click', unmute, { once: true });
+            }).catch(function() {});
+          });
         }
         if (onMediaStatsChangedCb) {
           setTimeout(function() { onMediaStatsChangedCb(getRealMediaStats()); }, 500);
@@ -322,7 +361,10 @@ function playWithNativeVideo(streamUrl) {
     currentVideoElement.removeAttribute('src');
     currentVideoElement.load();
 
+    currentVideoElement.muted = false;
+    currentVideoElement.volume = 1.0;
     currentVideoElement.src = streamUrl;
+
     var playPromise = currentVideoElement.play();
     if (playPromise && typeof playPromise.then === 'function') {
       playPromise.then(function() {}).catch(function(err) {
@@ -330,7 +372,10 @@ function playWithNativeVideo(streamUrl) {
         currentVideoElement.muted = true;
         currentVideoElement.play().then(function() {
           function unmute() {
-            if (currentVideoElement) currentVideoElement.muted = false;
+            if (currentVideoElement) {
+              currentVideoElement.muted = false;
+              currentVideoElement.volume = 1.0;
+            }
             window.removeEventListener('keydown', unmute);
             window.removeEventListener('click', unmute);
           }
