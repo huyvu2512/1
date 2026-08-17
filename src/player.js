@@ -36,6 +36,20 @@ export function setPlaybackErrorCallback(cb) {
 export function getRealMediaStats() {
   if (!currentVideoElement) return null;
   try {
+    var isRadio = currentChannelData && currentChannelData.group && 
+      (currentChannelData.group.toLowerCase().indexOf('radio') !== -1 || currentChannelData.name.toLowerCase().indexOf('vov') !== -1);
+
+    if (isRadio || (!currentVideoElement.videoWidth && currentVideoElement.readyState >= 1)) {
+      return {
+        width: 0,
+        height: 0,
+        fps: 'Radio',
+        bitrate: '128 kbps',
+        bandwidth: '128 kbps',
+        isAudioOnly: true
+      };
+    }
+
     var width = currentVideoElement.videoWidth || 1920;
     var height = currentVideoElement.videoHeight || 1080;
     var fps = 25.0;
@@ -66,7 +80,8 @@ export function getRealMediaStats() {
       height: height,
       fps: fpsStr,
       bitrate: bitrateMbps + ' Mbps',
-      bandwidth: bitrateMbps + ' Mbps'
+      bandwidth: bitrateMbps + ' Mbps',
+      isAudioOnly: false
     };
   } catch (e) {
     return null;
@@ -313,9 +328,16 @@ function playCurrentChannelInternal() {
 
   var url = currentChannelData.url;
   var isDrm = !!currentChannelData.licenseKey || (url.indexOf('.mpd') !== -1);
+  var isRawAudio = url.indexOf('.mp3') !== -1 || url.indexOf('.aac') !== -1 || url.indexOf('.ogg') !== -1 || url.indexOf(';stream') !== -1;
 
   currentVideoElement.muted = false;
   currentVideoElement.volume = 1.0;
+
+  // Nếu là raw audio stream (mp3, aac, shoutcast): dùng trực tiếp Native Engine
+  if (isRawAudio) {
+    playWithNativeVideo(url);
+    return;
+  }
 
   // 1. Nếu có Shaka Player:
   if (playerInstance) {

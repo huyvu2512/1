@@ -77,6 +77,18 @@ function setupDOM() {
 
   app.innerHTML = 
     '<video id="video-screen" class="pip-right" autoplay playsinline></video>' +
+    '<div id="radio-visualizer-layer" class="pip-right">' +
+      '<div class="radio-pulse-circle" id="radio-pulse-box">' +
+        '<img id="radio-layer-logo" class="radio-logo-center" src="" alt="Radio" onerror="this.style.display=\'none\';" />' +
+      '</div>' +
+      '<div id="radio-layer-title" class="radio-title-text">Kênh Radio</div>' +
+      '<div class="radio-subtitle-text">' +
+        '<span>Đang phát thanh trực tuyến</span>' +
+        '<div class="radio-wave-bars">' +
+          '<div class="radio-wave-bar"></div><div class="radio-wave-bar"></div><div class="radio-wave-bar"></div><div class="radio-wave-bar"></div><div class="radio-wave-bar"></div>' +
+        '</div>' +
+      '</div>' +
+    '</div>' +
     '<div id="center-state-layer" class="pip-right"><div class="center-state-circle" id="center-state-icon"></div></div>' +
     '<div id="video-spinner-layer" class="pip-right"><div class="white-video-spinner"></div></div>' +
     '<div id="video-error-layer" class="pip-right">' +
@@ -197,10 +209,30 @@ function playSelectedChannel(ch) {
   showVideoSpinner();
   updateOsdInfo(ch, isDrawerOpen);
 
+  var isRadio = ch.group && (ch.group.toLowerCase().indexOf('radio') !== -1 || ch.name.toLowerCase().indexOf('vov') !== -1);
+  var radioLayer = document.getElementById('radio-visualizer-layer');
+  var radioLogo = document.getElementById('radio-layer-logo');
+  var radioTitle = document.getElementById('radio-layer-title');
+
+  if (isRadio && radioLayer) {
+    if (radioTitle) radioTitle.innerText = ch.name;
+    if (radioLogo) {
+      if (ch.logo) {
+        radioLogo.src = ch.logo;
+        radioLogo.style.display = 'block';
+      } else {
+        radioLogo.style.display = 'none';
+      }
+    }
+    radioLayer.classList.add('active');
+  } else if (radioLayer) {
+    radioLayer.classList.remove('active');
+  }
+
   if (playbackTimeout) clearTimeout(playbackTimeout);
   playbackTimeout = setTimeout(function() {
     var video = document.getElementById('video-screen');
-    if (!video || video.paused || video.readyState < 2) {
+    if (!video || video.paused || (video.readyState < 1 && video.currentTime === 0)) {
       if (ch.sources && ch.sources.length > 1 && (ch.activeSourceIndex || 0) + 1 < ch.sources.length) {
         handleStreamFailure(new Error('Timeout'));
       } else {
@@ -216,6 +248,7 @@ function openDrawer() {
   isDrawerOpen = true;
   var drawer = document.getElementById('tivimate-drawer');
   var video = document.getElementById('video-screen');
+  var radioLayer = document.getElementById('radio-visualizer-layer');
   var osdBanner = document.getElementById('dl-osd-banner');
   var centerLayer = document.getElementById('center-state-layer');
   var spinner = document.getElementById('video-spinner-layer');
@@ -223,6 +256,7 @@ function openDrawer() {
 
   if (drawer) drawer.classList.add('open');
   if (video) video.classList.add('pip-right');
+  if (radioLayer) radioLayer.classList.add('pip-right');
   if (osdBanner) osdBanner.classList.add('pip-right');
   if (centerLayer) centerLayer.classList.add('pip-right');
   if (spinner) spinner.classList.add('pip-right');
@@ -240,6 +274,7 @@ function closeDrawer() {
   blurSearchBox();
   var drawer = document.getElementById('tivimate-drawer');
   var video = document.getElementById('video-screen');
+  var radioLayer = document.getElementById('radio-visualizer-layer');
   var osdBanner = document.getElementById('dl-osd-banner');
   var centerLayer = document.getElementById('center-state-layer');
   var spinner = document.getElementById('video-spinner-layer');
@@ -247,6 +282,7 @@ function closeDrawer() {
 
   if (drawer) drawer.classList.remove('open');
   if (video) video.classList.remove('pip-right');
+  if (radioLayer) radioLayer.classList.remove('pip-right');
   if (osdBanner) osdBanner.classList.remove('pip-right');
   if (centerLayer) centerLayer.classList.remove('pip-right');
   if (spinner) spinner.classList.remove('pip-right');
@@ -512,6 +548,11 @@ function startApplication() {
     video.addEventListener('waiting', function() { showVideoSpinner(); });
     video.addEventListener('seeking', function() { showVideoSpinner(); });
     video.addEventListener('loadstart', function() { showVideoSpinner(); });
+    video.addEventListener('play', function() {
+      if (playbackTimeout) clearTimeout(playbackTimeout);
+      hidePlaybackError();
+      hideVideoSpinner();
+    });
     video.addEventListener('playing', function() {
       if (playbackTimeout) clearTimeout(playbackTimeout);
       hidePlaybackError();
@@ -522,8 +563,13 @@ function startApplication() {
       hidePlaybackError();
       hideVideoSpinner();
     });
+    video.addEventListener('loadeddata', function() {
+      if (playbackTimeout) clearTimeout(playbackTimeout);
+      hidePlaybackError();
+      hideVideoSpinner();
+    });
     video.addEventListener('timeupdate', function() {
-      if (video.currentTime > 0.1) {
+      if (video.currentTime > 0.05) {
         if (playbackTimeout) clearTimeout(playbackTimeout);
         hidePlaybackError();
         hideVideoSpinner();

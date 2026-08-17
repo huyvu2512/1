@@ -100,10 +100,20 @@ export function updateOsdInfo(ch, isDrawerOpen) {
       : '';
   }
 
+  var isRadio = ch.group && (ch.group.toLowerCase().indexOf('radio') !== -1 || ch.name.toLowerCase().indexOf('vov') !== -1);
   var epgReady = isEpgReady();
   var epg = getChannelEPG(ch.name);
 
-  if (!epgReady) {
+  if (isRadio) {
+    if (progNameEl) {
+      progNameEl.style.display = 'block';
+      progNameEl.innerText = 'Kênh phát thanh Radio trực tuyến';
+    }
+    if (timelineRowEl) {
+      timelineRowEl.style.visibility = 'hidden';
+      timelineRowEl.style.display = 'flex';
+    }
+  } else if (!epgReady) {
     if (progNameEl) {
       progNameEl.style.display = 'block';
       progNameEl.innerHTML = '<div class="skeleton-box skeleton-title" style="width: 140px; height: 12px; margin: 2px 0;"></div>';
@@ -167,6 +177,10 @@ export function updateLiveVideoSpecs(incomingStats) {
   if (!specsEl) return;
   var stats = incomingStats || getRealMediaStats();
   if (stats) {
+    if (stats.isAudioOnly || stats.fps === 'Radio' || stats.width === 0) {
+      specsEl.innerText = 'Radio Live Stream | Stereo 128 kbps';
+      return;
+    }
     var fpsVal = stats.fps;
     var fpsStr = '25.0';
     if (typeof fpsVal === 'number') {

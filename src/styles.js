@@ -36,6 +36,47 @@ export var globalStyles = '\
       width: 68vw !important;\
       height: 100vh !important;\
     }\
+    #radio-visualizer-layer {\
+      position: absolute;\
+      top: 0; left: 0;\
+      width: 100vw; height: 100vh;\
+      display: none;\
+      flex-direction: column;\
+      align-items: center;\
+      justify-content: center;\
+      background: radial-gradient(circle at center, #1e293b 0%, #0b0f19 100%);\
+      z-index: 3;\
+      pointer-events: none;\
+      transition: width 0.25s cubic-bezier(0.2, 0.9, 0.3, 1), left 0.25s cubic-bezier(0.2, 0.9, 0.3, 1);\
+    }\
+    #radio-visualizer-layer.active { display: flex !important; }\
+    #radio-visualizer-layer.pip-right { left: 32vw !important; width: 68vw !important; }\
+    .radio-pulse-circle {\
+      width: 160px; height: 160px;\
+      border-radius: 50%;\
+      background: rgba(251, 146, 60, 0.12);\
+      border: 3px solid rgba(251, 146, 60, 0.45);\
+      display: flex; align-items: center; justify-content: center;\
+      animation: radioPulse 2.2s infinite ease-in-out;\
+      margin-bottom: 24px;\
+      overflow: hidden;\
+      padding: 16px;\
+    }\
+    @keyframes radioPulse {\
+      0%, 100% { transform: scale(1); box-shadow: 0 0 25px rgba(251, 146, 60, 0.2); }\
+      50% { transform: scale(1.06); box-shadow: 0 0 50px rgba(251, 146, 60, 0.5); }\
+    }\
+    .radio-logo-center { max-width: 100%; max-height: 100%; object-fit: contain; }\
+    .radio-title-text { font-size: 32px; font-weight: 900; color: #ffffff; margin-bottom: 12px; letter-spacing: -0.3px; }\
+    .radio-subtitle-text { font-size: 18px; font-weight: 700; color: #fb923c; display: flex; align-items: center; gap: 10px; }\
+    .radio-wave-bars { display: flex; align-items: flex-end; gap: 4px; height: 20px; }\
+    .radio-wave-bar { width: 4px; background: #fb923c; border-radius: 2px; animation: waveAnim 0.9s ease-in-out infinite alternate; }\
+    .radio-wave-bar:nth-child(1) { height: 8px; animation-delay: 0.1s; }\
+    .radio-wave-bar:nth-child(2) { height: 20px; animation-delay: 0.3s; }\
+    .radio-wave-bar:nth-child(3) { height: 12px; animation-delay: 0.2s; }\
+    .radio-wave-bar:nth-child(4) { height: 22px; animation-delay: 0.4s; }\
+    .radio-wave-bar:nth-child(5) { height: 10px; animation-delay: 0.15s; }\
+    @keyframes waveAnim { 0% { height: 5px; } 100% { height: 22px; } }\
     #center-state-layer {\
       position: absolute;\
       top: 0; left: 0;\

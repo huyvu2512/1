@@ -108,15 +108,6 @@ export function cleanGroupName(rawGroup) {
   return grp || 'Kênh Khác';
 }
 
-/**
- * Thứ tự ưu tiên nhóm kênh:
- * 1. Các nhóm có chữ VTV lên đầu (VTV -> VTVcab -> VTV...)
- * 2. HTV (HTV, HTVC...)
- * 3. SCTV
- * 4. Các nhóm Sự Kiện (Sự Kiện TV360, Sự Kiện VTVPrime... giữ riêng)
- * 5. THỂ THAO (THỂ THAO QUỐC TẾ, Thể Thao, K+...)
- * 6. Các nhóm còn lại
- */
 export function getCategoryPriority(catName) {
   var norm = removeVietnameseTones((catName || '').toLowerCase()).trim();
 
@@ -242,13 +233,65 @@ export function getFallbackChannelLogo(name, tvgId) {
     'vtc12': LOGO_BASE + 'VTC12.png',
     'vtc13': LOGO_BASE + 'VTC13.png',
     'vtc14': LOGO_BASE + 'VTC14.png',
-    'vtc16': LOGO_BASE + 'VTC16.png'
+    'vtc16': LOGO_BASE + 'VTC16.png',
+    'vov1': 'https://admin.vov.gov.vn/UploadFolder/KhoTin/Images/UploadFolder/VOVVN/Images/sites/default/files/2024-02/vov1.jpg',
+    'vov2': 'https://vov2.vov.vn/themes/custom/vov_news/logo.png',
+    'vov3': 'https://vov3.vov.vn/sites/default/files/styles/front_medium/public/2021-12/Logo%20VOV3%20800x600%20edit.jpg',
+    'vov5': 'https://foxxradio.com/upload/vi/1671788035.png.webp',
+    'vovgiaothong': 'https://foxxradio.com/upload/vi/1671787624.png.webp'
   };
 
   for (var key in MAP) {
     if (s.indexOf(key) !== -1) return MAP[key];
   }
   return '';
+}
+
+// Nguồn phát trực tiếp Radio chất lượng cao chính thức
+var RADIO_DIRECT_SOURCES = {
+  'vov1': [
+    'https://str.vov.gov.vn/vovlive/vov1vov5Vietnamese.sdp_aac/playlist.m3u8'
+  ],
+  'vov2': [
+    'https://audio-lss.vov.vn/live/vov2.m3u8',
+    'https://str.vov.gov.vn/vovlive/vov2.sdp_aac/playlist.m3u8'
+  ],
+  'vov3': [
+    'https://str.vov.gov.vn/vovlive/vov3.sdp_aac/playlist.m3u8',
+    'https://audio-lss.vov.vn/han/live/vov3/audio/haudio-eng.m3u8'
+  ],
+  'vov4': [
+    'https://stream.vovmedia.vn/vov4db',
+    'https://stream.vovmedia.vn/vov4tn'
+  ],
+  'vov5': [
+    'https://str.vov.gov.vn/vovlive/vov5.sdp_aac/playlist.m3u8',
+    'https://stream.vovmedia.vn/vov5'
+  ],
+  'vovgiaothonghanoi': [
+    'https://play.vovgiaothong.vn/live/gthn/playlist.m3u8',
+    'https://str.vov.gov.vn/vovlive/vovGTHN.sdp_aac/chunklist_w601606653.m3u8'
+  ],
+  'vovgiaothonghochiminh': [
+    'https://play.vovgiaothong.vn/live/gthcm/playlist.m3u8',
+    'https://str.vov.gov.vn/vovlive/vovGTHCM.sdp_aac/chunklist_w1213978008.m3u8'
+  ],
+  'vovgtmekong': [
+    'https://stream.vovmedia.vn/vovmekong'
+  ]
+};
+
+function getRadioDirectSources(chName) {
+  var s = removeVietnameseTones((chName || '').toLowerCase()).replace(/[^a-z0-9]/g, '');
+  if (s === 'vov1') return RADIO_DIRECT_SOURCES.vov1;
+  if (s === 'vov2') return RADIO_DIRECT_SOURCES.vov2;
+  if (s === 'vov3') return RADIO_DIRECT_SOURCES.vov3;
+  if (s === 'vov4') return RADIO_DIRECT_SOURCES.vov4;
+  if (s === 'vov5') return RADIO_DIRECT_SOURCES.vov5;
+  if (s.indexOf('vovgiaothonghanoi') !== -1 || s.indexOf('vovgthn') !== -1) return RADIO_DIRECT_SOURCES.vovgiaothonghanoi;
+  if (s.indexOf('vovgiaothonghochiminh') !== -1 || s.indexOf('vovgthcm') !== -1) return RADIO_DIRECT_SOURCES.vovgiaothonghochiminh;
+  if (s.indexOf('mekong') !== -1) return RADIO_DIRECT_SOURCES.vovgtmekong;
+  return null;
 }
 
 export function loadAndMergePlaylists(callback) {
@@ -309,6 +352,23 @@ export function loadAndMergePlaylists(callback) {
               ch.sources = [streamSource];
               ch.activeSourceIndex = 0;
               ch.logo = validLogo || getFallbackChannelLogo(ch.name, ch.id);
+
+              // Tự động bổ sung nguồn Radio chính thức nếu là kênh Radio
+              var radioLinks = getRadioDirectSources(ch.name);
+              if (radioLinks && radioLinks.length > 0) {
+                var newSources = [];
+                for (var r = 0; r < radioLinks.length; r++) {
+                  newSources.push({
+                    sourceName: 'Radio Live',
+                    url: radioLinks[r],
+                    licenseKey: null,
+                    userAgent: null
+                  });
+                }
+                ch.sources = newSources.concat(ch.sources);
+                ch.url = ch.sources[0].url;
+              }
+
               mergedObj[uniqueKey] = ch;
               mergedList.push(ch);
             } 
