@@ -38,7 +38,7 @@ import { initPlayer, playStream, stopStream, setStatsCallback, setPlaybackErrorC
 import { loadEPG } from './epg.js';
 import { TV_KEYS, registerTizenKeys } from './remote.js';
 
-const APP_VERSION = 'v1.2.1 (Tizen 3+)';
+const APP_VERSION = 'v1.2.2 (OK)';
 
 let allChannels = [];
 let currentPlayingChannel = null;
