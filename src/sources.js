@@ -1,14 +1,14 @@
 import { parseM3U } from './parser.js';
 
-export const SOURCE_1_URL = 'https://raw.githubusercontent.com/hieu-TQS/error/refs/heads/main/error.m3u'; // SuperOK VIP DRM (Nguồn 1 - Ưu tiên hàng đầu)
-export const SOURCE_2_URL = 'https://raw.githubusercontent.com/vuminhthanh12/vuminhthanh12/refs/heads/main/vmttv'; // VMT Thể Thao (Nguồn 2)
-export const SOURCE_3_URL = 'https://tv.vietanhtv.top/tv/'; // VietAnhTV DRM (Nguồn 3 - Bổ sung kênh thiếu)
+export var SOURCE_1_URL = 'https://raw.githubusercontent.com/hieu-TQS/error/refs/heads/main/error.m3u'; // SuperOK VIP DRM (Nguồn 1 - Ưu tiên hàng đầu)
+export var SOURCE_2_URL = 'https://raw.githubusercontent.com/vuminhthanh12/vuminhthanh12/refs/heads/main/vmttv'; // VMT Thể Thao (Nguồn 2)
+export var SOURCE_3_URL = 'https://tv.vietanhtv.top/tv/'; // VietAnhTV DRM (Nguồn 3 - Bổ sung kênh thiếu)
 
 export function xhrGet(url, callback) {
-  let done = false;
-  const xhr = new XMLHttpRequest();
+  var done = false;
+  var xhr = new XMLHttpRequest();
   xhr.open('GET', url, true);
-  xhr.timeout = 10000; // Timeout 10s cho mỗi nguồn playlist
+  xhr.timeout = 10000;
 
   xhr.onreadystatechange = function () {
     if (xhr.readyState === 4 && !done) {
@@ -16,7 +16,7 @@ export function xhrGet(url, callback) {
       if (xhr.status >= 200 && xhr.status < 300) {
         callback(null, xhr.responseText);
       } else {
-        callback(new Error(`HTTP ${xhr.status}`), null);
+        callback(new Error('HTTP ' + xhr.status), null);
       }
     }
   };
@@ -46,214 +46,225 @@ export function xhrGet(url, callback) {
 }
 
 export function getFetchUrl(url) {
-  let cleanUrl = url.trim();
+  var cleanUrl = url.trim();
   if (cleanUrl.indexOf('tv.vietanhtv.top/tv') !== -1 && cleanUrl.slice(-1) !== '/') {
     cleanUrl += '/';
   }
-  const separator = cleanUrl.includes('?') ? '&' : '?';
-  return `${cleanUrl}${separator}_t=${Date.now()}`;
+  var separator = cleanUrl.indexOf('?') !== -1 ? '&' : '?';
+  return cleanUrl + separator + '_t=' + Date.now();
 }
 
+/**
+ * Loại bỏ triệt để emoji, ký tự đặc biệt thừa ở đầu và đuôi (như |, •, ●, ★, -, _, :, ~, v.v.)
+ */
 export function cleanTitle(str) {
   if (!str || typeof str !== 'string') return '';
-  return str
+  var s = str
     .replace(/[\uD800-\uDBFF][\uDC00-\uDFFF]/g, '')
     .replace(/[\u2600-\u27BF\u2300-\u23FF\u2B50\u200D\uFE0F]/g, '')
-    .replace(/^[\s\|\-\_\:\/\•\●\★\—\–\.\,]+|[\s\|\-\_\:\/\•\●\★\—\–\.\,]+$/g, '')
+    .replace(/[^\x00-\x7F\u00C0-\u1EF9]/g, ' ')
+    .replace(/^[\s\|\-\_\:\/\•\●\★\—\–\.\,\~\#\+\*\(\)\[\]\{\}\>\<\=\@\!]+/, '')
+    .replace(/[\s\|\-\_\:\/\•\●\★\—\–\.\,\~\#\+\*\(\)\[\]\{\}\>\<\=\@\!]+$/, '')
+    .replace(/\s+/g, ' ')
     .trim();
+  return s;
 }
 
-function removeVietnameseTones(str) {
-  str = str.replace(/à|á|ạ|ả|ã|â|ầ|ấ|ậ|ẩ|ẫ|ă|ằ|ắ|ặ|ẳ|ẵ/g, 'a');
-  str = str.replace(/è|é|ẹ|ẻ|ẽ|ê|ề|ế|ệ|ể|ễ/g, 'e');
-  str = str.replace(/ì|í|ị|ỉ|ĩ/g, 'i');
-  str = str.replace(/ò|ó|ọ|ỏ|õ|ô|ồ|ố|ộ|ổ|ỗ|ơ|ờ|ớ|ợ|ở|ỡ/g, 'o');
-  str = str.replace(/ù|ú|ụ|ủ|ũ|ư|ừ|ứ|ự|ử|ữ/g, 'u');
-  str = str.replace(/ỳ|ý|Ỵ|Ỷ|Ỹ/g, 'y');
-  str = str.replace(/đ/g, 'd');
-  str = str.replace(/À|Á|Ạ|Ả|Ã|Â|Ầ|Ấ|Ậ|Ẩ|Ẫ|Ă|Ằ|Ắ|Ặ|Ẳ|Ẵ/g, 'A');
-  str = str.replace(/È|É|Ẹ|Ẻ|Ẽ|Ê|Ề|Ế|Ệ|Ể|Ễ/g, 'E');
-  str = str.replace(/Ì|Í|Ị|Ỉ|Ĩ/g, 'I');
-  str = str.replace(/Ò|Ó|Ọ|Ỏ|Õ|Ô|Ồ|Ố|Ộ|Ổ|Ỗ|Ơ|Ờ|Ớ|Ợ|Ở|Ỡ/g, 'O');
-  str = str.replace(/Ù|Ú|Ụ|Ủ|Ũ|Ư|Ừ|Ứ|Ự|Ử|Ữ/g, 'U');
-  str = str.replace(/Ỳ|Ý|Ỵ|Ỷ|Ỹ/g, 'Y');
-  str = str.replace(/Đ/g, 'D');
-  return str;
+export function removeVietnameseTones(str) {
+  if (!str || typeof str !== 'string') return '';
+  var s = str;
+  s = s.replace(/à|á|ạ|ả|ã|â|ầ|ấ|ậ|ẩ|ẫ|ă|ằ|ắ|ặ|ẳ|ẵ/g, 'a');
+  s = s.replace(/è|é|ẹ|ẻ|ẽ|ê|ề|ế|ệ|ể|ễ/g, 'e');
+  s = s.replace(/ì|í|ị|ỉ|ĩ/g, 'i');
+  s = s.replace(/ò|ó|ọ|ỏ|õ|ô|ồ|ố|ộ|ổ|ỗ|ơ|ờ|ớ|ợ|ở|ỡ/g, 'o');
+  s = s.replace(/ù|ú|ụ|ủ|ũ|ư|ừ|ứ|ự|ử|ữ/g, 'u');
+  s = s.replace(/ỳ|ý|ỵ|ỷ|ỹ/g, 'y');
+  s = s.replace(/đ/g, 'd');
+  s = s.replace(/À|Á|Ạ|Ả|Ã|Â|Ầ|Ấ|Ậ|Ẩ|Ẫ|Ă|Ằ|Ắ|Ặ|Ẳ|Ẵ/g, 'A');
+  s = s.replace(/È|É|Ẹ|Ẻ|Ẽ|Ê|Ề|Ế|Ệ|Ể|Ễ/g, 'E');
+  s = s.replace(/Ì|Í|Ị|Ỉ|Ĩ/g, 'I');
+  s = s.replace(/Ò|Ó|Ọ|Ỏ|Õ|Ô|Ồ|Ố|Ộ|Ổ|Ỗ|Ơ|Ờ|Ớ|Ợ|Ở|Ỡ/g, 'O');
+  s = s.replace(/Ù|Ú|Ụ|Ủ|Ũ|Ư|Ừ|Ứ|Ự|Ử|Ữ/g, 'U');
+  s = s.replace(/Ỳ|Ý|Ỵ|Ỷ|Ỹ/g, 'Y');
+  s = s.replace(/Đ/g, 'D');
+  return s;
 }
 
 export function isBlockedChannelOrGroup(name, group) {
-  const n = removeVietnameseTones((name || '').toLowerCase());
-  const g = removeVietnameseTones((group || '').toLowerCase());
+  var check = ((name || '') + ' ' + (group || '')).toLowerCase();
+  var blockedWords = [
+    'nguoi lon', '18+', 'adult', 'xxx', 'sex', 'jav', 'hentai', 'porn', 'erotic', 'nsfw',
+    'chao mung', 'chào mừng', 'huong dan', 'hướng dẫn', 'nap tien', 'nạp tiền', 'gia han', 'gia hạn', 'lien he', 'liên hệ', 'zalo', 'tele'
+  ];
 
-  const blockedWords = ['update', 'du phong', 'backup', 'thong bao', 'huong dan', 'quang cao', 'nap tien', 'gia han'];
-  return blockedWords.some(w => n.includes(w) || g.includes(w));
+  for (var i = 0; i < blockedWords.length; i++) {
+    if (check.indexOf(blockedWords[i]) !== -1) return true;
+  }
+  return false;
+}
+
+export function cleanGroupName(rawGroup) {
+  var grp = cleanTitle(rawGroup || '').trim();
+  return grp || 'Kênh Khác';
 }
 
 /**
- * Chuẩn hóa tên danh mục đồng nhất 100%
+ * Thứ tự ưu tiên nhóm kênh:
+ * 1. Các nhóm có chữ VTV lên đầu (VTV -> VTVcab -> VTV...)
+ * 2. HTV (HTV, HTVC...)
+ * 3. SCTV
+ * 4. Các nhóm Sự Kiện (Sự Kiện TV360, Sự Kiện VTVPrime... giữ riêng)
+ * 5. THỂ THAO (THỂ THAO QUỐC TẾ, Thể Thao, K+...)
+ * 6. Các nhóm còn lại
  */
-export function standardizeCategory(cat) {
-  const cleaned = cleanTitle(cat);
-  const norm = removeVietnameseTones(cleaned.toLowerCase()).replace(/[\s\-_]/g, '');
+export function getCategoryPriority(catName) {
+  var norm = removeVietnameseTones((catName || '').toLowerCase()).trim();
 
-  if (norm.includes('vtv') || norm.includes('daiquocgia')) return 'VTV';
-  if (norm.includes('vtvcab') || norm.includes('onlive') || norm.includes('oncine')) return 'VTVcab';
-  if (norm.includes('htv') || norm.includes('htvc') || norm.includes('tphcm')) return 'HTV & HTVC';
-  if (norm.includes('sctv') || norm.includes('saigontourist')) return 'SCTV';
-  if (norm.includes('thethao') || norm.includes('sport') || norm.includes('kplus') || norm.includes('k+')) return 'Thể Thao & K+';
-  if (norm.includes('thvl') || norm.includes('vinhlong')) return 'Truyền hình Vĩnh Long';
-  if (norm.includes('phim') || norm.includes('movie') || norm.includes('cinema') || norm.includes('hbo')) return 'Phim Truyện';
-  if (norm.includes('thieunhi') || norm.includes('kids') || norm.includes('cartoon') || norm.includes('hoathinh')) return 'Thiếu Nhi';
-  if (norm.includes('tintuc') || norm.includes('news') || norm.includes('thoisu')) return 'Tin Tức & Thời Sự';
-  if (norm.includes('giaitri') || norm.includes('amnhac') || norm.includes('music') || norm.includes('show')) return 'Giải Trí & Âm Nhạc';
-  if (norm.includes('khoahoc') || norm.includes('khampha') || norm.includes('discovery') || norm.includes('natgeo')) return 'Khám Phá';
-  if (norm.includes('quocte') || norm.includes('international') || norm.includes('world')) return 'Kênh Quốc Tế';
-  if (norm.includes('diaphuong') || norm.includes('tinh') || norm.includes('local')) return 'Kênh Địa Phương';
+  // 1. Tất cả các nhóm có chữ VTV lên đầu tiên
+  if (norm === 'vtv' || norm === 'dai truyen hinh viet nam') return 10;
+  if (norm.startsWith('vtv') && (norm.indexOf('cab') !== -1 || norm.indexOf('vtvcab') !== -1)) return 11;
+  if (norm.indexOf('vtvcab') !== -1 || norm.indexOf('vtv cab') !== -1) return 11;
+  if (norm.startsWith('vtv')) return 12;
+  if (norm.indexOf('vtv') !== -1) return 13;
 
-  return 'Kênh Tổng Hợp';
+  // 2. HTV
+  if (norm === 'htv' || norm === 'htvc') return 20;
+  if (norm.startsWith('htv') || norm.indexOf('htv') !== -1) return 21;
+
+  // 3. SCTV
+  if (norm === 'sctv') return 30;
+  if (norm.startsWith('sctv') || norm.indexOf('sctv') !== -1) return 31;
+
+  // 4. Các nhóm Sự Kiện (Giữ riêng biệt từng nhóm)
+  if (norm.indexOf('su kien') !== -1 || norm.indexOf('event') !== -1 || norm.indexOf('truc tiep') !== -1) return 40;
+
+  // 5. THỂ THAO
+  if (norm.indexOf('the thao') !== -1 || norm.indexOf('sport') !== -1 || norm.indexOf('kplus') !== -1 || norm.indexOf('k+') !== -1) return 50;
+
+  // 6. Vĩnh Long
+  if (norm.indexOf('thvl') !== -1 || norm.indexOf('vinh long') !== -1) return 60;
+
+  // 7. Còn lại
+  return 100;
 }
 
-/**
- * Chuẩn hóa tên kênh để so sánh và gộp kênh trùng giữa 3 nguồn
- */
-export function normalizeName(name, tvgId) {
-  let str = (name || '') + ' ' + (tvgId || '');
-  str = cleanTitle(str);
-  let s = removeVietnameseTones(str.toLowerCase());
-
-  // Loại bỏ các từ khóa thừa
-  s = s.replace(/(fhd|uhd|4k|2k|hd|sd|50fps|60fps|hevc|h265|raw|tv|backup|du phong|vip|server\s*\d+|nguon\s*\d+)/g, '');
-  s = s.replace(/[^a-z0-9]/g, '').trim();
-
-  // Quy đổi bí danh (Alias mapping) cho toàn bộ các đài tỉnh
-  if (s.startsWith('vinhlong') || s.startsWith('thvl')) {
-    const num = s.match(/\d+/);
-    return num ? `thvl${num[0]}` : 'thvl1';
+export function getChannelUniqueKey(ch) {
+  if (ch.id && typeof ch.id === 'string' && ch.id.trim().length > 0) {
+    var rawId = ch.id.trim().toLowerCase();
+    var cleanId = removeVietnameseTones(rawId)
+      .replace(/(fhd|uhd|4k|2k|hd|sd|50fps|60fps|hevc|h265|raw)/g, '')
+      .replace(/[^a-z0-9]/g, '');
+    if (cleanId.length > 0) return 'id:' + cleanId;
   }
-  if (s.startsWith('hanoi') || s.startsWith('hn') || /^h\d+$/.test(s)) {
-    const num = s.match(/\d+/);
-    return num ? `hanoi${num[0]}` : 'hanoi1';
-  }
-  if (s.startsWith('danang') || s.startsWith('dnrt') || s.startsWith('dnang') || s.startsWith('dnrt1') || s.startsWith('dnrt2')) {
-    const num = s.match(/\d+/);
-    return num ? `danang${num[0]}` : 'danang1';
-  }
-  if (s.startsWith('dongnai') || s.startsWith('dnnrtv') || s.startsWith('dnrtv') || /^dn\d+$/.test(s) || s.startsWith('dn')) {
-    const num = s.match(/\d+/);
-    return num ? `dongnai${num[0]}` : 'dongnai1';
-  }
-  if (s.startsWith('dongthap') || s.startsWith('thdt') || s.startsWith('dthap')) {
-    const num = s.match(/\d+/);
-    return num ? `dongthap${num[0]}` : 'dongthap1';
-  }
-  if (s.startsWith('quangninh') || s.startsWith('qtv') || s.startsWith('qni')) {
-    const num = s.match(/\d+/);
-    return num ? `quangninh${num[0]}` : 'quangninh1';
-  }
-  if (s.startsWith('cantho') || s.startsWith('ctho')) {
-    const num = s.match(/\d+/);
-    return num ? `cantho${num[0]}` : 'cantho1';
-  }
-  if (s.startsWith('quangngai') || s.startsWith('qngtv') || s.startsWith('qng') || /^qn\d+$/.test(s)) {
-    const num = s.match(/\d+/);
-    return num ? `quangngai${num[0]}` : 'quangngai1';
-  }
-  if (s.startsWith('angiang') || /^atv\d+$/.test(s) || s.startsWith('atv')) {
-    const num = s.match(/\d+/);
-    return num ? `angiang${num[0]}` : 'angiang1';
-  }
-  if (s.startsWith('lamdong') || /^ltv\d+$/.test(s) || s.startsWith('ltv')) {
-    const num = s.match(/\d+/);
-    return num ? `lamdong${num[0]}` : 'lamdong1';
-  }
-  if (s.startsWith('haiphong') || s.startsWith('thp')) {
-    const num = s.match(/\d+/);
-    return num ? `haiphong${num[0]}` : 'haiphong1';
-  }
-  if (s.startsWith('tayninh') || s.startsWith('tayni') || s.startsWith('tn')) return 'tayninh';
-  if (s.startsWith('camau') || s.startsWith('ctv')) return 'camau';
-  if (s.startsWith('daklak') || s.startsWith('drt')) return 'daklak';
-  if (s.startsWith('gialai') || s.startsWith('gtv')) return 'gialai';
-  if (s.startsWith('hatinh') || s.startsWith('bht') || s.startsWith('bhttv')) return 'hatinh';
-  if (s.startsWith('hungyen') || s.startsWith('hy') || s.startsWith('hytv')) return 'hungyen';
-  if (s.startsWith('bacninh') || s.startsWith('bacn') || s.startsWith('btv')) return 'bacninh';
-  if (s.startsWith('langson') || s.startsWith('lstv')) return 'langson';
-  if (s.startsWith('laocai') || s.startsWith('thlc')) return 'laocai';
-  if (s.startsWith('nghean')) return 'nghean';
-  if (s.startsWith('phutho') || s.startsWith('ptv')) return 'phutho';
-  if (s.startsWith('quangtri') || s.startsWith('qttv')) return 'quangtri';
-  if (s.startsWith('thainguyen')) return 'thainguyen';
-  if (s.startsWith('tuyenquang') || s.startsWith('tuyenq') || s.startsWith('ttv')) return 'tuyenquang';
-  if (s.startsWith('dienbien') || s.startsWith('dtv')) return 'dienbien';
-  if (s.startsWith('thanhhoa')) return 'thanhhoa';
-  if (s.startsWith('ninhbinh')) return 'ninhbinh';
-  if (s.startsWith('caobang') || s.startsWith('crtv') || s.startsWith('rtv')) return 'caobang';
-  if (s.startsWith('sonla') || s.startsWith('stv')) return 'sonla';
-  if (s.startsWith('hue')) return 'hue';
-  if (s.startsWith('khanhhoa') || s.startsWith('ktv')) {
-    const num = s.match(/\d+/);
-    return num ? `khanhhoa${num[0]}` : 'khanhhoa';
-  }
-
-  // VTV
-  if (s.startsWith('vtv')) {
-    const num = s.match(/\d+/);
-    if (num) {
-      if (s.includes('tnb') || s.includes('taynam')) return `vtv${num[0]}tnb`;
-      if (s.includes('tn') || s.includes('taynguyen')) return `vtv${num[0]}tn`;
-      return `vtv${num[0]}`;
-    }
-  }
-
-  // HTV
-  if (s.startsWith('htv')) {
-    const num = s.match(/\d+/);
-    if (num) return `htv${num[0]}`;
-    if (s.includes('thethao')) return 'htvthethao';
-    if (s.includes('thuanviet')) return 'htvcthuanviet';
-    if (s.includes('giadinh')) return 'htvcgiadinh';
-    if (s.includes('phunu')) return 'htvcphunu';
-    if (s.includes('dulich')) return 'htvcdulich';
-    if (s.includes('canhac') || s.includes('music')) return 'htvccanhac';
-    if (s.includes('plus')) return 'htvcplus';
-    if (s.includes('phim') || s.includes('movies')) return 'htvcmovies';
-  }
-
-  // SCTV
-  if (s.startsWith('sctv')) {
-    const num = s.match(/\d+/);
-    if (num) return `sctv${num[0]}`;
-    if (s.includes('phim')) return 'sctvphim';
-  }
-
-  return s || 'channel';
+  var cleanN = removeVietnameseTones((ch.name || '').toLowerCase())
+    .replace(/(fhd|uhd|4k|2k|hd|sd|50fps|60fps|hevc|h265|raw)/g, '')
+    .replace(/[^a-z0-9]/g, '');
+  return 'name:' + (cleanN || 'channel');
 }
 
-/**
- * Định dạng tên hiển thị của kênh sạch đẹp, sang trọng
- */
 export function formatPrettyChannelName(rawName) {
-  let name = cleanTitle(rawName);
+  var name = cleanTitle(rawName);
   name = name.replace(/\s+(FHD|UHD|4K|2K|HD|SD|50fps|60fps|HEVC|H265|RAW)(\s+|$)/gi, ' ');
   name = name.replace(/^(Kênh|Kenh|Channel)\s+/i, '');
-  return name.trim();
+  return cleanTitle(name);
+}
+
+function isValidLogoUrl(url) {
+  if (!url || typeof url !== 'string') return false;
+  var u = url.trim().toLowerCase();
+  if (u.length === 0) return false;
+  if (u.indexOf('duckdns.org') !== -1) return false;
+  if (u.indexOf('vietanh18h1') !== -1) return false;
+  if (u.indexOf('http://') === 0 || u.indexOf('https://') === 0) return true;
+  return false;
+}
+
+export function getFallbackChannelLogo(name, tvgId) {
+  var s = removeVietnameseTones(((name || '') + ' ' + (tvgId || '')).toLowerCase()).replace(/[^a-z0-9]/g, '');
+  var LOGO_BASE = 'https://raw.githubusercontent.com/hieu-TQS/LOGO-IPTV/main/';
+
+  var MAP = {
+    'vtv1': LOGO_BASE + '1.png',
+    'vtv2': LOGO_BASE + '2.png',
+    'vtv3': LOGO_BASE + '3.png',
+    'vtv4': LOGO_BASE + '4.png',
+    'vtv5': LOGO_BASE + '5.png',
+    'vtv5tnb': LOGO_BASE + '5TNB.png',
+    'vtv5tn': LOGO_BASE + '5TN.png',
+    'vtv6': LOGO_BASE + '6.png',
+    'vtvcantho': LOGO_BASE + '6.png',
+    'vtv7': LOGO_BASE + '7.png',
+    'vtv8': LOGO_BASE + '8.png',
+    'vtv9': LOGO_BASE + '9.png',
+    'thvl1': LOGO_BASE + 'THVL1.png',
+    'thvl2': LOGO_BASE + 'THVL2.png',
+    'thvl3': LOGO_BASE + 'THVL3.png',
+    'thvl4': LOGO_BASE + 'THVL4.png',
+    'htv1': LOGO_BASE + 'HTV1.png',
+    'htv2': LOGO_BASE + 'HTV2.png',
+    'htv3': LOGO_BASE + 'HTV3.png',
+    'htv7': LOGO_BASE + 'HTV7.png',
+    'htv9': LOGO_BASE + 'HTV9.png',
+    'htvthethao': LOGO_BASE + 'HTVTHETHAO.png',
+    'sctv1': LOGO_BASE + 'SCTV1.png',
+    'sctv2': LOGO_BASE + 'SCTV2.png',
+    'sctv3': LOGO_BASE + 'SCTV3.png',
+    'sctv4': LOGO_BASE + 'SCTV4.png',
+    'sctv5': LOGO_BASE + 'SCTV5.png',
+    'sctv6': LOGO_BASE + 'SCTV6.png',
+    'sctv7': LOGO_BASE + 'SCTV7.png',
+    'sctv8': LOGO_BASE + 'SCTV8.png',
+    'sctv9': LOGO_BASE + 'SCTV9.png',
+    'sctv10': LOGO_BASE + 'SCTV10.png',
+    'sctv11': LOGO_BASE + 'SCTV11.png',
+    'sctv12': LOGO_BASE + 'SCTV12.png',
+    'sctv13': LOGO_BASE + 'SCTV13.png',
+    'sctv14': LOGO_BASE + 'SCTV14.png',
+    'sctv15': LOGO_BASE + 'SCTV15.png',
+    'sctv16': LOGO_BASE + 'SCTV16.png',
+    'sctv17': LOGO_BASE + 'SCTV17.png',
+    'sctv18': LOGO_BASE + 'SCTV18.png',
+    'sctv19': LOGO_BASE + 'SCTV19.png',
+    'sctv20': LOGO_BASE + 'SCTV20.png',
+    'sctv21': LOGO_BASE + 'SCTV21.png',
+    'sctv22': LOGO_BASE + 'SCTV22.png',
+    'vtc1': LOGO_BASE + 'VTC1.png',
+    'vtc2': LOGO_BASE + 'VTC2.png',
+    'vtc3': LOGO_BASE + 'VTC3.png',
+    'vtc4': LOGO_BASE + 'VTC4.png',
+    'vtc5': LOGO_BASE + 'VTC5.png',
+    'vtc6': LOGO_BASE + 'VTC6.png',
+    'vtc7': LOGO_BASE + 'VTC7.png',
+    'vtc8': LOGO_BASE + 'VTC8.png',
+    'vtc9': LOGO_BASE + 'VTC9.png',
+    'vtc10': LOGO_BASE + 'VTC10.png',
+    'vtc11': LOGO_BASE + 'VTC11.png',
+    'vtc12': LOGO_BASE + 'VTC12.png',
+    'vtc13': LOGO_BASE + 'VTC13.png',
+    'vtc14': LOGO_BASE + 'VTC14.png',
+    'vtc16': LOGO_BASE + 'VTC16.png'
+  };
+
+  for (var key in MAP) {
+    if (s.indexOf(key) !== -1) return MAP[key];
+  }
+  return '';
 }
 
 export function loadAndMergePlaylists(callback) {
-  // NGUYÊN TẮC: Nguồn 1 ưu tiên hàng đầu -> Nguồn 2 -> Nguồn 3 bổ sung kênh thiếu
-  const sources = [
+  var sources = [
     { url: SOURCE_1_URL, name: 'SuperOK' },
     { url: SOURCE_2_URL, name: 'VMT' },
     { url: SOURCE_3_URL, name: 'VietAnhTV' }
   ];
 
-  let completed = 0;
-  const parsedLists = [];
+  var completed = 0;
+  var parsedLists = [];
 
-  sources.forEach((srcObj, index) => {
-    xhrGet(getFetchUrl(srcObj.url), (err, text) => {
+  sources.forEach(function (srcObj, index) {
+    xhrGet(getFetchUrl(srcObj.url), function (err, text) {
       if (err) {
-        console.warn(`[Sources] Không thể tải ${srcObj.name}:`, err.message);
+        console.warn('[Sources] Không thể tải ' + srcObj.name + ':', err.message);
       }
       parsedLists[index] = {
         name: srcObj.name,
@@ -262,45 +273,48 @@ export function loadAndMergePlaylists(callback) {
       completed++;
 
       if (completed === sources.length) {
-        const mergedObj = {};
-        const mergedList = [];
+        var mergedObj = {};
+        var mergedList = [];
 
         // Duyệt tuần tự theo đúng thứ tự ưu tiên: Nguồn 1 -> Nguồn 2 -> Nguồn 3
-        for (let i = 0; i < parsedLists.length; i++) {
-          const srcData = parsedLists[i];
+        for (var i = 0; i < parsedLists.length; i++) {
+          var srcData = parsedLists[i];
           if (!srcData || !srcData.channels) continue;
 
-          for (let j = 0; j < srcData.channels.length; j++) {
-            const ch = srcData.channels[j];
+          for (var j = 0; j < srcData.channels.length; j++) {
+            var ch = srcData.channels[j];
             if (isBlockedChannelOrGroup(ch.name, ch.group)) {
               continue;
             }
 
-            const cleanGroup = standardizeCategory(ch.group);
-            const prettyName = formatPrettyChannelName(ch.name);
+            var groupName = cleanGroupName(ch.group);
+            var prettyName = formatPrettyChannelName(ch.name);
             ch.name = prettyName;
-            ch.group = cleanGroup;
+            ch.group = groupName;
 
-            const norm = normalizeName(ch.name, ch.id);
-            if (!norm) continue;
+            var uniqueKey = getChannelUniqueKey(ch);
+            if (!uniqueKey) continue;
 
-            const streamSource = {
+            var streamSource = {
               sourceName: srcData.name,
               url: ch.url,
               licenseKey: ch.licenseKey,
               userAgent: ch.userAgent
             };
 
+            var validLogo = isValidLogoUrl(ch.logo) ? ch.logo : '';
+
             // NẾU KÊNH CHƯA CÓ TRONG DANH SÁCH: THÊM MỚI VÀO
-            if (!mergedObj[norm]) {
+            if (!mergedObj[uniqueKey]) {
               ch.sources = [streamSource];
               ch.activeSourceIndex = 0;
-              mergedObj[norm] = ch;
+              ch.logo = validLogo || getFallbackChannelLogo(ch.name, ch.id);
+              mergedObj[uniqueKey] = ch;
               mergedList.push(ch);
             } 
-            // NẾU KÊNH ĐÃ CÓ: LƯU THÊM NGUỒN PHÁT DỰ PHÒNG
+            // NẾU KÊNH ĐÃ CÓ (TRÙNG tvg-id HOẶC TÊN): LƯU THÊM NGUỒN PHÁT DỰ PHÒNG & THỪA KẾ LOGO
             else {
-              const existing = mergedObj[norm];
+              var existing = mergedObj[uniqueKey];
               if (!existing.sources) {
                 existing.sources = [{
                   sourceName: 'Gốc',
@@ -309,32 +323,52 @@ export function loadAndMergePlaylists(callback) {
                   userAgent: existing.userAgent
                 }];
               }
-              const isDuplicateUrl = existing.sources.some(s => s.url === ch.url);
+              var isDuplicateUrl = existing.sources.some(function(s) { return s.url === ch.url; });
               if (!isDuplicateUrl) {
                 existing.sources.push(streamSource);
               }
-              if (!existing.logo && ch.logo) {
-                existing.logo = ch.logo;
+
+              // NẾU NGUỒN 1 KHÔNG CÓ LOGO (hoặc logo chết) -> THỪA KẾ LOGO TỪ NGUỒN 2, 3!
+              if (!isValidLogoUrl(existing.logo) && validLogo) {
+                existing.logo = validLogo;
               }
             }
           }
         }
 
-        const groupedChannels = {};
-        const categoryList = [];
-
-        for (let k = 0; k < mergedList.length; k++) {
-          const ch = mergedList[k];
-          const grp = ch.group || 'Khác';
-          if (!groupedChannels[grp]) {
-            groupedChannels[grp] = [];
-            categoryList.push(grp);
+        // Kiểm tra lượt cuối: Nếu kênh nào chưa có logo hợp lệ, gán từ kho Logo Fallback
+        for (var m = 0; m < mergedList.length; m++) {
+          if (!isValidLogoUrl(mergedList[m].logo)) {
+            mergedList[m].logo = getFallbackChannelLogo(mergedList[m].name, mergedList[m].id);
           }
-          groupedChannels[grp].push(ch);
         }
 
-        console.log(`[Sources] Đã gộp và lọc trùng hoàn toàn: ${mergedList.length} kênh duy nhất, ${categoryList.length} nhóm danh mục!`);
-        callback({ allChannels: mergedList, groupedChannels, categoryList });
+        var groupedChannels = {};
+        var rawCategoryOrder = [];
+
+        for (var k = 0; k < mergedList.length; k++) {
+          var item = mergedList[k];
+          var grp = item.group || 'Kênh Khác';
+          if (!groupedChannels[grp]) {
+            groupedChannels[grp] = [];
+            rawCategoryOrder.push(grp);
+          }
+          groupedChannels[grp].push(item);
+        }
+
+        // Sắp xếp thứ tự Nhóm kênh: Tất cả nhóm VTV (VTV, VTVcab, VTV...) lên đầu -> HTV -> SCTV -> Sự Kiện -> THỂ THAO -> Còn lại
+        var categoryList = rawCategoryOrder.slice();
+        categoryList.sort(function (a, b) {
+          var pA = getCategoryPriority(a);
+          var pB = getCategoryPriority(b);
+          if (pA !== pB) {
+            return pA - pB;
+          }
+          return rawCategoryOrder.indexOf(a) - rawCategoryOrder.indexOf(b);
+        });
+
+        console.log('[Sources] Đã gộp và sắp xếp VTV/VTVcab lên đầu: ' + mergedList.length + ' kênh, ' + categoryList.length + ' nhóm danh mục!');
+        callback({ allChannels: mergedList, groupedChannels: groupedChannels, categoryList: categoryList });
       }
     });
   });

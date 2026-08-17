@@ -4,21 +4,22 @@
 export function parseM3U(content) {
   if (!content || typeof content !== 'string') return [];
 
-  const lines = content.split(/\r?\n/);
-  const channels = [];
-  let current = {};
+  var lines = content.split(/\r?\n/);
+  var channels = [];
+  var current = {};
 
-  for (let rawLine of lines) {
-    const line = rawLine.trim();
+  for (var i = 0; i < lines.length; i++) {
+    var rawLine = lines[i];
+    var line = rawLine.trim();
     if (!line) continue;
 
-    if (line.startsWith('#EXTINF:')) {
-      const commaIndex = line.lastIndexOf(',');
-      const name = commaIndex !== -1 ? line.substring(commaIndex + 1).trim() : 'Kênh truyền hình';
+    if (line.indexOf('#EXTINF:') === 0) {
+      var commaIndex = line.lastIndexOf(',');
+      var name = commaIndex !== -1 ? line.substring(commaIndex + 1).trim() : 'Kênh truyền hình';
 
-      const logoMatch = line.match(/tvg-logo="([^"]+)"/i);
-      const groupMatch = line.match(/group-title="([^"]+)"/i);
-      const idMatch = line.match(/tvg-id="([^"]+)"/i);
+      var logoMatch = line.match(/tvg-logo=["']?([^"'>\s,]+)["']?/i);
+      var groupMatch = line.match(/group-title=["']?([^"'>,]+)["']?/i);
+      var idMatch = line.match(/tvg-id=["']?([^"'>\s,]+)["']?/i);
 
       current = {
         name: name || 'Kênh không tên',
@@ -26,18 +27,18 @@ export function parseM3U(content) {
         group: groupMatch ? groupMatch[1] : 'Mặc định',
         id: idMatch ? idMatch[1] : ''
       };
-    } else if (line.startsWith('#KODIPROP:inputstream.adaptive.license_key=')) {
+    } else if (line.indexOf('#KODIPROP:inputstream.adaptive.license_key=') === 0) {
       current.licenseKey = line.split('=')[1].trim();
-    } else if (line.startsWith('#KODIPROP:inputstream.adaptive.manifest_type=')) {
+    } else if (line.indexOf('#KODIPROP:inputstream.adaptive.manifest_type=') === 0) {
       current.manifestType = line.split('=')[1].trim();
-    } else if (line.startsWith('#KODIPROP:inputstream.adaptive.license_type=')) {
+    } else if (line.indexOf('#KODIPROP:inputstream.adaptive.license_type=') === 0) {
       current.licenseType = line.split('=')[1].trim();
-    } else if (line.startsWith('#EXTVLCOPT:http-user-agent=')) {
+    } else if (line.indexOf('#EXTVLCOPT:http-user-agent=') === 0) {
       current.userAgent = line.split('=')[1].trim();
-    } else if (line.startsWith('http://') || line.startsWith('https://')) {
+    } else if (line.indexOf('http://') === 0 || line.indexOf('https://') === 0) {
       current.url = line;
       if (current.name) {
-        channels.push({ ...current });
+        channels.push(Object.assign({}, current));
       }
       current = {};
     }

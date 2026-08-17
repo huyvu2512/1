@@ -5,12 +5,15 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>IPTV Player DRM</title>
 </head>
-<body>
-  <div id="status-text" style="color:#fff;padding:20px;font-family:sans-serif;">Đang khởi động IPTV Player DRM...</div>
+<body style="margin:0;padding:0;background:#121418;overflow:hidden;">
+  <div id="status-text" style="display:none;position:fixed;top:0;left:0;right:0;background:#ef4444;color:#fff;padding:12px 20px;font-family:sans-serif;font-weight:bold;z-index:999999;"></div>
   <script>
     window.onerror = function (message, source, line) {
       var status = document.getElementById('status-text');
-      if (status) status.textContent = 'Startup error: ' + message + ' (line ' + line + ')';
+      if (status) {
+        status.style.display = 'block';
+        status.textContent = 'Startup error: ' + message + ' (line ' + line + ')';
+      }
     };
   </script>
   <script src="./dist/index.js"></script>

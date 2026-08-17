@@ -53,17 +53,19 @@ export function getRealMediaStats() {
     }
 
     if (currentChannelData) {
-      var nameLow = currentChannelData.name.toLowerCase();
+      var nameLow = (currentChannelData.name || '').toLowerCase();
       if (nameLow.indexOf('50fps') !== -1) fps = 50.0;
       else if (nameLow.indexOf('60fps') !== -1) fps = 60.0;
     }
 
     var bitrateMbps = width >= 1920 ? '3.5' : (width >= 1280 ? '2.5' : '1.8');
+    var fpsStr = (typeof fps === 'number') ? fps.toFixed(1) : (fps ? String(fps) : '25.0');
 
     return {
       width: width,
       height: height,
-      fps: fps.toFixed(1),
+      fps: fpsStr,
+      bitrate: bitrateMbps + ' Mbps',
       bandwidth: bitrateMbps + ' Mbps'
     };
   } catch (e) {
@@ -150,7 +152,7 @@ export function getRealAudioTracks() {
           return {
             label: label,
             value: l,
-            active: (l === activeLang) // CHỈ tích dấu V cho kênh đang chọn
+            active: (l === activeLang)
           };
         });
       }

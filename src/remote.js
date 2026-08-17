@@ -1,5 +1,5 @@
 /**
- * Bộ ánh xạ phím điều khiển Samsung Smart TV Remote
+ * Bộ ánh xạ phím điều khiển Samsung Smart TV Remote & Máy tính (PC Keyboard)
  */
 export const TV_KEYS = {
   UP: 38,
@@ -7,8 +7,10 @@ export const TV_KEYS = {
   LEFT: 37,
   RIGHT: 39,
   ENTER: 13,
+  SPACE: 32,
   RETURN: 10009,
   BACK_PC: 27,
+  BACKSPACE: 8,
   RED: 403,
   GREEN: 404,
   YELLOW: 405,
@@ -25,7 +27,7 @@ export const TV_KEYS = {
  */
 export function registerTizenKeys() {
   try {
-    if (window.tizen && window.tizen.tvinputdevice) {
+    if (typeof window !== 'undefined' && window.tizen && window.tizen.tvinputdevice) {
       const keysToRegister = [
         'ColorF0Red', 'ColorF1Green', 'ColorF2Yellow', 'ColorF3Blue', 
         'MediaPlay', 'MediaPause', 'MediaStop', 'MediaPlayPause'

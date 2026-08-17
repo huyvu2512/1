@@ -18,6 +18,17 @@ function parseXMLTVDate(str) {
     const h = parseInt(clean.substring(8, 10), 10);
     const min = parseInt(clean.substring(10, 12), 10);
     const s = parseInt(clean.substring(12, 14), 10) || 0;
+
+    // Xử lý múi giờ chuẩn XMLTV (ví dụ: +0700, +0000)
+    const tzMatch = clean.match(/([+-])(\d{2})(\d{2})/);
+    if (tzMatch) {
+      const sign = tzMatch[1] === '+' ? 1 : -1;
+      const tzHours = parseInt(tzMatch[2], 10);
+      const tzMinutes = parseInt(tzMatch[3], 10);
+      const offsetMs = sign * (tzHours * 60 + tzMinutes) * 60000;
+      const utcEpoch = Date.UTC(y, m, d, h, min, s) - offsetMs;
+      return new Date(utcEpoch);
+    }
     return new Date(y, m, d, h, min, s);
   } catch (e) {
     return null;
@@ -225,7 +236,6 @@ export function loadEPG(onLoaded) {
     fetchXml(EPG_SOURCE_2, (err2, xml2) => {
       if (!err2 && xml2) {
         const src2Data = parseEpgXmlFast(xml2);
-        const now = new Date();
         let added = 0;
 
         Object.keys(src2Data).forEach(key => {
@@ -273,10 +283,21 @@ export function getChannelEPG(channelName) {
     }
   }
 
+  // Nếu không trùng chính xác, tìm chương trình gần nhất trong tương lai hoặc chương trình cuối cùng
+  if (!currentProg && list.length > 0) {
+    for (let j = 0; j < list.length; j++) {
+      if (list[j].start && list[j].start > now) {
+        currentProg = list[j];
+        nextProg = list[j + 1] || null;
+        break;
+      }
+    }
+  }
+
   if (!currentProg) return null;
 
-  const total = currentProg.stop.getTime() - currentProg.start.getTime();
-  const elapsed = now.getTime() - currentProg.start.getTime();
+  const total = currentProg.stop ? (currentProg.stop.getTime() - currentProg.start.getTime()) : 3600000;
+  const elapsed = currentProg.start ? (now.getTime() - currentProg.start.getTime()) : 0;
   const progressPercent = Math.min(100, Math.max(0, Math.round((elapsed / Math.max(1, total)) * 100)));
 
   return {

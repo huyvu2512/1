@@ -238,14 +238,29 @@ export function clearSearch() {
 
 function safeScrollIntoView(el) {
   if (!el) return;
-  try {
-    if (typeof el.scrollIntoViewIfNeeded === 'function') {
-      el.scrollIntoViewIfNeeded(false);
-    } else {
-      el.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+  var container = document.getElementById('drawer-channel-list');
+  if (container && container.contains(el)) {
+    try {
+      var cRect = container.getBoundingClientRect();
+      var iRect = el.getBoundingClientRect();
+      var diff = (iRect.top + iRect.height / 2) - (cRect.top + cRect.height / 2);
+      container.scrollTop += diff;
+    } catch (e) {
+      var elTop = el.offsetTop;
+      var elHeight = el.offsetHeight;
+      var containerHeight = container.clientHeight;
+      var targetScroll = elTop - (containerHeight / 2) + (elHeight / 2);
+      if (targetScroll < 0) targetScroll = 0;
+      container.scrollTop = targetScroll;
     }
-  } catch (e) {
-    try { el.scrollIntoView(false); } catch(err) {}
+  } else {
+    try {
+      if (typeof el.scrollIntoView === 'function') {
+        el.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' });
+      }
+    } catch (e) {
+      try { el.scrollIntoView(false); } catch(err) {}
+    }
   }
 }
 
@@ -310,6 +325,54 @@ export function renderCategories() {
 
   var activeChip = nav.querySelector('.cat-chip.active');
   if (activeChip) safeScrollIntoView(activeChip);
+}
+
+/**
+ * Tự động làm mới EPG và tiến độ phát sóng trên danh sách kênh theo thời gian thực (Real-time)
+ */
+export function updateDrawerEpgProgress() {
+  var list = document.getElementById('drawer-channel-list');
+  if (!list) return;
+  var items = list.querySelectorAll('.channel-row-item');
+  var channels = getCurrentChannels();
+  var epgReady = isEpgReady();
+  if (!epgReady || items.length === 0) return;
+
+  for (var i = 0; i < items.length; i++) {
+    var ch = channels[i];
+    if (!ch) continue;
+    var epg = getChannelEPG(ch.name);
+    var contentCol = items[i].querySelector('.ch-content-col');
+    if (!contentCol) continue;
+
+    if (epg && epg.current && epg.current.title) {
+      var progEl = contentCol.querySelector('.ch-program-gray');
+      var timeStartEl = contentCol.querySelector('.ch-timeline-row .ch-time-text:first-child');
+      var timeStopEl = contentCol.querySelector('.ch-timeline-row .ch-time-text:last-child');
+      var fillEl = contentCol.querySelector('.ch-timeline-bar-fill');
+      var timelineRow = contentCol.querySelector('.ch-timeline-row');
+
+      if (progEl && timelineRow) {
+        if (progEl.innerText !== epg.current.title) {
+          progEl.innerText = epg.current.title;
+        }
+        if (fillEl) {
+          fillEl.style.width = epg.current.progressPercent + '%';
+        }
+        if (timeStartEl) timeStartEl.innerText = epg.current.startTimeStr;
+        if (timeStopEl) timeStopEl.innerText = epg.current.stopTimeStr;
+      } else {
+        contentCol.innerHTML = 
+          '<div class="ch-name-orange">' + ch.name + '</div>' +
+          '<div class="ch-program-gray">' + epg.current.title + '</div>' +
+          '<div class="ch-timeline-row">' +
+            '<span class="ch-time-text">' + epg.current.startTimeStr + '</span>' +
+            '<div class="ch-timeline-bar-bg"><div class="ch-timeline-bar-fill" style="width:' + epg.current.progressPercent + '%;"></div></div>' +
+            '<span class="ch-time-text">' + epg.current.stopTimeStr + '</span>' +
+          '</div>';
+      }
+    }
+  }
 }
 
 export function renderChannels() {

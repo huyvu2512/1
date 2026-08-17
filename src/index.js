@@ -9,6 +9,7 @@ import {
   navigateActionBar, 
   executeActionPill,
   isOsdVisible,
+  hideOsdBar,
   isQualityOrAudioDialogOpen,
   navigateDialog,
   selectDialogCurrent,
@@ -18,6 +19,7 @@ import {
   initDrawerState, 
   renderCategories, 
   renderChannels, 
+  updateDrawerEpgProgress,
   nextCategory, 
   prevCategory, 
   nextChannel, 
@@ -50,33 +52,88 @@ var playbackTimeout = null;
 var isPlayerInitialized = false;
 var isAppStarted = false;
 
+// Trạng thái Popup xác nhận thoát ứng dụng
+var isExitModalOpen = false;
+var exitBtnFocusedIndex = 0; // 0: Hủy, 1: Đồng ý
+var lastReturnPressTimestamp = 0;
+
+function isReturnOrEscKey(key) {
+  return key === 10009 || key === 27 || key === 8 || key === 461 || key === TV_KEYS.RETURN || key === TV_KEYS.BACK_PC;
+}
+
+function isOkOrEnterKey(key) {
+  return key === 13 || key === 32 || key === TV_KEYS.ENTER || key === TV_KEYS.SPACE;
+}
+
+function openExitModal() {
+  isExitModalOpen = true;
+  exitBtnFocusedIndex = 0;
+  var dlg = document.getElementById('exit-confirm-dialog');
+  if (dlg) dlg.classList.add('active');
+  updateExitBtnFocusVisual();
+}
+
+function closeExitModal() {
+  isExitModalOpen = false;
+  var dlg = document.getElementById('exit-confirm-dialog');
+  if (dlg) dlg.classList.remove('active');
+}
+
+function updateExitBtnFocusVisual() {
+  var btnCancel = document.getElementById('btn-exit-cancel');
+  var btnConfirm = document.getElementById('btn-exit-confirm');
+  if (btnCancel) btnCancel.classList.toggle('focused', exitBtnFocusedIndex === 0);
+  if (btnConfirm) btnConfirm.classList.toggle('focused', exitBtnFocusedIndex === 1);
+}
+
+function executeExitApp() {
+  try {
+    if (typeof window !== 'undefined' && window.tizenbrew && typeof window.tizenbrew.exit === 'function') {
+      window.tizenbrew.exit();
+      return;
+    }
+  } catch (e) {}
+  try {
+    if (typeof window !== 'undefined' && window.tizen && window.tizen.application) {
+      window.tizen.application.getCurrentApplication().exit();
+      return;
+    }
+  } catch (e) {}
+  try {
+    window.close();
+  } catch (e) {}
+}
+
 function setupDOM() {
   injectStyles();
 
-  document.body.innerHTML = 
+  var statusTextEl = document.getElementById('status-text');
+  if (statusTextEl) {
+    statusTextEl.style.display = 'none';
+  }
+
+  var app = document.getElementById('app-container');
+  if (!app) {
+    app = document.createElement('div');
+    app.id = 'app-container';
+    document.body.appendChild(app);
+  }
+
+  app.innerHTML = 
     '<video id="video-screen" class="pip-right" autoplay playsinline></video>' +
-    '<div id="center-state-layer" class="pip-right">' +
-      '<div class="center-state-circle">' +
-        '<svg id="center-state-icon" viewBox="0 0 24 24"><polygon points="5 3 19 12 5 21 5 3"/></svg>' +
-      '</div>' +
-    '</div>' +
-    '<div id="video-spinner-layer" class="pip-right active">' +
-      '<div class="white-video-spinner"></div>' +
-    '</div>' +
+    '<div id="center-state-layer" class="pip-right"><div class="center-state-circle" id="center-state-icon"></div></div>' +
+    '<div id="video-spinner-layer" class="pip-right"><div class="white-video-spinner"></div></div>' +
     '<div id="video-error-layer" class="pip-right">' +
       '<div class="error-container-box">' +
-        '<div class="error-title-main">' +
-          '<span class="err-white">IPTV Player</span> ' +
-          '<span class="err-cyan">DRM</span>' +
-        '</div>' +
-        '<div class="error-channel-text">KÊNH HIỆN TẠI KHÔNG KHẢ DỤNG</div>' +
+        '<div class="error-title-main"><span class="err-white">IPTV</span><span class="err-cyan">DRM</span></div>' +
+        '<div class="error-channel-text">Kênh này đang tạm dừng hoặc lỗi nguồn phát</div>' +
       '</div>' +
     '</div>' +
     '<div id="tivimate-drawer" class="open">' +
       '<div class="drawer-header">' +
         '<div class="drawer-top-row">' +
           '<div class="app-title-badge">' +
-            '<span class="title-white">IPTV Player</span>' +
+            '<span class="title-white">IPTV</span>' +
             '<span class="title-cyan">DRM</span>' +
             '<span style="font-size: 11px; color: #f97316; margin-left: 6px; font-weight: 700;">' + APP_VERSION + '</span>' +
           '</div>' +
@@ -144,11 +201,37 @@ function setupDOM() {
         '</button>' +
       '</div>' +
     '</div>' +
-    '<div id="quality-audio-dialog"></div>';
+    '<div id="quality-audio-dialog"></div>' +
+    '<div id="exit-confirm-dialog">' +
+      '<div class="exit-card">' +
+        '<div class="exit-title">Xác nhận thoát</div>' +
+        '<div class="exit-msg">Bạn có chắc chắn muốn thoát ứng dụng không?</div>' +
+        '<div class="exit-btn-row">' +
+          '<button id="btn-exit-cancel" class="exit-btn focused">Hủy</button>' +
+          '<button id="btn-exit-confirm" class="exit-btn danger">Đồng ý</button>' +
+        '</div>' +
+      '</div>' +
+    '</div>';
 
   setupPillClickEvents(function() { return currentPlayingChannel; }, function() { return allChannels; });
   setOpenDrawerCallback(openDrawer);
   setPlayChannelCallback(playSelectedChannel);
+
+  // Setup click sự kiện nút Hủy / Đồng ý thoát
+  var btnCancel = document.getElementById('btn-exit-cancel');
+  var btnConfirm = document.getElementById('btn-exit-confirm');
+  if (btnCancel) {
+    btnCancel.onclick = function(e) {
+      e.stopPropagation();
+      closeExitModal();
+    };
+  }
+  if (btnConfirm) {
+    btnConfirm.onclick = function(e) {
+      e.stopPropagation();
+      executeExitApp();
+    };
+  }
 }
 
 function showVideoSpinner() {
@@ -275,16 +358,42 @@ function autoPlayFirstChannel() {
 
 function handleKeyDown(e) {
   var key = e.keyCode;
-  var navKeys = [TV_KEYS.UP, TV_KEYS.DOWN, TV_KEYS.LEFT, TV_KEYS.RIGHT, 8, 27, TV_KEYS.RETURN, TV_KEYS.BACK_PC, TV_KEYS.INFO, TV_KEYS.PLAY, TV_KEYS.PAUSE, TV_KEYS.PLAY_PAUSE];
+  var navKeys = [TV_KEYS.UP, TV_KEYS.DOWN, TV_KEYS.LEFT, TV_KEYS.RIGHT, 8, 27, 32, 461, TV_KEYS.RETURN, TV_KEYS.BACK_PC, TV_KEYS.INFO, TV_KEYS.PLAY, TV_KEYS.PAUSE, TV_KEYS.PLAY_PAUSE];
 
   if (navKeys.indexOf(key) !== -1) {
-    if (!isSearchEditing() || key !== 8) {
+    if (!isSearchEditing() || (key !== 8 && key !== 32)) {
       e.preventDefault();
     }
   }
 
-  // 1. KHI POPUP CHỌN LỊCH PHÁT SÓNG / CHẤT LƯỢNG / ÂM THANH ĐANG MỞ
+  // 0. KHI POPUP XÁC NHẬN THOÁT ĐANG MỞ
+  if (isExitModalOpen) {
+    if (key === TV_KEYS.LEFT || key === TV_KEYS.RIGHT || key === TV_KEYS.UP || key === TV_KEYS.DOWN) {
+      exitBtnFocusedIndex = 1 - exitBtnFocusedIndex;
+      updateExitBtnFocusVisual();
+      return;
+    }
+    if (isOkOrEnterKey(key)) {
+      if (exitBtnFocusedIndex === 1) {
+        executeExitApp();
+      } else {
+        closeExitModal();
+      }
+      return;
+    }
+    if (isReturnOrEscKey(key)) {
+      closeExitModal();
+      return;
+    }
+    return;
+  }
+
+  // 1. KHI POPUP LỊCH PHÁT SÓNG / CHẤT LƯỢNG / ÂM THANH ĐANG MỞ
   if (isQualityOrAudioDialogOpen()) {
+    if (isReturnOrEscKey(key)) {
+      closeQualityAudioDialog(currentPlayingChannel);
+      return;
+    }
     if (key === TV_KEYS.LEFT) {
       navigateDialog('left', currentPlayingChannel);
       return;
@@ -301,12 +410,8 @@ function handleKeyDown(e) {
       navigateDialog('down', currentPlayingChannel);
       return;
     }
-    if (key === TV_KEYS.ENTER) {
+    if (isOkOrEnterKey(key)) {
       selectDialogCurrent();
-      return;
-    }
-    if (key === TV_KEYS.BACK_PC || key === TV_KEYS.RETURN || key === 8 || key === 27) {
-      closeQualityAudioDialog(currentPlayingChannel);
       return;
     }
     return;
@@ -316,6 +421,21 @@ function handleKeyDown(e) {
 
   // 2. KHI ĐANG Ở CHẾ ĐỘ TOÀN MÀN HÌNH (FULLSCREEN)
   if (!isDrawerOpen) {
+    if (isReturnOrEscKey(key)) {
+      var now = Date.now();
+      if (now - lastReturnPressTimestamp < 2000) {
+        // Bấm 2 lần liên tiếp -> Bật popup hỏi thoát ứng dụng
+        lastReturnPressTimestamp = 0;
+        openExitModal();
+      } else {
+        // Bấm 1 lần -> Mở Menu danh sách kênh bên trái
+        lastReturnPressTimestamp = now;
+        if (isOsdVisible()) hideOsdBar();
+        openDrawer();
+      }
+      return;
+    }
+
     if (key === TV_KEYS.LEFT) {
       if (isOsdVisible()) {
         navigateActionBar('left', currentPlayingChannel);
@@ -333,11 +453,12 @@ function handleKeyDown(e) {
       return;
     }
 
-    if (key === TV_KEYS.ENTER) {
+    if (isOkOrEnterKey(key)) {
       if (isOsdVisible()) {
         executeActionPill(currentPlayingChannel, allChannels);
       } else {
-        togglePlayPause();
+        // Mở thanh điều khiển OSD khi đang xem toàn màn hình
+        if (currentPlayingChannel) updateOsdInfo(currentPlayingChannel, false);
       }
       return;
     }
@@ -369,24 +490,19 @@ function handleKeyDown(e) {
       return;
     }
 
-    if (key === TV_KEYS.BACK_PC || key === TV_KEYS.RETURN || key === 27 || key === 8) {
-      openDrawer();
-      return;
-    }
-
     return;
   }
 
-  // 3. KHI ĐANG TRONG TRẠNG THÁI GÕ BÀN PHÍM ẢO
+  // 3. KHI ĐANG TRONG TRẠNG THÁI GÕ BÀN PHÍM ẢO TÌM KIẾM
   if (isSearchEditing()) {
-    if (key === TV_KEYS.DOWN || key === TV_KEYS.ENTER) {
+    if (key === TV_KEYS.DOWN || key === 13) {
       stopSearchEditing();
       blurSearchBox();
       var ch = getCurrentSelectedChannel();
       if (ch) playSelectedChannel(ch);
       return;
     }
-    if (key === TV_KEYS.BACK_PC || key === TV_KEYS.RETURN || key === 27) {
+    if (isReturnOrEscKey(key)) {
       if (getSearchQuery()) {
         clearSearch();
       } else {
@@ -401,12 +517,12 @@ function handleKeyDown(e) {
 
   // 4. KHI ĐANG FOCUS VIỀN SÁNG VÀO Ô TÌM KIẾM (CHƯA GÕ PHÍM)
   if (isSearchBoxFocused()) {
-    if (key === TV_KEYS.ENTER) {
-      startSearchEditing(); // Người dùng ấn OK -> Mới mở bàn phím ảo
+    if (isOkOrEnterKey(key)) {
+      startSearchEditing();
       return;
     }
     if (key === TV_KEYS.DOWN) {
-      nextChannel(); // Ấn xuống -> Trở lại kênh đầu tiên
+      nextChannel();
       return;
     }
     if (key === TV_KEYS.LEFT) {
@@ -417,7 +533,7 @@ function handleKeyDown(e) {
       nextCategory();
       return;
     }
-    if (key === TV_KEYS.BACK_PC || key === TV_KEYS.RETURN || key === 27 || key === 8) {
+    if (isReturnOrEscKey(key)) {
       if (getSearchQuery()) {
         clearSearch();
       } else {
@@ -430,6 +546,12 @@ function handleKeyDown(e) {
   }
 
   // 5. KHI MENU DANH SÁCH KÊNH ĐANG HOẠT ĐỘNG
+  if (isOkOrEnterKey(key)) {
+    var selectedCh = getCurrentSelectedChannel();
+    if (selectedCh) playSelectedChannel(selectedCh);
+    return;
+  }
+
   switch (key) {
     case TV_KEYS.UP:
       prevChannel();
@@ -443,18 +565,22 @@ function handleKeyDown(e) {
     case TV_KEYS.RIGHT:
       nextCategory();
       break;
-    case TV_KEYS.ENTER:
-      var selectedCh = getCurrentSelectedChannel();
-      if (selectedCh) playSelectedChannel(selectedCh);
-      break;
-    case TV_KEYS.BACK_PC:
-    case TV_KEYS.RETURN:
-    case 27:
-    case 8:
-      if (getSearchQuery()) {
-        clearSearch();
-      } else {
-        closeDrawer();
+    default:
+      if (isReturnOrEscKey(key)) {
+        if (getSearchQuery()) {
+          clearSearch();
+        } else {
+          var now = Date.now();
+          if (now - lastReturnPressTimestamp < 2000) {
+            // Bấm 2 lần trong menu kênh -> Mở popup hỏi thoát
+            lastReturnPressTimestamp = 0;
+            openExitModal();
+          } else {
+            // Bấm 1 lần -> Đóng menu kênh về toàn màn hình
+            lastReturnPressTimestamp = now;
+            closeDrawer();
+          }
+        }
       }
       break;
   }
@@ -467,7 +593,23 @@ function startApplication() {
   try {
     setupDOM();
     updateWindowsClock();
-    setInterval(updateWindowsClock, 1000);
+    
+    // Tự động làm mới đồng hồ, thanh tiến độ phát sóng và chương trình EPG liên tục mỗi 4 giây
+    setInterval(function() {
+      updateWindowsClock();
+      updateDrawerEpgProgress();
+      if (currentPlayingChannel) {
+        updateOsdInfo(currentPlayingChannel, isDrawerOpen);
+      }
+    }, 4000);
+
+    // Tự động cập nhật lại file XMLTV EPG mới nhất sau mỗi 30 phút
+    setInterval(function() {
+      loadEPG(function() {
+        renderChannels();
+      });
+    }, 30 * 60 * 1000);
+
     registerTizenKeys();
   } catch (err) {
     console.error('[App] DOM setup error:', err);
