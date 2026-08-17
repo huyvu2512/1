@@ -52,56 +52,12 @@ var playbackTimeout = null;
 var isPlayerInitialized = false;
 var isAppStarted = false;
 
-// Trạng thái Popup xác nhận thoát ứng dụng
-var isExitModalOpen = false;
-var exitBtnFocusedIndex = 0; // 0: Hủy, 1: Đồng ý
-var lastReturnPressTimestamp = 0;
-
 function isReturnOrEscKey(key) {
   return key === 10009 || key === 27 || key === 8 || key === 461 || key === TV_KEYS.RETURN || key === TV_KEYS.BACK_PC;
 }
 
 function isOkOrEnterKey(key) {
   return key === 13 || key === 32 || key === TV_KEYS.ENTER || key === TV_KEYS.SPACE;
-}
-
-function openExitModal() {
-  isExitModalOpen = true;
-  exitBtnFocusedIndex = 0;
-  var dlg = document.getElementById('exit-confirm-dialog');
-  if (dlg) dlg.classList.add('active');
-  updateExitBtnFocusVisual();
-}
-
-function closeExitModal() {
-  isExitModalOpen = false;
-  var dlg = document.getElementById('exit-confirm-dialog');
-  if (dlg) dlg.classList.remove('active');
-}
-
-function updateExitBtnFocusVisual() {
-  var btnCancel = document.getElementById('btn-exit-cancel');
-  var btnConfirm = document.getElementById('btn-exit-confirm');
-  if (btnCancel) btnCancel.classList.toggle('focused', exitBtnFocusedIndex === 0);
-  if (btnConfirm) btnConfirm.classList.toggle('focused', exitBtnFocusedIndex === 1);
-}
-
-function executeExitApp() {
-  try {
-    if (typeof window !== 'undefined' && window.tizenbrew && typeof window.tizenbrew.exit === 'function') {
-      window.tizenbrew.exit();
-      return;
-    }
-  } catch (e) {}
-  try {
-    if (typeof window !== 'undefined' && window.tizen && window.tizen.application) {
-      window.tizen.application.getCurrentApplication().exit();
-      return;
-    }
-  } catch (e) {}
-  try {
-    window.close();
-  } catch (e) {}
 }
 
 function setupDOM() {
@@ -201,37 +157,11 @@ function setupDOM() {
         '</button>' +
       '</div>' +
     '</div>' +
-    '<div id="quality-audio-dialog"></div>' +
-    '<div id="exit-confirm-dialog">' +
-      '<div class="exit-card">' +
-        '<div class="exit-title">Xác nhận thoát</div>' +
-        '<div class="exit-msg">Bạn có chắc chắn muốn thoát ứng dụng không?</div>' +
-        '<div class="exit-btn-row">' +
-          '<button id="btn-exit-cancel" class="exit-btn focused">Hủy</button>' +
-          '<button id="btn-exit-confirm" class="exit-btn danger">Đồng ý</button>' +
-        '</div>' +
-      '</div>' +
-    '</div>';
+    '<div id="quality-audio-dialog"></div>';
 
   setupPillClickEvents(function() { return currentPlayingChannel; }, function() { return allChannels; });
   setOpenDrawerCallback(openDrawer);
   setPlayChannelCallback(playSelectedChannel);
-
-  // Setup click sự kiện nút Hủy / Đồng ý thoát
-  var btnCancel = document.getElementById('btn-exit-cancel');
-  var btnConfirm = document.getElementById('btn-exit-confirm');
-  if (btnCancel) {
-    btnCancel.onclick = function(e) {
-      e.stopPropagation();
-      closeExitModal();
-    };
-  }
-  if (btnConfirm) {
-    btnConfirm.onclick = function(e) {
-      e.stopPropagation();
-      executeExitApp();
-    };
-  }
 }
 
 function showVideoSpinner() {
@@ -366,28 +296,6 @@ function handleKeyDown(e) {
     }
   }
 
-  // 0. KHI POPUP XÁC NHẬN THOÁT ĐANG MỞ
-  if (isExitModalOpen) {
-    if (key === TV_KEYS.LEFT || key === TV_KEYS.RIGHT || key === TV_KEYS.UP || key === TV_KEYS.DOWN) {
-      exitBtnFocusedIndex = 1 - exitBtnFocusedIndex;
-      updateExitBtnFocusVisual();
-      return;
-    }
-    if (isOkOrEnterKey(key)) {
-      if (exitBtnFocusedIndex === 1) {
-        executeExitApp();
-      } else {
-        closeExitModal();
-      }
-      return;
-    }
-    if (isReturnOrEscKey(key)) {
-      closeExitModal();
-      return;
-    }
-    return;
-  }
-
   // 1. KHI POPUP LỊCH PHÁT SÓNG / CHẤT LƯỢNG / ÂM THANH ĐANG MỞ
   if (isQualityOrAudioDialogOpen()) {
     if (isReturnOrEscKey(key)) {
@@ -422,17 +330,9 @@ function handleKeyDown(e) {
   // 2. KHI ĐANG Ở CHẾ ĐỘ TOÀN MÀN HÌNH (FULLSCREEN)
   if (!isDrawerOpen) {
     if (isReturnOrEscKey(key)) {
-      var now = Date.now();
-      if (now - lastReturnPressTimestamp < 2000) {
-        // Bấm 2 lần liên tiếp -> Bật popup hỏi thoát ứng dụng
-        lastReturnPressTimestamp = 0;
-        openExitModal();
-      } else {
-        // Bấm 1 lần -> Mở Menu danh sách kênh bên trái
-        lastReturnPressTimestamp = now;
-        if (isOsdVisible()) hideOsdBar();
-        openDrawer();
-      }
+      // Bấm Return / ESC khi đang full màn hình -> Bật Menu danh sách kênh bên trái
+      if (isOsdVisible()) hideOsdBar();
+      openDrawer();
       return;
     }
 
@@ -570,16 +470,7 @@ function handleKeyDown(e) {
         if (getSearchQuery()) {
           clearSearch();
         } else {
-          var now = Date.now();
-          if (now - lastReturnPressTimestamp < 2000) {
-            // Bấm 2 lần trong menu kênh -> Mở popup hỏi thoát
-            lastReturnPressTimestamp = 0;
-            openExitModal();
-          } else {
-            // Bấm 1 lần -> Đóng menu kênh về toàn màn hình
-            lastReturnPressTimestamp = now;
-            closeDrawer();
-          }
+          closeDrawer(); // Đóng menu kênh, về toàn màn hình
         }
       }
       break;

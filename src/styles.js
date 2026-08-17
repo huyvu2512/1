@@ -304,57 +304,6 @@ export var globalStyles = '\
     .epg-time-range { font-size: 16px; font-weight: 800; color: #fb923c; flex-shrink: 0; }\
     .epg-item-title { flex: 1; font-size: 18px; font-weight: 700; color: #ffffff; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }\
     .epg-live-badge { padding: 5px 12px; background: #ef4444; color: #ffffff; font-size: 13px; font-weight: 900; border-radius: 6px; flex-shrink: 0; }\
-    #exit-confirm-dialog {\
-      position: absolute;\
-      top: 0; left: 0;\
-      width: 100vw; height: 100vh;\
-      background: rgba(10, 12, 16, 0.88);\
-      z-index: 50;\
-      display: none;\
-      align-items: center; justify-content: center;\
-    }\
-    #exit-confirm-dialog.active { display: flex !important; }\
-    .exit-card {\
-      background: #20242b;\
-      border: 2px solid rgba(255, 255, 255, 0.24);\
-      border-radius: 22px;\
-      padding: 34px 44px;\
-      min-width: 440px;\
-      max-width: 520px;\
-      box-shadow: 0 25px 60px rgba(0, 0, 0, 0.9);\
-      display: flex;\
-      flex-direction: column;\
-      align-items: center;\
-      text-align: center;\
-      gap: 16px;\
-    }\
-    .exit-title { font-size: 26px; font-weight: 800; color: #ffffff; }\
-    .exit-msg { font-size: 18px; font-weight: 600; color: #cbd5e1; margin-bottom: 12px; }\
-    .exit-btn-row { display: flex; align-items: center; gap: 20px; width: 100%; justify-content: center; }\
-    .exit-btn {\
-      flex: 1;\
-      padding: 14px 24px;\
-      border-radius: 14px;\
-      font-size: 18px;\
-      font-weight: 700;\
-      border: 2px solid rgba(255, 255, 255, 0.16);\
-      background: #2b303a;\
-      color: #ffffff;\
-      cursor: pointer;\
-      transition: background 0.12s ease, color 0.12s ease;\
-    }\
-    .exit-btn.focused {\
-      background: #ffffff !important;\
-      border-color: #ffffff !important;\
-      color: #0b0d14 !important;\
-      font-weight: 800 !important;\
-    }\
-    .exit-btn.danger.focused {\
-      background: #ef4444 !important;\
-      border-color: #ef4444 !important;\
-      color: #ffffff !important;\
-      font-weight: 800 !important;\
-    }\
 ';
 
 export function injectStyles() {
