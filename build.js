@@ -43,7 +43,7 @@ async function build() {
     schemaVersion: 1,
     name: pkg.name || "tizenbrew-iptv-drm",
     displayName: pkg.displayName || "TizenBrew IPTV DRM",
-    version: pkg.version || "1.0.0",
+    version: pkg.version || "1.0.1",
     description: pkg.description || "TizenBrew IPTV DRM for Samsung Smart TV with ClearKey DRM & EPG Support",
     targetUrl: "https://localhost",
     assets: {

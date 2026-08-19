@@ -162,13 +162,47 @@ export function getRealAudioTracks() {
       if (langs && langs.length > 0) {
         if (!activeLang) activeLang = langs[0];
         return langs.map(function(l) {
-          var label = l.toUpperCase();
-          if (label === 'VI' || label === 'VIE' || label === 'VN') label = 'Tiếng Việt';
-          else if (label === 'EN' || label === 'ENG' || label === 'US') label = 'Tiếng Anh';
-          else if (label === 'UND' || label === 'MAIN') label = 'Âm thanh gốc';
-          else if (label === 'IK') label = 'Kênh 1 (Gốc)';
-          else if (label === 'AA') label = 'Kênh 2 (Thuyết minh)';
-          else if (label === 'VE') label = 'Kênh 3 (Lồng tiếng)';
+          var code = (l || '').toLowerCase().trim();
+          var label = '';
+
+          if (code === 'vi' || code === 'vie' || code === 'vn') {
+            label = 'Tiếng Việt';
+          } else if (code === 'en' || code === 'eng' || code === 'us') {
+            label = 'Tiếng Anh';
+          } else if (code === 'ru' || code === 'rus') {
+            label = 'Âm thanh hiện trường';
+          } else if (code === 'und' || code === 'main' || code === 'qaa' || code === 'zxx') {
+            label = 'Âm thanh gốc';
+          } else if (code === 'ko' || code === 'kor') {
+            label = 'Tiếng Hàn';
+          } else if (code === 'ja' || code === 'jpn') {
+            label = 'Tiếng Nhật';
+          } else if (code === 'zh' || code === 'zho' || code === 'chi') {
+            label = 'Tiếng Trung';
+          } else if (code === 'th' || code === 'tha') {
+            label = 'Tiếng Thái';
+          } else if (code === 'fr' || code === 'fra') {
+            label = 'Tiếng Pháp';
+          } else if (code === 'es' || code === 'spa') {
+            label = 'Tiếng Tây Ban Nha';
+          } else if (code === 'de' || code === 'deu') {
+            label = 'Tiếng Đức';
+          } else if (code === 'it' || code === 'ita') {
+            label = 'Tiếng Ý';
+          } else if (code === 'pt' || code === 'por') {
+            label = 'Tiếng Bồ Đào Nha';
+          } else if (code === 'ar' || code === 'ara') {
+            label = 'Tiếng Ả Rập';
+          } else if (code === 'ik') {
+            label = 'Kênh 1 (Gốc)';
+          } else if (code === 'aa') {
+            label = 'Kênh 2 (Thuyết minh)';
+          } else if (code === 've') {
+            label = 'Kênh 3 (Lồng tiếng)';
+          } else {
+            label = code.toUpperCase();
+          }
+
           return {
             label: label,
             value: l,
@@ -179,7 +213,7 @@ export function getRealAudioTracks() {
     } catch (e) {}
   }
   return [
-    { label: 'Tiếng Việt (Gốc)', value: 'vie', active: true }
+    { label: 'Tiếng Việt', value: 'vie', active: true }
   ];
 }
 
