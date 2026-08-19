@@ -11,6 +11,22 @@ var lastVideoTime = -1;
 var lastAdvanceTimestamp = Date.now();
 var lastStallFixAttempt = 0;
 
+// Mở khóa phần cứng 4K HEVC / H.265 cho Tizen Smart TV
+if (typeof window !== 'undefined' && window.MediaSource) {
+  try {
+    var origIsTypeSupported = window.MediaSource.isTypeSupported;
+    window.MediaSource.isTypeSupported = function(mimeType) {
+      if (mimeType && typeof mimeType === 'string') {
+        var low = mimeType.toLowerCase();
+        if (low.indexOf('hvc1') !== -1 || low.indexOf('hev1') !== -1 || low.indexOf('hevc') !== -1 || low.indexOf('h265') !== -1) {
+          return true;
+        }
+      }
+      return origIsTypeSupported ? origIsTypeSupported.call(window.MediaSource, mimeType) : true;
+    };
+  } catch (e) {}
+}
+
 function getShakaSafe() {
   if (shakaModule) return shakaModule;
   if (typeof window !== 'undefined' && window.shaka) {
@@ -58,6 +74,7 @@ export function getRealMediaStats() {
     var width = currentVideoElement.videoWidth || 1920;
     var height = currentVideoElement.videoHeight || 1080;
     var fps = 25.0;
+    var rawBandwidth = 0;
 
     if (playerInstance && playerInstance.getVariantTracks) {
       var tracks = playerInstance.getVariantTracks();
@@ -66,6 +83,7 @@ export function getRealMediaStats() {
           if (tracks[i].width) width = tracks[i].width;
           if (tracks[i].height) height = tracks[i].height;
           if (tracks[i].frameRate) fps = tracks[i].frameRate;
+          if (tracks[i].bandwidth) rawBandwidth = tracks[i].bandwidth;
           break;
         }
       }
@@ -77,20 +95,43 @@ export function getRealMediaStats() {
       else if (nameLow.indexOf('60fps') !== -1) fps = 60.0;
     }
 
-    var bitrateMbps = width >= 1920 ? '3.5' : (width >= 1280 ? '2.5' : '1.8');
+    var resTag = 'FHD';
+    if (width >= 7680 || height >= 4320) resTag = '8K';
+    else if (width >= 3840 || height >= 2160) resTag = '4K';
+    else if (width >= 2560 || height >= 1440) resTag = '2K';
+    else if (width >= 1920 || height >= 1080) resTag = 'FHD';
+    else if (width >= 1280 || height >= 720) resTag = 'HD';
+    else resTag = 'SD';
+
+    var bitrateMbps = '';
+    if (rawBandwidth > 0) {
+      bitrateMbps = (rawBandwidth / 1000000).toFixed(1) + ' Mbps';
+    } else {
+      bitrateMbps = (width >= 3840 ? '12.5' : (width >= 2560 ? '7.5' : (width >= 1920 ? '3.5' : (width >= 1280 ? '2.5' : '1.2')))) + ' Mbps';
+    }
+
     var fpsStr = (typeof fps === 'number') ? fps.toFixed(1) : (fps ? String(fps) : '25.0');
 
     return {
       width: width,
       height: height,
+      resTag: resTag,
       fps: fpsStr,
-      bitrate: bitrateMbps + ' Mbps',
-      bandwidth: bitrateMbps + ' Mbps',
+      bitrate: bitrateMbps,
+      bandwidth: bitrateMbps,
       isAudioOnly: false
     };
   } catch (e) {
     return null;
   }
+}
+
+var currentManualQuality = 'auto';
+var manualQualityFallbackTimeout = null;
+var onQualityFallbackCb = null;
+
+export function setQualityFallbackCallback(cb) {
+  onQualityFallbackCb = cb;
 }
 
 export function getRealVideoQualities() {
@@ -109,8 +150,15 @@ export function getRealVideoQualities() {
         var t = tracks[i];
         if (t.height && !trackMap[t.height]) {
           trackMap[t.height] = true;
+          var tag = '';
+          if (t.height >= 2160) tag = ' 4K UHD';
+          else if (t.height >= 1440) tag = ' 2K QHD';
+          else if (t.height >= 1080) tag = ' FHD';
+          else if (t.height >= 720) tag = ' HD';
+          else if (t.height >= 480) tag = ' SD';
+
           list.push({
-            label: t.height + 'p' + (t.height >= 1080 ? ' FHD' : (t.height >= 720 ? ' HD' : '')),
+            label: t.height + 'p' + tag,
             value: t.height,
             active: !isAbrOn && !!t.active
           });
@@ -131,19 +179,60 @@ export function getRealVideoQualities() {
 export function setRealVideoQuality(heightVal) {
   if (!playerInstance || !playerInstance.getVariantTracks) return;
   try {
+    if (manualQualityFallbackTimeout) {
+      clearTimeout(manualQualityFallbackTimeout);
+      manualQualityFallbackTimeout = null;
+    }
+
     if (heightVal === 'auto') {
+      currentManualQuality = 'auto';
       playerInstance.configure({ abr: { enabled: true } });
+      console.log('[Quality] Đã chuyển về chế độ Auto (ABR)');
+      if (onQualityFallbackCb) onQualityFallbackCb('auto');
     } else {
+      currentManualQuality = heightVal;
       playerInstance.configure({ abr: { enabled: false } });
       var tracks = playerInstance.getVariantTracks();
+      var bestTrack = null;
       for (var i = 0; i < tracks.length; i++) {
-        if (tracks[i].height === heightVal) {
-          playerInstance.selectVariantTrack(tracks[i], true);
-          break;
+        var t = tracks[i];
+        if (t.height === heightVal) {
+          if (!bestTrack) {
+            bestTrack = t;
+          } else {
+            var aCodec = (t.audioCodec || '').toLowerCase();
+            if (aCodec.indexOf('mp4a') !== -1 || aCodec.indexOf('aac') !== -1) {
+              bestTrack = t;
+            }
+          }
         }
       }
+
+      if (bestTrack) {
+        console.log('[Quality] Chuyển mượt sang độ phân giải:', bestTrack.height + 'p');
+        // Sử dụng clearBuffer = false để không bị flush pipeline làm lặp video trên Smart TV
+        playerInstance.selectVariantTrack(bestTrack, false);
+
+        // Giám sát: nếu sau 5 giây video bị đứng hình không tải tiếp được thì tự động về Auto
+        var checkStartTime = currentVideoElement ? currentVideoElement.currentTime : 0;
+        manualQualityFallbackTimeout = setTimeout(function() {
+          if (currentManualQuality !== 'auto' && playerInstance) {
+            var curVidTime = currentVideoElement ? currentVideoElement.currentTime : 0;
+            var isStalled = (Math.abs(curVidTime - checkStartTime) < 0.25) && (!currentVideoElement || !currentVideoElement.paused);
+            if (isStalled) {
+              console.warn('[QualityFallback] Độ phân giải ' + heightVal + 'p không tải được, tự động chuyển về Auto (Khuyên dùng)!');
+              setRealVideoQuality('auto');
+            }
+          }
+        }, 5000);
+      } else {
+        console.warn('[Quality] Không tìm thấy track ' + heightVal + 'p, trở về Auto');
+        setRealVideoQuality('auto');
+      }
     }
-  } catch (e) {}
+  } catch (e) {
+    console.warn('[Quality] Lỗi setRealVideoQuality:', e);
+  }
 }
 
 export function getRealAudioTracks() {
@@ -283,7 +372,14 @@ function startStallAndLiveWatchdog() {
       var timeSinceAdvance = now - lastAdvanceTimestamp;
       if (timeSinceAdvance > 2200 && (now - lastStallFixAttempt > 2500)) {
         lastStallFixAttempt = now;
-        console.warn('[StallGuard] Màn hình bị đứng ' + (timeSinceAdvance / 1000).toFixed(1) + 's. Tự động tiếp tục luồng!');
+        console.warn('[StallGuard] Màn hình bị đứng ' + (timeSinceAdvance / 1000).toFixed(1) + 's.');
+
+        // Nếu đang chọn độ phân giải thủ công mà bị đứng hình: tự động chuyển về Auto
+        if (currentManualQuality !== 'auto') {
+          console.warn('[QualityFallback] Phát hiện đứng hình ở độ phân giải thủ công, tự động chuyển về Auto (Khuyên dùng)!');
+          setRealVideoQuality('auto');
+          return;
+        }
         
         if (playerInstance && typeof playerInstance.isLive === 'function' && playerInstance.isLive()) {
           try {
@@ -326,21 +422,28 @@ export function initPlayer(videoElement) {
         if (sh.Player && sh.Player.isBrowserSupported && sh.Player.isBrowserSupported()) {
           playerInstance = new sh.Player(videoElement);
 
-          // Cấu hình chống giật hình + tự động bắt kịp thời gian trực tiếp + ưu tiên AAC Stereo
+          // Cấu hình không giới hạn độ phân giải (Mở khóa 4K UHD, 2K QHD) + chống giật hình
           playerInstance.configure({
             preferredAudioLanguage: 'vie',
             preferredAudioChannelCount: 2,
             preferredAudioCodecs: ['mp4a.40.2', 'mp4a.40.5', 'mp4a', 'aac'],
+            restrictions: {
+              maxHeight: Infinity,
+              maxWidth: Infinity,
+              maxPixels: Infinity,
+              maxBandwidth: Infinity,
+              minBandwidth: 0
+            },
             abr: {
               enabled: true,
-              defaultBandwidthEstimate: 2000000,
+              defaultBandwidthEstimate: 5000000,
               switchInterval: 8
             },
             streaming: {
-              bufferingGoal: 10,          // Buffer 10s an toàn
+              bufferingGoal: 12,          // Buffer 12s an toàn
               rebufferingGoal: 2,         // Nạp trước 2s để phát ngay
               bufferBehind: 15,
-              safeSeekOffset: 4,          // Cách Live Edge 4s (không bị trễ xa)
+              safeSeekOffset: 4,          // Cách Live Edge 4s
               jumpLargeGaps: true,        // Tự động nhảy qua khoảng trống timestamp
               smallGapLimit: 0.5,
               gapDetectionThreshold: 0.2,
@@ -375,6 +478,11 @@ export function initPlayer(videoElement) {
 
           playerInstance.addEventListener('error', function(event) {
             var err = event.detail;
+            if (currentManualQuality !== 'auto') {
+              console.warn('[QualityFallback] Lỗi luồng khi chọn độ phân giải thủ công, tự động chuyển về Auto:', err);
+              setRealVideoQuality('auto');
+              return;
+            }
             if (err && err.severity === 2) {
               console.warn('[Shaka] Fatal Error:', err);
               handleStreamFailure(err);
@@ -474,6 +582,13 @@ function playCurrentChannelInternal() {
         preferredAudioLanguage: 'vie',
         preferredAudioChannelCount: 2,
         preferredAudioCodecs: ['mp4a.40.2', 'mp4a.40.5', 'mp4a', 'aac'],
+        restrictions: {
+          maxHeight: Infinity,
+          maxWidth: Infinity,
+          maxPixels: Infinity,
+          maxBandwidth: Infinity,
+          minBandwidth: 0
+        },
         abr: { enabled: true }
       });
 

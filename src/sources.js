@@ -1,32 +1,106 @@
 import { parseM3U } from './parser.js';
-import { FALLBACK_M3U_SOURCE_1, FALLBACK_M3U_SOURCE_2 } from './fallback_data.js';
+import {
+  FALLBACK_M3U_SOURCE_1,
+  FALLBACK_M3U_SOURCE_2,
+  FALLBACK_M3U_VIETANH,
+  FALLBACK_M3U_VMT_COBAN,
+  FALLBACK_M3U_VIETXIAOMI,
+  FALLBACK_M3U_ONSPORTS_VIP,
+  FALLBACK_M3U_TINHLAGI_SPORTS,
+  FALLBACK_M3U_TINHLAGI_TV,
+  FALLBACK_M3U_EASPORT
+} from './fallback_data.js';
 
 export var SOURCE_CONFIGS = [
   {
-    name: 'SuperOK',
-    rawUrl: 'https://raw.githubusercontent.com/hieu-TQS/error/refs/heads/main/error.m3u',
-    apiUrl: 'https://api.github.com/repos/hieu-TQS/error/contents/error.m3u',
-    fallbackM3u: FALLBACK_M3U_SOURCE_1
-  },
-  {
-    name: 'VMT',
+    id: 'vmt',
+    name: 'VMT (VIP & Sự Kiện)',
     rawUrl: 'https://raw.githubusercontent.com/vuminhthanh12/vuminhthanh12/refs/heads/main/vmttv',
     apiUrl: 'https://api.github.com/repos/vuminhthanh12/vuminhthanh12/contents/vmttv',
     fallbackM3u: FALLBACK_M3U_SOURCE_2
   },
   {
-    name: 'VietAnhTV',
+    id: 'superok',
+    name: 'SuperOK (Tổng Hợp)',
+    rawUrl: 'https://raw.githubusercontent.com/hieu-TQS/error/refs/heads/main/error.m3u',
+    apiUrl: 'https://api.github.com/repos/hieu-TQS/error/contents/error.m3u',
+    fallbackM3u: FALLBACK_M3U_SOURCE_1
+  },
+  {
+    id: 'vietanh',
+    name: 'VietAnhTV (Đa Dạng)',
     rawUrl: 'https://tv.vietanhtv.top/tv/',
     apiUrl: null,
-    fallbackM3u: ''
+    fallbackM3u: FALLBACK_M3U_VIETANH
+  },
+  {
+    id: 'vmt_coban',
+    name: 'VMT Cơ Bản (Cơ Bản)',
+    rawUrl: 'https://dl.dropboxusercontent.com/s/o5vygit34v9ryly71gam4/coban66.m3u?rlkey=auyoon54hfubajt16nc7u7dbn&st=70gyvtcu&dl=0',
+    apiUrl: null,
+    fallbackM3u: FALLBACK_M3U_VMT_COBAN
+  },
+  {
+    id: 'vietxiaomi',
+    name: 'VietXiaomi (Địa Phương)',
+    rawUrl: 'https://raw.githubusercontent.com/vietng228/m3u/refs/heads/main/new.m3u',
+    apiUrl: 'https://api.github.com/repos/vietng228/m3u/contents/new.m3u',
+    fallbackM3u: FALLBACK_M3U_VIETXIAOMI
+  },
+  {
+    id: 'onsports_vip',
+    name: 'ON Sports VIP (ClearKey DRM)',
+    rawUrl: 'https://justpaste.it/lxtwn',
+    apiUrl: null,
+    fallbackM3u: FALLBACK_M3U_ONSPORTS_VIP
+  },
+  {
+    id: 'tinhlagi_sports',
+    name: 'TinhLaGi Sports (Bóng Đá)',
+    rawUrl: 'https://tinhlagi.pro/s.m3u',
+    apiUrl: null,
+    fallbackM3u: FALLBACK_M3U_TINHLAGI_SPORTS
+  },
+  {
+    id: 'tinhlagi_tv',
+    name: 'TinhLaGi TV (HBO & 4K)',
+    rawUrl: 'https://tinhlagi.pro/tv.json',
+    apiUrl: null,
+    fallbackM3u: FALLBACK_M3U_TINHLAGI_TV
+  },
+  {
+    id: 'easport',
+    name: 'EASport (Thể Thao Quốc Tế)',
+    rawUrl: 'https://livesport.io.vn/ott/list.php',
+    apiUrl: null,
+    fallbackM3u: FALLBACK_M3U_EASPORT
   }
 ];
+
+export function getActiveSourceIndex() {
+  try {
+    var saved = localStorage.getItem('active_source_idx');
+    if (saved !== null && saved !== '') {
+      var idx = parseInt(saved, 10);
+      if (!isNaN(idx) && idx >= 0 && idx < SOURCE_CONFIGS.length) {
+        return idx;
+      }
+    }
+  } catch (e) {}
+  return 0;
+}
+
+export function setActiveSourceIndex(idx) {
+  try {
+    localStorage.setItem('active_source_idx', idx.toString());
+  } catch (e) {}
+}
 
 export function xhrGet(url, callback) {
   var done = false;
   var xhr = new XMLHttpRequest();
   xhr.open('GET', url, true);
-  xhr.timeout = 8000;
+  xhr.timeout = 3000;
 
   xhr.onreadystatechange = function () {
     if (xhr.readyState === 4 && !done) {
@@ -92,17 +166,32 @@ function decodeBase64Safe(str) {
   return '';
 }
 
-function fetchSourceWithFallback(srcConfig, callback) {
-  // 1. Thử tải link raw trực tiếp
+function isCorsSupportedUrl(url) {
+  if (!url) return false;
+  var u = url.toLowerCase();
+  return u.indexOf('githubusercontent.com') !== -1 || u.indexOf('api.github.com') !== -1 || u.indexOf('jsdelivr.net') !== -1 || u.indexOf('unpkg.com') !== -1;
+}
+
+function isRunningInStandardBrowser() {
+  if (typeof window === 'undefined') return false;
+  var isTizenApp = !!(window.tizen || window.webapis);
+  return !isTizenApp;
+}
+
+function fetchSourceWithFallback(srcConfig, forceReload, callback) {
+  if (isRunningInStandardBrowser() && !isCorsSupportedUrl(srcConfig.rawUrl)) {
+    if (srcConfig.fallbackM3u && srcConfig.fallbackM3u.trim().length > 50) {
+      callback(null, srcConfig.fallbackM3u);
+      return;
+    }
+  }
+
   xhrGet(getFetchUrl(srcConfig.rawUrl), function (err, text) {
-    if (!err && text && text.trim().length > 200) {
+    if (!err && text && text.trim().length > 100) {
       callback(null, text);
       return;
     }
 
-    console.warn('[Sources] Không thể tải raw ' + srcConfig.name + ' (' + (err ? err.message : 'empty') + '), chuyển sang GitHub API...');
-
-    // 2. Nếu raw bị 429 hoặc lỗi: Thử tải qua GitHub REST API
     if (srcConfig.apiUrl) {
       xhrGet(getFetchUrl(srcConfig.apiUrl), function (apiErr, apiText) {
         if (!apiErr && apiText) {
@@ -110,8 +199,7 @@ function fetchSourceWithFallback(srcConfig, callback) {
             var json = JSON.parse(apiText);
             if (json && json.content) {
               var decoded = decodeBase64Safe(json.content);
-              if (decoded && decoded.trim().length > 200) {
-                console.log('[Sources] Đã tải thành công ' + srcConfig.name + ' qua GitHub REST API!');
+              if (decoded && decoded.trim().length > 100) {
                 callback(null, decoded);
                 return;
               }
@@ -119,29 +207,23 @@ function fetchSourceWithFallback(srcConfig, callback) {
           } catch (e) {}
         }
 
-        console.warn('[Sources] GitHub API ' + srcConfig.name + ' lỗi, kích hoạt bản dự phòng Offline!');
-        // 3. Nếu cả 2 đều lỗi: Dùng bản bundle Offline
-        if (srcConfig.fallbackM3u && srcConfig.fallbackM3u.trim().length > 100) {
+        if (srcConfig.fallbackM3u && srcConfig.fallbackM3u.trim().length > 50) {
           callback(null, srcConfig.fallbackM3u);
         } else {
-          callback(new Error('Tất cả nguồn đều lỗi'), null);
+          callback(new Error('Không thể tải nguồn này'), null);
         }
       });
       return;
     }
 
-    // 3. Nguồn không có API (VietAnhTV): nếu lỗi thì trả về fallback
-    if (srcConfig.fallbackM3u && srcConfig.fallbackM3u.trim().length > 100) {
+    if (srcConfig.fallbackM3u && srcConfig.fallbackM3u.trim().length > 50) {
       callback(null, srcConfig.fallbackM3u);
     } else {
-      callback(new Error('Tất cả nguồn đều lỗi'), null);
+      callback(new Error('Không thể tải nguồn này'), null);
     }
   });
 }
 
-/**
- * Loại bỏ triệt để emoji, ký tự đặc biệt thừa ở đầu và đuôi (như |, •, ●, ★, -, _, :, ~, v.v.)
- */
 export function cleanTitle(str) {
   if (!str || typeof str !== 'string') return '';
   var s = str
@@ -196,46 +278,42 @@ export function cleanGroupName(rawGroup) {
 export function getCategoryPriority(catName) {
   var norm = removeVietnameseTones((catName || '').toLowerCase()).trim();
 
-  // 1. Tất cả các nhóm có chữ VTV lên đầu tiên
+  // 1. Nhóm SỰ KIỆN (FPT Play lên đầu Sự Kiện, TV360, VTVPrime, LIVE EVENTS...)
+  var isEventGroup = norm.indexOf('su kien') !== -1 || norm.indexOf('event') !== -1 || norm.indexOf('truc tiep') !== -1;
+  if (isEventGroup) {
+    if (norm.indexOf('fpt') !== -1) return 35; // Sự Kiện FPT Play lên đầu
+    if (norm.indexOf('tv360') !== -1 || norm.indexOf('360') !== -1) return 36; // Sự Kiện TV360
+    if (norm.indexOf('prime') !== -1 || norm.indexOf('vtvprime') !== -1) return 37; // Sự Kiện VTVPrime
+    if (norm.indexOf('live event') !== -1 || norm === 'live events') return 38; // LIVE EVENTS
+    return 39; // Các nhóm Sự Kiện khác
+  }
+
+  // 2. Tất cả các nhóm Đài Truyền hình VTV
   if (norm === 'vtv' || norm === 'dai truyen hinh viet nam') return 10;
   if (norm.startsWith('vtv') && (norm.indexOf('cab') !== -1 || norm.indexOf('vtvcab') !== -1)) return 11;
   if (norm.indexOf('vtvcab') !== -1 || norm.indexOf('vtv cab') !== -1) return 11;
   if (norm.startsWith('vtv')) return 12;
   if (norm.indexOf('vtv') !== -1) return 13;
 
-  // 2. HTV
+  // 3. HTV
   if (norm === 'htv' || norm === 'htvc') return 20;
   if (norm.startsWith('htv') || norm.indexOf('htv') !== -1) return 21;
 
-  // 3. SCTV
+  // 4. SCTV
   if (norm === 'sctv') return 30;
   if (norm.startsWith('sctv') || norm.indexOf('sctv') !== -1) return 31;
 
-  // 4. Các nhóm Sự Kiện (Giữ riêng biệt từng nhóm)
-  if (norm.indexOf('su kien') !== -1 || norm.indexOf('event') !== -1 || norm.indexOf('truc tiep') !== -1) return 40;
+  // 5. THỂ THAO & BÓNG ĐÁ
+  if (norm.indexOf('the thao') !== -1 || norm.indexOf('sport') !== -1 || norm.indexOf('kplus') !== -1 || norm.indexOf('k+') !== -1 || norm.indexOf('bong da') !== -1) return 50;
 
-  // 5. THỂ THAO
-  if (norm.indexOf('the thao') !== -1 || norm.indexOf('sport') !== -1 || norm.indexOf('kplus') !== -1 || norm.indexOf('k+') !== -1) return 50;
+  // 6. Rạp Phim / Phim truyện / 4K / HBO
+  if (norm.indexOf('rap phim') !== -1 || norm.indexOf('hbo') !== -1 || norm.indexOf('phim') !== -1 || norm.indexOf('cinema') !== -1) return 55;
 
-  // 6. Vĩnh Long
+  // 7. Vĩnh Long (THVL)
   if (norm.indexOf('thvl') !== -1 || norm.indexOf('vinh long') !== -1) return 60;
 
-  // 7. Còn lại
+  // 8. Còn lại
   return 100;
-}
-
-export function getChannelUniqueKey(ch) {
-  if (ch.id && typeof ch.id === 'string' && ch.id.trim().length > 0) {
-    var rawId = ch.id.trim().toLowerCase();
-    var cleanId = removeVietnameseTones(rawId)
-      .replace(/(fhd|uhd|4k|2k|hd|sd|50fps|60fps|hevc|h265|raw)/g, '')
-      .replace(/[^a-z0-9]/g, '');
-    if (cleanId.length > 0) return 'id:' + cleanId;
-  }
-  var cleanN = removeVietnameseTones((ch.name || '').toLowerCase())
-    .replace(/(fhd|uhd|4k|2k|hd|sd|50fps|60fps|hevc|h265|raw)/g, '')
-    .replace(/[^a-z0-9]/g, '');
-  return 'name:' + (cleanN || 'channel');
 }
 
 export function formatPrettyChannelName(rawName) {
@@ -332,206 +410,82 @@ export function getFallbackChannelLogo(name, tvgId) {
   return '';
 }
 
-// Nguồn phát trực tiếp Radio chất lượng cao chính thức
-var RADIO_DIRECT_SOURCES = {
-  'vov1': [
-    'https://str.vov.gov.vn/vovlive/vov1vov5Vietnamese.sdp_aac/playlist.m3u8'
-  ],
-  'vov2': [
-    'https://audio-lss.vov.vn/live/vov2.m3u8',
-    'https://str.vov.gov.vn/vovlive/vov2.sdp_aac/playlist.m3u8'
-  ],
-  'vov3': [
-    'https://str.vov.gov.vn/vovlive/vov3.sdp_aac/playlist.m3u8',
-    'https://audio-lss.vov.vn/han/live/vov3/audio/haudio-eng.m3u8'
-  ],
-  'vov4': [
-    'https://stream.vovmedia.vn/vov4db',
-    'https://stream.vovmedia.vn/vov4tn'
-  ],
-  'vov5': [
-    'https://str.vov.gov.vn/vovlive/vov5.sdp_aac/playlist.m3u8',
-    'https://stream.vovmedia.vn/vov5'
-  ],
-  'vovgiaothonghanoi': [
-    'https://play.vovgiaothong.vn/live/gthn/playlist.m3u8',
-    'https://str.vov.gov.vn/vovlive/vovGTHN.sdp_aac/chunklist_w601606653.m3u8'
-  ],
-  'vovgiaothonghochiminh': [
-    'https://play.vovgiaothong.vn/live/gthcm/playlist.m3u8',
-    'https://str.vov.gov.vn/vovlive/vovGTHCM.sdp_aac/chunklist_w1213978008.m3u8'
-  ],
-  'vovgtmekong': [
-    'https://stream.vovmedia.vn/vovmekong'
-  ]
-};
+/**
+ * Nạp riêng biệt từng nguồn M3U được chọn (Không gộp chung / Không lọc bỏ kênh)
+ * Vẫn giữ nguyên logic ưu tiên thứ tự nhóm kênh lên trên
+ */
+export function loadSourceByIndex(sourceIndex, forceReload, callback) {
+  var idx = Math.max(0, Math.min(sourceIndex, SOURCE_CONFIGS.length - 1));
+  var srcConfig = SOURCE_CONFIGS[idx];
 
-function getRadioDirectSources(chName) {
-  var s = removeVietnameseTones((chName || '').toLowerCase()).replace(/[^a-z0-9]/g, '');
-  if (s === 'vov1') return RADIO_DIRECT_SOURCES.vov1;
-  if (s === 'vov2') return RADIO_DIRECT_SOURCES.vov2;
-  if (s === 'vov3') return RADIO_DIRECT_SOURCES.vov3;
-  if (s === 'vov4') return RADIO_DIRECT_SOURCES.vov4;
-  if (s === 'vov5') return RADIO_DIRECT_SOURCES.vov5;
-  if (s.indexOf('vovgiaothonghanoi') !== -1 || s.indexOf('vovgthn') !== -1) return RADIO_DIRECT_SOURCES.vovgiaothonghanoi;
-  if (s.indexOf('vovgiaothonghochiminh') !== -1 || s.indexOf('vovgthcm') !== -1) return RADIO_DIRECT_SOURCES.vovgiaothonghochiminh;
-  if (s.indexOf('mekong') !== -1) return RADIO_DIRECT_SOURCES.vovgtmekong;
-  return null;
-}
+  fetchSourceWithFallback(srcConfig, forceReload, function (err, text) {
+    var rawChannels = (!err && text) ? parseM3U(text) : [];
+    var processedChannels = [];
+    var groupedChannels = {};
+    var categoryOrder = [];
 
-export function loadAndMergePlaylists(callback) {
-  var completed = 0;
-  var parsedLists = [];
-
-  SOURCE_CONFIGS.forEach(function (srcConfig, index) {
-    fetchSourceWithFallback(srcConfig, function (err, text) {
-      if (err) {
-        console.warn('[Sources] Không thể tải ' + srcConfig.name + ':', err.message);
+    for (var i = 0; i < rawChannels.length; i++) {
+      var ch = rawChannels[i];
+      if (isBlockedChannelOrGroup(ch.name, ch.group)) {
+        continue;
       }
-      parsedLists[index] = {
-        name: srcConfig.name,
-        channels: (!err && text) ? parseM3U(text) : []
-      };
-      completed++;
 
-      if (completed === SOURCE_CONFIGS.length) {
-        var mergedObj = {};
-        var mergedList = [];
+      var grpName = cleanGroupName(ch.group);
+      var prettyName = formatPrettyChannelName(ch.name);
 
-        // Duyệt tuần tự theo đúng thứ tự ưu tiên: Nguồn 1 -> Nguồn 2 -> Nguồn 3
-        for (var i = 0; i < parsedLists.length; i++) {
-          var srcData = parsedLists[i];
-          if (!srcData || !srcData.channels) continue;
+      ch.name = prettyName;
+      ch.group = grpName;
 
-          for (var j = 0; j < srcData.channels.length; j++) {
-            var ch = srcData.channels[j];
-            if (isBlockedChannelOrGroup(ch.name, ch.group)) {
-              continue;
-            }
-
-            var groupName = cleanGroupName(ch.group);
-            var prettyName = formatPrettyChannelName(ch.name);
-            ch.name = prettyName;
-            ch.group = groupName;
-
-            var uniqueKey = getChannelUniqueKey(ch);
-            if (!uniqueKey) continue;
-
-            var streamSource = {
-              sourceName: srcData.name,
-              url: ch.url,
-              licenseKey: ch.licenseKey,
-              userAgent: ch.userAgent
-            };
-
-            var validLogo = isValidLogoUrl(ch.logo) ? ch.logo : '';
-
-            // NẾU KÊNH CHƯA CÓ TRONG DANH SÁCH: THÊM MỚI VÀO
-            if (!mergedObj[uniqueKey]) {
-              ch.sources = [streamSource];
-              ch.activeSourceIndex = 0;
-              ch.logo = validLogo || getFallbackChannelLogo(ch.name, ch.id);
-
-              // Tự động bổ sung nguồn Radio chính thức nếu là kênh Radio
-              var radioLinks = getRadioDirectSources(ch.name);
-              if (radioLinks && radioLinks.length > 0) {
-                var newSources = [];
-                for (var r = 0; r < radioLinks.length; r++) {
-                  newSources.push({
-                    sourceName: 'Radio Live',
-                    url: radioLinks[r],
-                    licenseKey: null,
-                    userAgent: null
-                  });
-                }
-                ch.sources = newSources.concat(ch.sources);
-                ch.url = ch.sources[0].url;
-              }
-
-              mergedObj[uniqueKey] = ch;
-              mergedList.push(ch);
-            } 
-            // NẾU KÊNH ĐÃ CÓ (TRÙNG tvg-id HOẶC TÊN): LƯU THÊM NGUỒN PHÁT DỰ PHÒNG & THỪA KẾ LOGO
-            else {
-              var existing = mergedObj[uniqueKey];
-              if (!existing.sources) {
-                existing.sources = [{
-                  sourceName: 'Gốc',
-                  url: existing.url,
-                  licenseKey: existing.licenseKey,
-                  userAgent: existing.userAgent
-                }];
-              }
-              var isDuplicateUrl = existing.sources.some(function(s) { return s.url === ch.url; });
-              if (!isDuplicateUrl) {
-                existing.sources.push(streamSource);
-              }
-
-              // NẾU NGUỒN 1 KHÔNG CÓ LOGO (hoặc logo chết) -> THỪA KẾ LOGO TỪ NGUỒN 2, 3!
-              if (!isValidLogoUrl(existing.logo) && validLogo) {
-                existing.logo = validLogo;
-              }
-            }
-          }
-        }
-
-        // Nếu tất cả nguồn đều gặp sự cố 429 hoặc mất mạng: Nạp từ Local Storage Cache!
-        if (mergedList.length === 0) {
-          try {
-            var cachedStr = localStorage.getItem('cached_iptv_payload');
-            if (cachedStr) {
-              var cachedData = JSON.parse(cachedStr);
-              if (cachedData && cachedData.allChannels && cachedData.allChannels.length > 0) {
-                console.warn('[Sources] Kích hoạt chế độ cứu hộ: Đã nạp ' + cachedData.allChannels.length + ' kênh từ bộ nhớ đệm Cache!');
-                callback(cachedData);
-                return;
-              }
-            }
-          } catch(e) {}
-        }
-
-        // Kiểm tra lượt cuối: Nếu kênh nào chưa có logo hợp lệ, gán từ kho Logo Fallback
-        for (var m = 0; m < mergedList.length; m++) {
-          if (!isValidLogoUrl(mergedList[m].logo)) {
-            mergedList[m].logo = getFallbackChannelLogo(mergedList[m].name, mergedList[m].id);
-          }
-        }
-
-        var groupedChannels = {};
-        var rawCategoryOrder = [];
-
-        for (var k = 0; k < mergedList.length; k++) {
-          var item = mergedList[k];
-          var grp = item.group || 'Kênh Khác';
-          if (!groupedChannels[grp]) {
-            groupedChannels[grp] = [];
-            rawCategoryOrder.push(grp);
-          }
-          groupedChannels[grp].push(item);
-        }
-
-        // Sắp xếp thứ tự Nhóm kênh: Tất cả nhóm VTV (VTV, VTVcab, VTV...) lên đầu -> HTV -> SCTV -> Sự Kiện -> THỂ THAO -> Còn lại
-        var categoryList = rawCategoryOrder.slice();
-        categoryList.sort(function (a, b) {
-          var pA = getCategoryPriority(a);
-          var pB = getCategoryPriority(b);
-          if (pA !== pB) {
-            return pA - pB;
-          }
-          return rawCategoryOrder.indexOf(a) - rawCategoryOrder.indexOf(b);
-        });
-
-        var payload = { allChannels: mergedList, groupedChannels: groupedChannels, categoryList: categoryList };
-        
-        if (mergedList.length > 0) {
-          try {
-            localStorage.setItem('cached_iptv_payload', JSON.stringify(payload));
-          } catch(e) {}
-        }
-
-        console.log('[Sources] Đã gộp thành công ' + mergedList.length + ' kênh, ' + categoryList.length + ' nhóm danh mục!');
-        callback(payload);
+      if (!isValidLogoUrl(ch.logo)) {
+        ch.logo = getFallbackChannelLogo(ch.name, ch.id);
       }
+
+      ch.sources = [{
+        sourceName: srcConfig.name,
+        url: ch.url,
+        licenseKey: ch.licenseKey,
+        userAgent: ch.userAgent
+      }];
+      ch.activeSourceIndex = 0;
+
+      processedChannels.push(ch);
+
+      if (!groupedChannels[grpName]) {
+        groupedChannels[grpName] = [];
+        categoryOrder.push(grpName);
+      }
+      groupedChannels[grpName].push(ch);
+    }
+
+    // Sắp xếp thứ tự Nhóm kênh theo đúng độ ưu tiên:
+    // VTV -> HTV -> SCTV -> SỰ KIỆN -> THỂ THAO -> Rạp Phim -> Vĩnh Long -> Các nhóm khác
+    var categoryList = categoryOrder.slice();
+    categoryList.sort(function (a, b) {
+      var pA = getCategoryPriority(a);
+      var pB = getCategoryPriority(b);
+      if (pA !== pB) {
+        return pA - pB;
+      }
+      return categoryOrder.indexOf(a) - categoryOrder.indexOf(b);
     });
+
+    if (processedChannels.length === 0 && SOURCE_CONFIGS.length > 1) {
+      console.warn('[Sources] Nguồn ' + srcConfig.name + ' không có kênh nào hoặc lỗi tải, tự động chuyển sang nguồn tiếp theo!');
+      var nextSourceIdx = (idx + 1) % SOURCE_CONFIGS.length;
+      setActiveSourceIndex(nextSourceIdx);
+      loadSourceByIndex(nextSourceIdx, forceReload, callback);
+      return;
+    }
+
+    var payload = {
+      allChannels: processedChannels,
+      groupedChannels: groupedChannels,
+      categoryList: categoryList,
+      sourceName: srcConfig.name,
+      sourceIndex: idx
+    };
+
+    console.log('[Sources] Đã nạp thành công ' + processedChannels.length + ' kênh từ nguồn: ' + srcConfig.name);
+    callback(payload);
   });
 }

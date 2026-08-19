@@ -183,6 +183,120 @@ export var globalStyles = '\
     .search-clear-btn { background: transparent; border: none; color: #cbd5e1; cursor: pointer; padding: 2px; display: flex; align-items: center; justify-content: center; border-radius: 50%; width: 26px; height: 26px; transition: all 0.1s ease; }\
     .search-clear-btn:hover { background: rgba(255, 255, 255, 0.18); color: #ffffff; }\
     .search-clear-btn svg { width: 18px; height: 18px; }\
+    .drawer-source-control-row {\
+      display: flex;\
+      align-items: center;\
+      gap: 10px;\
+      margin-bottom: 14px;\
+    }\
+    .source-ctrl-btn {\
+      display: flex;\
+      align-items: center;\
+      justify-content: center;\
+      padding: 9px 16px;\
+      background: #2b303a;\
+      border: 1.5px solid rgba(255, 255, 255, 0.2);\
+      border-radius: 12px;\
+      color: #e2e8f0;\
+      font-size: 14px;\
+      font-weight: 700;\
+      cursor: pointer;\
+      font-family: inherit;\
+      transition: background 0.12s ease, border-color 0.12s ease, color 0.12s ease;\
+    }\
+    .source-ctrl-btn:hover, .source-ctrl-btn.focused {\
+      background: #ffffff !important;\
+      border-color: #ffffff !important;\
+      color: #0f172a !important;\
+      font-weight: 800 !important;\
+      outline: none;\
+    }\
+    .source-switch-btn {\
+      flex: 1;\
+      overflow: hidden;\
+    }\
+    .source-switch-btn span {\
+      white-space: nowrap;\
+      overflow: hidden;\
+      text-overflow: ellipsis;\
+    }\
+    .source-refresh-btn {\
+      flex-shrink: 0;\
+    }\
+    .source-modal-overlay {\
+      position: fixed !important;\
+      top: 0 !important;\
+      left: 0 !important;\
+      width: 100vw !important;\
+      height: 100vh !important;\
+      background: rgba(0, 0, 0, 0.88) !important;\
+      backdrop-filter: blur(12px) !important;\
+      -webkit-backdrop-filter: blur(12px) !important;\
+      z-index: 9999 !important;\
+      display: none;\
+      align-items: center;\
+      justify-content: center;\
+    }\
+    .source-modal-overlay.active { display: flex !important; }\
+    .source-dialog-card {\
+      background: rgba(24, 28, 35, 0.98);\
+      border: none;\
+      border-radius: 22px;\
+      padding: 28px 34px;\
+      width: 520px;\
+      max-width: 90vw;\
+      box-shadow: 0 18px 45px rgba(0, 0, 0, 0.9);\
+      pointer-events: auto;\
+      display: flex;\
+      flex-direction: column;\
+    }\
+    .source-dialog-title {\
+      font-size: 24px;\
+      font-weight: 800;\
+      color: #ffffff;\
+      margin-bottom: 20px;\
+      padding-bottom: 16px;\
+      border-bottom: 1.5px solid rgba(255, 255, 255, 0.14);\
+      white-space: nowrap;\
+      overflow: hidden;\
+      text-overflow: ellipsis;\
+    }\
+    .source-dialog-list {\
+      display: flex;\
+      flex-direction: column;\
+      gap: 10px;\
+      max-height: 460px;\
+      overflow-y: auto;\
+      padding-right: 4px;\
+    }\
+    .source-dialog-list::-webkit-scrollbar { width: 5px; }\
+    .source-dialog-list::-webkit-scrollbar-thumb { background: rgba(255, 255, 255, 0.2); border-radius: 3px; }\
+    .source-dialog-item {\
+      display: flex;\
+      align-items: center;\
+      justify-content: space-between;\
+      padding: 15px 22px;\
+      background: #2b303a;\
+      border: none;\
+      border-radius: 16px;\
+      font-size: 19px;\
+      font-weight: 700;\
+      color: #f1f5f9;\
+      cursor: pointer;\
+      transition: background 0.1s ease, color 0.1s ease;\
+    }\
+    .source-dialog-item:hover { background: #363d4a; }\
+    .source-dialog-item.focused {\
+      background: #ffffff !important;\
+      border: none !important;\
+      color: #0b0d14 !important;\
+      font-weight: 800 !important;\
+      box-shadow: none !important;\
+    }\
+    .source-dialog-item.focused span { color: #0b0d14 !important; font-weight: 800 !important; }\
+    .source-dialog-item.active { color: #fb923c; }\
+    .source-dialog-item.active .source-badge { color: #fb923c; }\
+    .source-dialog-item.focused .source-badge { color: #0b0d14 !important; }\
     .category-nav-bar { display: flex; align-items: center; gap: 10px; overflow-x: auto; white-space: nowrap; padding: 4px 0 6px 0; scrollbar-width: none; }\
     .category-nav-bar::-webkit-scrollbar { display: none; }\
     .cat-chip {\

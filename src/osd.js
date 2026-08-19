@@ -236,7 +236,8 @@ export function updateLiveVideoSpecs(incomingStats) {
         fpsStr = fpsVal;
       }
       var bitrateStr = stats.bitrate || stats.bandwidth || '3.5 Mbps';
-      specsEl.innerText = stats.width + 'x' + stats.height + ' @ ' + fpsStr + 'fps | ' + bitrateStr;
+      var resTag = stats.resTag || 'FHD';
+      specsEl.innerText = resTag + ' ' + stats.width + 'x' + stats.height + ' @ ' + fpsStr + 'fps | ' + bitrateStr;
     }
   }
   updateActivePillLabels();

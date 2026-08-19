@@ -37,14 +37,22 @@ import {
   startSearchEditing,
   stopSearchEditing,
   clearSearch,
-  getSearchQuery
+  getSearchQuery,
+  isSourceModalOpen,
+  navigateSourceModal,
+  selectSourceModalCurrent,
+  closeSourceModal,
+  handleLeftInDrawer,
+  handleRightInDrawer,
+  handleEnterInDrawer,
+  renderSourceControl
 } from './drawer.js';
-import { loadAndMergePlaylists } from './sources.js';
-import { initPlayer, playStream, stopStream, setStatsCallback, setPlaybackErrorCallback, handleStreamFailure } from './player.js';
+import { loadSourceByIndex, getActiveSourceIndex, setActiveSourceIndex, SOURCE_CONFIGS } from './sources.js';
+import { initPlayer, playStream, stopStream, setStatsCallback, setPlaybackErrorCallback, setQualityFallbackCallback, handleStreamFailure } from './player.js';
 import { loadEPG } from './epg.js';
 import { TV_KEYS, registerTizenKeys } from './remote.js';
 
-var APP_VERSION = 'v1.0.0';
+var APP_VERSION = 'v1.0.1';
 
 var allChannels = [];
 var currentPlayingChannel = null;
@@ -126,6 +134,14 @@ function setupDOM() {
             '</button>' +
           '</div>' +
         '</div>' +
+        '<div class="drawer-source-control-row">' +
+          '<button id="btn-change-source" class="source-ctrl-btn source-switch-btn" title="Bấm để đổi nguồn phát">' +
+            '<span id="current-source-name-label">Đổi nguồn: SuperOK</span>' +
+          '</button>' +
+          '<button id="btn-refresh-source" class="source-ctrl-btn source-refresh-btn" title="Tải lại danh sách">' +
+            '<span>Làm mới</span>' +
+          '</button>' +
+        '</div>' +
         '<div id="category-nav-bar" class="category-nav-bar"></div>' +
       '</div>' +
       '<div id="drawer-channel-list" class="drawer-channel-list"></div>' +
@@ -170,7 +186,13 @@ function setupDOM() {
         '</button>' +
       '</div>' +
     '</div>' +
-    '<div id="quality-audio-dialog"></div>';
+    '<div id="quality-audio-dialog"></div>' +
+    '<div id="source-modal-overlay" class="source-modal-overlay" style="display:none;">' +
+      '<div class="source-dialog-card">' +
+        '<div class="source-dialog-title">Chọn Nguồn Phát</div>' +
+        '<div id="source-modal-list" class="source-dialog-list"></div>' +
+      '</div>' +
+    '</div>';
 
   setupPillClickEvents(function() { return currentPlayingChannel; }, function() { return allChannels; });
   setOpenDrawerCallback(openDrawer);
@@ -324,6 +346,40 @@ function autoPlayFirstChannel() {
   playSelectedChannel(targetChannel);
 }
 
+function loadSelectedSource(sourceIdx, forceReload) {
+  setActiveSourceIndex(sourceIdx);
+  showVideoSpinner();
+
+  loadSourceByIndex(sourceIdx, forceReload, function(data) {
+    allChannels = data.allChannels || [];
+    initDrawerState(
+      data,
+      function(ch) { playSelectedChannel(ch); },
+      function(newIdx) { loadSelectedSource(newIdx, false); },
+      function() { loadSelectedSource(sourceIdx, true); }
+    );
+
+    renderSourceControl();
+    openDrawer();
+
+    if (allChannels.length > 0) {
+      var foundSame = currentPlayingChannel ? allChannels.find(function(c) { return c.name === currentPlayingChannel.name; }) : null;
+      if (foundSame) {
+        playSelectedChannel(foundSame);
+      } else {
+        autoPlayFirstChannel();
+      }
+    }
+
+    loadEPG(function() {
+      renderChannels();
+      if (currentPlayingChannel) {
+        updateOsdInfo(currentPlayingChannel, isDrawerOpen, false);
+      }
+    });
+  });
+}
+
 function handleKeyDown(e) {
   var key = e.keyCode;
   var navKeys = [TV_KEYS.UP, TV_KEYS.DOWN, TV_KEYS.LEFT, TV_KEYS.RIGHT, 8, 27, 32, 461, TV_KEYS.RETURN, TV_KEYS.BACK_PC, TV_KEYS.INFO, TV_KEYS.PLAY, TV_KEYS.PAUSE, TV_KEYS.PLAY_PAUSE];
@@ -334,7 +390,28 @@ function handleKeyDown(e) {
     }
   }
 
-  // 1. KHI POPUP LỊCH PHÁT SÓNG / CHẤT LƯỢNG / ÂM THANH ĐANG MỞ
+  // 1. KHI POPUP CHỌN NGUỒN PHÁT ĐANG MỞ
+  if (isSourceModalOpen()) {
+    if (isReturnOrEscKey(key)) {
+      closeSourceModal();
+      return;
+    }
+    if (key === TV_KEYS.UP) {
+      navigateSourceModal('up');
+      return;
+    }
+    if (key === TV_KEYS.DOWN) {
+      navigateSourceModal('down');
+      return;
+    }
+    if (isOkOrEnterKey(key)) {
+      selectSourceModalCurrent();
+      return;
+    }
+    return;
+  }
+
+  // 2. KHI POPUP LỊCH PHÁT SÓNG / CHẤT LƯỢNG / ÂM THANH ĐANG MỞ
   if (isQualityOrAudioDialogOpen()) {
     if (isReturnOrEscKey(key)) {
       closeQualityAudioDialog(currentPlayingChannel);
@@ -365,10 +442,9 @@ function handleKeyDown(e) {
 
   var channels = getCurrentChannels();
 
-  // 2. KHI ĐANG Ở CHẾ ĐỘ TOÀN MÀN HÌNH (FULLSCREEN)
+  // 3. KHI ĐANG Ở CHẾ ĐỘ TOÀN MÀN HÌNH (FULLSCREEN)
   if (!isDrawerOpen) {
     if (isReturnOrEscKey(key)) {
-      // Bấm Return / ESC khi đang full màn hình -> Bật Menu danh sách kênh bên trái
       if (isOsdVisible()) hideOsdBar();
       openDrawer();
       return;
@@ -395,7 +471,6 @@ function handleKeyDown(e) {
       if (isOsdVisible()) {
         executeActionPill(currentPlayingChannel, allChannels);
       } else {
-        // Mở thanh điều khiển OSD khi đang xem toàn màn hình
         if (currentPlayingChannel) updateOsdInfo(currentPlayingChannel, false, true);
       }
       return;
@@ -431,7 +506,7 @@ function handleKeyDown(e) {
     return;
   }
 
-  // 3. KHI ĐANG TRONG TRẠNG THÁI GÕ BÀN PHÍM ẢO TÌM KIẾM
+  // 4. KHI ĐANG TRONG TRẠNG THÁI GÕ BÀN PHÍM ẢO TÌM KIẾM
   if (isSearchEditing()) {
     if (key === TV_KEYS.DOWN || key === 13) {
       stopSearchEditing();
@@ -453,40 +528,9 @@ function handleKeyDown(e) {
     return;
   }
 
-  // 4. KHI ĐANG FOCUS VIỀN SÁNG VÀO Ô TÌM KIẾM (CHƯA GÕ PHÍM)
-  if (isSearchBoxFocused()) {
-    if (isOkOrEnterKey(key)) {
-      startSearchEditing();
-      return;
-    }
-    if (key === TV_KEYS.DOWN) {
-      nextChannel();
-      return;
-    }
-    if (key === TV_KEYS.LEFT) {
-      prevCategory();
-      return;
-    }
-    if (key === TV_KEYS.RIGHT) {
-      nextCategory();
-      return;
-    }
-    if (isReturnOrEscKey(key)) {
-      if (getSearchQuery()) {
-        clearSearch();
-      } else {
-        blurSearchBox();
-        closeDrawer();
-      }
-      return;
-    }
-    return;
-  }
-
-  // 5. KHI MENU DANH SÁCH KÊNH ĐANG HOẠT ĐỘNG
+  // 5. KHI MENU DANH SÁCH KÊNH ĐANG HOẠT ĐỘNG (DRAWER)
   if (isOkOrEnterKey(key)) {
-    var selectedCh = getCurrentSelectedChannel();
-    if (selectedCh) playSelectedChannel(selectedCh);
+    handleEnterInDrawer();
     return;
   }
 
@@ -498,17 +542,17 @@ function handleKeyDown(e) {
       nextChannel();
       break;
     case TV_KEYS.LEFT:
-      prevCategory();
+      handleLeftInDrawer();
       break;
     case TV_KEYS.RIGHT:
-      nextCategory();
+      handleRightInDrawer();
       break;
     default:
       if (isReturnOrEscKey(key)) {
         if (getSearchQuery()) {
           clearSearch();
         } else {
-          closeDrawer(); // Đóng menu kênh, về toàn màn hình
+          closeDrawer();
         }
       }
       break;
@@ -523,7 +567,7 @@ function startApplication() {
     setupDOM();
     updateWindowsClock();
     
-    // Tự động làm mới đồng hồ, thanh tiến độ phát sóng và chương trình EPG liên tục mỗi 4 giây (chạy nền im lặng, không tự mở OSD)
+    // Tự động làm mới đồng hồ, tiến độ phát sóng EPG mỗi 4 giây
     setInterval(function() {
       updateWindowsClock();
       updateDrawerEpgProgress();
@@ -532,7 +576,7 @@ function startApplication() {
       }
     }, 4000);
 
-    // Tự động cập nhật lại file XMLTV EPG mới nhất sau mỗi 30 phút
+    // Tự động cập nhật XMLTV EPG mỗi 30 phút
     setInterval(function() {
       loadEPG(function() {
         renderChannels();
@@ -607,26 +651,17 @@ function startApplication() {
     showPlaybackError();
   });
 
+  setQualityFallbackCallback(function() {
+    updateActivePillLabels();
+  });
+
   window.addEventListener('keydown', handleKeyDown);
   window.addEventListener('beforeunload', function() { stopStream(); });
   window.addEventListener('pagehide', function() { stopStream(); });
 
-  loadAndMergePlaylists(function(data) {
-    allChannels = data.allChannels || [];
-    initDrawerState(data, function(ch) {
-      playSelectedChannel(ch);
-    });
-
-    openDrawer();
-    autoPlayFirstChannel();
-
-    loadEPG(function() {
-      renderChannels();
-      if (currentPlayingChannel) {
-        updateOsdInfo(currentPlayingChannel, isDrawerOpen, false);
-      }
-    });
-  });
+  // Nạp nguồn đang được chọn hiện tại
+  var initialSourceIndex = getActiveSourceIndex();
+  loadSelectedSource(initialSourceIndex, false);
 }
 
 if (document.readyState === 'complete' || document.readyState === 'interactive') {
