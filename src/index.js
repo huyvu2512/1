@@ -52,7 +52,7 @@ import { initPlayer, playStream, stopStream, setStatsCallback, setPlaybackErrorC
 import { loadEPG } from './epg.js';
 import { TV_KEYS, registerTizenKeys } from './remote.js';
 
-var APP_VERSION = 'v1.0.1';
+var APP_VERSION = 'v1.0.2';
 
 var allChannels = [];
 var currentPlayingChannel = null;
