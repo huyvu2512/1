@@ -2,7 +2,7 @@
   "schemaVersion": 1,
   "name": "tizenbrew-iptv-drm",
   "displayName": "TizenBrew IPTV DRM",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "description": "TizenBrew IPTV DRM for Samsung Smart TV & Web",
   "targetUrl": "https://localhost",
   "assets": {
